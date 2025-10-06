@@ -1,0 +1,20 @@
+# WARPCORE Code Owners
+# Global ownership
+* @operators
+
+# PAP Architecture layers
+/web/routes/ @operators
+/web/controllers/ @operators 
+/web/orchestrators/ @operators
+/web/providers/ @operators
+/web/middleware/ @operators
+/web/executors/ @operators
+
+# Configuration
+/config/ @operators
+/WARP.md @operators
+
+# Build and deployment
+/warpcore.py @operators
+/native/ @operators
+/linux-native/ @operators

@@ -1,0 +1,67 @@
+{
+  "name": "waRPCORe-native",
+  "version": "3.0.0",
+  "description": "waRpcoRE Command Center - Native macOS Application",
+  "main": "main.js",
+  "scripts": {
+    "start": "electron .",
+    "build": "electron-builder",
+    "dist": "electron-builder --publish=never",
+    "pack": "electron-builder --dir"
+  },
+  "author": "waRpcoRE",
+  "license": "MIT",
+  "repository": {
+    "type": "git",
+    "url": "https://github.com/waRPCORe/waRPCORe.git"
+  },
+  "devDependencies": {
+    "electron": "^27.0.0",
+    "electron-builder": "^24.6.4"
+  },
+  "build": {
+    "appId": "com.waRPCORe.commandcenter",
+    "productName": "waRpcoRE Command Center",
+    "directories": {
+      "output": "dist"
+    },
+    "files": [
+      "main.js",
+      "preload.js",
+      "assets/**/*",
+      "resources/**/*"
+    ],
+    "extraResources": [
+      {
+        "from": "resources/waRPCORe_app",
+        "to": "waRPCORe_app"
+      }
+    ],
+    "mac": {
+      "icon": "assets/icon.icns",
+      "category": "public.app-category.developer-tools",
+      "target": "dmg",
+      "artifactName": "waRpcoRE-3.0.0-Unified.dmg"
+    },
+    "dmg": {
+      "title": "waRpcoRE Command Center",
+      "window": {
+        "width": 600,
+        "height": 400
+      },
+      "contents": [
+        {
+          "x": 150,
+          "y": 200,
+          "type": "file"
+        },
+        {
+          "x": 450,
+          "y": 200,
+          "type": "link",
+          "path": "/Applications"
+        }
+      ]
+    }
+  }
+}
