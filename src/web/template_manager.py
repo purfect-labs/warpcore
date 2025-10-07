@@ -46,11 +46,11 @@ class WARPCORETemplateManager:
             "architecture": "Provider-Abstraction-Pattern",
             "license_status": license_status or {
                 "status": "active",
-                "type": "WARP_DEMO",
-                "user_name": "WARP Demo User"
+                "type": "production",
+                "user_name": "Licensed User"
             },
             "providers": ["gcp", "license"],
-            "note": "WARP DEMO - Same feature gates as API layer"
+            "note": "Production template manager - feature gates from data layer"
         }
         
         # Merge with shared feature context from Data layer

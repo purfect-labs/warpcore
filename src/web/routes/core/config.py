@@ -9,34 +9,36 @@ def setup_core_config_routes(app, controller_registry):
     
     @app.get("/api/config/profiles")
     async def get_available_profiles():
-        """Route to API controller for profiles - WARP DEMO"""
+        """Route to API controller for profiles - Production"""
         # Web layer routes to API controller by convention
         # No direct imports - controller registry provides the interface
+        
+        # Get actual project configuration from environment or config
+        # TODO: Load from actual GCP project configuration
+        
         return {
             "success": True,
-            "gcp_projects": ["warp-demo-project-dev", "warp-demo-project-stage"],
-            "gcp_project_details": {
-                "warp-demo-project-dev": {"id": "warp-demo-dev-123", "name": "WARP Demo Dev"},
-                "warp-demo-project-stage": {"id": "warp-demo-stage-456", "name": "WARP Demo Stage"}
-            },
-            "note": "WARP DEMO - Web layer routing to API controllers"
+            "gcp_projects": [],  # Will be populated from actual GCP config
+            "gcp_project_details": {},  # Will be populated from actual GCP project data
+            "note": "Production - Web layer routing to API controllers"
         }
     
     @app.get("/api/config")
     async def get_config_info():
-        """Route to API controller for config info - WARP DEMO"""
+        """Route to API controller for config info - Production"""
         # Web layer provides routing, API layer provides business logic
+        # TODO: Load actual configuration from data layer
         return {
             "success": True,
             "gcp": {
-                "projects": ["warp-demo-project-dev", "warp-demo-project-stage"],
-                "configured": True
+                "projects": [],  # Will be loaded from actual GCP configuration
+                "configured": False  # Will be determined by actual provider status
             },
             "license": {
-                "configured": True,
-                "type": "WARP_DEMO"
+                "configured": False,  # Will be determined by actual license validation
+                "type": "production"
             },
             "providers": ["gcp", "license"],
             "architecture": "Provider-Abstraction-Pattern",
-            "note": "WARP DEMO - Web layer routes, API controllers handle logic"
+            "note": "Production - Web layer routes, API controllers handle logic"
         }
