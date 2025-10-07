@@ -10,7 +10,7 @@
 @import 'components/shared/terminal.css';
 @import 'components/shared/panels.css';
 @import 'components/shared/buttons.css';
-@import 'components/shared/license.css';
+@import 'components/licensing/license.css';
 @import 'components/shared/compact.css';
 @import 'components/gcp/kali.css';
 

@@ -7,7 +7,7 @@ import json
 import os
 from typing import Dict, Any, Optional, List
 from ..core.base_provider import BaseProvider
-from data.config_loader import get_config
+from ....data.config_loader import get_config
 
 
 class GCPAuth(BaseProvider):

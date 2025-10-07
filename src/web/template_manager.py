@@ -29,6 +29,13 @@ class WARPCORETemplateManager:
             trim_blocks=True,
             lstrip_blocks=True
         )
+        
+        # Add global functions
+        self.env.globals['has_feature'] = self._has_feature
+    
+    def _has_feature(self, feature_name: str) -> bool:
+        """Check if a feature is available - Jinja2 global function"""
+        return feature_gate_manager.has_feature(feature_name)
     
     def get_template_context(self, license_status=None) -> Dict[str, Any]:
         """Get template context with shared Data layer feature gates"""

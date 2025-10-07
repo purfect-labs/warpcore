@@ -168,12 +168,13 @@ logs/
 *.swp
 *.swo
 *~
-.data
 # Temporary files
 tmp/
 temp/
 .tmp/
-
+.data/
+.data/*.json
+src/agency/.data/*.json
 # OS generated files
 Thumbs.db
 ehthumbs.db

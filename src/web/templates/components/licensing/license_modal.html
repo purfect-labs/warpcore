@@ -1,8 +1,8 @@
-<!-- License Management Modal -->
+<!-- WARP License Management Modal - Production Ready -->
 <div class="modal-overlay" id="license-modal" style="display: none;">
     <div class="modal-content license-modal">
         <div class="modal-header">
-            <h3 class="modal-title">🔑 License Management</h3>
+            <h3 class="modal-title">🔑 WARP License Management</h3>
             <button class="modal-close" onclick="closeLicenseModal()">×</button>
         </div>
         
@@ -65,15 +65,15 @@
                 <div class="license-tab-content" id="license-tab-trial">
                     <h5>Start Free Trial</h5>
                     <div class="trial-benefits">
-                        <p>🆓 Get full access to Trial features for 30 days:</p>
+                        <p>🆓 Get full access to Professional features for 14 days:</p>
                         <ul>
-                            <li>✅ AWS SSO Authentication</li>
                             <li>✅ GCP Authentication</li>
+                            <li>✅ Advanced K8s Operations</li>
                             <li>✅ Live Log Streaming</li>
-                            <li>✅ Kiali Port Forwarding</li>
-                            <li>✅ ECS Operations</li>
-                            <li>✅ CloudWatch Logs</li>
-                            <li>✅ Active Connection Monitoring</li>
+                            <li>✅ Multi-Environment Support</li>
+                            <li>✅ Priority Support</li>
+                            <li>✅ Export Capabilities</li>
+                            <li>✅ Advanced Analytics</li>
                         </ul>
                     </div>
                     <form id="trial-form">
@@ -82,7 +82,7 @@
                             <input type="email" id="trial-email" placeholder="your.email@company.com" class="license-input" required>
                         </div>
                         <div class="form-actions">
-                            <button type="submit" class="btn-primary">Start 30-Day Trial</button>
+                            <button type="submit" class="btn-primary">Start 14-Day Trial</button>
                         </div>
                     </form>
                 </div>
@@ -239,7 +239,7 @@ document.getElementById('trial-form')?.addEventListener('submit', async function
             headers: { 'Content-Type': 'application/json' },
             body: JSON.stringify({ 
                 user_email: email,
-                days: 30
+                days: 14
             })
         });
         

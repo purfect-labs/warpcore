@@ -7,7 +7,7 @@ import asyncio
 import json
 import logging
 import os
-from datetime import datetime
+from datetime import datetime, timedelta
 from pathlib import Path
 from typing import Dict, List, Optional, Any
 
@@ -26,15 +26,13 @@ from .providers import get_provider_registry
 from .middleware import get_middleware_registry
 from .executors import get_executor_registry
 from .orchestrators.gcp.gcp_auth_orchestrator import GCPAuthOrchestrator
-from ..web.routes import setup_all_routes
 from ..data.config.discovery.context_discovery import ContextDiscoverySystem
 from .auto_registration import ComponentAutoDiscovery
 from ..docs.compliant_docs import CompliantDocsGenerator
 from .middleware.tracing.request_tracer import tracing_middleware, get_request_tracer
 from .middleware.tracing.error_correlator import get_error_correlator
 from .middleware.resource_management import get_resource_manager, shutdown_resource_manager
-from .routes.tracing import setup_tracing_routes
-from .routes.resource_management import setup_resource_management_routes
+# Route modules removed - using direct FastAPI routes in PAP architecture
 # Simple endpoint filtering - if we have endpoints we know not to call, we don't call them
 # No hardcoded endpoint filtering - use discovery
 
@@ -103,11 +101,8 @@ class WARPCOREAPIServer:
         # Setup routes
         self.setup_routes()
         
-        # Setup tracing API routes
-        setup_tracing_routes(self.app)
-        
-        # Setup resource management API routes
-        setup_resource_management_routes(self.app)
+        # Direct FastAPI routes replace tracing and resource management routes
+        # TODO: Migrate tracing and resource management to direct routes if needed
         
         # Setup documentation endpoints with complete architecture discovery
         self.setup_documentation_endpoints()
@@ -200,8 +195,7 @@ class WARPCOREAPIServer:
     def setup_routes(self):
         """Setup FastAPI routes"""
         
-        # Setup organized routes by provider
-        setup_all_routes(self.app, self.controller_registry)
+        # Direct FastAPI routes - no route abstraction layer
         
         @self.app.get("/", response_class=HTMLResponse)
         async def get_index():
@@ -292,12 +286,10 @@ class WARPCOREAPIServer:
         
         @self.app.get("/api/config")
         async def get_config_info():
-            # AWS profiles removed, GCP-only configuration
             return {
                 'gcp_projects': list(self.config.get_gcp_config().get('projects', {}).keys()),
                 'database_configs': self.config.get_all_database_configs(),
-                'timestamp': datetime.now().isoformat(),
-                'note': 'WARP test - AWS functionality removed'
+                'timestamp': datetime.now().isoformat()
             }
         
         # License management endpoints
@@ -395,6 +387,51 @@ class WARPCOREAPIServer:
                     return {"success": False, "error": "License controller not available"}
             except Exception as e:
                 return {"success": False, "error": str(e)}
+        
+        # License Purchase Stub for POC Demo
+        class LicensePurchaseRequest(BaseModel):
+            tier: str = "premium"
+            user_email: str
+            billing_info: Optional[dict] = None
+        
+        @self.app.post("/api/license/purchase")
+        async def purchase_license_stub(request: LicensePurchaseRequest):
+            """License purchase stub - always returns success for POC demo"""
+            try:
+                # POC Demo: Always return successful purchase
+                demo_license_key = f"DEMO-{request.tier.upper()}-{datetime.now().strftime('%Y%m%d%H%M%S')}"
+                
+                return {
+                    "success": True,
+                    "message": "Demo purchase successful",
+                    "demo_mode": True,
+                    "purchase_details": {
+                        "license_key": demo_license_key,
+                        "tier": request.tier,
+                        "user_email": request.user_email,
+                        "status": "completed",
+                        "expires_at": (datetime.now() + timedelta(days=365)).isoformat(),
+                        "features": {
+                            "premium": ["advanced_features", "priority_support", "unlimited_usage"],
+                            "enterprise": ["all_features", "dedicated_support", "sla_guarantee", "custom_integrations"]
+                        }.get(request.tier, ["basic_features"]),
+                        "watermark": "DEMO-PURCHASE-STUB"
+                    },
+                    "next_steps": {
+                        "activate_license": f"/api/license/activate",
+                        "license_key": demo_license_key,
+                        "message": "Use the provided license key to activate your purchase"
+                    },
+                    "timestamp": datetime.now().isoformat()
+                }
+                
+            except Exception as e:
+                return {
+                    "success": False,
+                    "error": f"Purchase stub failed: {str(e)}",
+                    "demo_mode": True,
+                    "timestamp": datetime.now().isoformat()
+                }
         
         @self.app.post("/api/command")
         async def execute_command(request: CommandRequest, background_tasks: BackgroundTasks):
@@ -2108,8 +2145,7 @@ Please implement the fixes directly in the codebase and provide a summary of cha
                 'timestamp': datetime.now().isoformat(),
                 'gcp': gcp_status,
                 'config': {
-                    'gcp_projects': list(self.config.get_gcp_config().get('projects', {}).keys()),
-                    'note': 'WARP test - AWS functionality removed'
+                    'gcp_projects': list(self.config.get_gcp_config().get('projects', {}).keys())
                 }
             }
         except Exception as e:

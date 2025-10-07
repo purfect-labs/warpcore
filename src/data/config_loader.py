@@ -236,6 +236,10 @@ class APEXConfigLoader:
         """Get the full unified configuration"""
         return self.config
     
+    def get_section(self, section_name: str, default: Optional[Dict[str, Any]] = None) -> Dict[str, Any]:
+        """Get a specific section from the configuration"""
+        return self.config.get(section_name, default or {})
+    
     def reload(self):
         """Reload all configuration files"""
         self.static_configs = {}

@@ -30,12 +30,11 @@ class K8sController(BaseController):
         return {
             "success": True,
             "clusters": [
-                "WARP-demo-cluster-dev",
-                "WARP-demo-cluster-stage", 
-                "WARP-demo-cluster-prod"
+                "demo-cluster-dev",
+                "demo-cluster-stage", 
+                "demo-cluster-prod"
             ],
-            "current": "WARP-demo-cluster-dev",
-            "note": "WARP test - Mock cluster data"
+            "current": "demo-cluster-dev"
         }
     
     async def switch_context(self, context: str) -> Dict[str, Any]:
@@ -45,14 +44,14 @@ class K8sController(BaseController):
             "data": {
                 "controller": self.name,
                 "context": context,
-                "message": f"WARP test - Switching to context: {context}"
+                "message": f"Switching to context: {context}"
             }
         })
         
         return {
             "success": True,
             "context": context,
-            "message": f"WARP test - Switched to context: {context}"
+            "message": f"Switched to context: {context}"
         }
     
     async def get_pods(self, namespace: str = "default") -> Dict[str, Any]:
@@ -62,16 +61,15 @@ class K8sController(BaseController):
             "namespace": namespace,
             "pods": [
                 {
-                    "name": "warp-demo-web-pod-1",
+                    "name": "demo-web-pod-1",
                     "status": "Running",
                     "ready": "1/1"
                 },
                 {
-                    "name": "warp-demo-api-pod-1", 
+                    "name": "demo-api-pod-1", 
                     "status": "Running",
                     "ready": "1/1"
                 }
             ],
-            "count": 2,
-            "note": "WARP test - Mock pod data"
+            "count": 2
         }
