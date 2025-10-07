@@ -280,7 +280,7 @@ class AgentFlowGenerator:
 <body>
     <div class="header">
         <h1>🤖 WARPCORE Agent Flow</h1>
-        <div class="watermark">🚀 WARP-DEMO STANDALONE MERMAID - Generated: {timestamp}</div>
+        <div class="watermark">Generated: {timestamp}</div>
     </div>
     
     <div class="mermaid-container">
@@ -338,8 +338,9 @@ class AgentFlowGenerator:
         
         # Add watermark comment if configured
         if config.get('output_options', {}).get('add_watermark_comment', True):
-            watermark = config.get('flow_config', {}).get('watermark', '🚀 WARP-DEMO FLOW')
-            mermaid += f"    %% {watermark}\n\n"
+            watermark = config.get('flow_config', {}).get('watermark', '')
+            if watermark:
+                mermaid += f"    %% {watermark}\n\n"
         
         # Generate nodes using config templates
         if self.flow_schema and 'agent_definitions' in self.flow_schema:
@@ -359,13 +360,13 @@ class AgentFlowGenerator:
     def _get_default_mermaid_config(self) -> Dict:
         """Get default Mermaid configuration if config file not available"""
         return {
-            'flow_config': {'diagram_type': 'flowchart TD', 'title': 'WARPCORE Agent Flow', 'watermark': '🚀 WARP-DEMO FLOW'},
+            'flow_config': {'diagram_type': 'flowchart TD', 'title': 'WARPCORE Agent Flow'},
             'node_templates': {
                 'agent_node': '{position}["{position}<br/>{name}<br/>{role_short}"]',
                 'user_node': 'USER(["👤 USER<br/>{description}"])'
             },
             'flow_patterns': {'role_truncation': {'max_length': 25, 'suffix': '...'}},
-            'output_options': {'include_styling': True, 'add_title_comment': True, 'add_watermark_comment': True}
+            'output_options': {'include_styling': True, 'add_title_comment': True, 'add_watermark_comment': False}
         }
     
     def _generate_nodes_from_schema(self, config: Dict) -> str:
@@ -532,7 +533,7 @@ class AgentFlowGenerator:
         <div class="header">
             <h1>🤖 WARPCORE Agent System</h1>
             <p>Dynamic Flow Documentation - Generated from Real Agent Schemas</p>
-            <p class="watermark">🚀 WARP-DEMO FLOW SYSTEM - Generated: {timestamp}</p>
+            <p class="watermark">Generated: {timestamp}</p>
         </div>
 
         <div class="tab-container">
@@ -684,7 +685,6 @@ class AgentFlowGenerator:
                 "schema_version": self.flow_schema.get('schema_version', '1.0.0'),
                 "generated_from": "Comprehensive schema definition + real agent files",
                 "timestamp": datetime.now().isoformat(),
-                "watermark": self.flow_schema.get('watermark', '🚀 WARP-DEMO FLOW'),
                 "agent_definitions": self.flow_schema.get('agent_definitions', {}),
                 "flow_relationships": self.flow_schema.get('flow_relationships', {}),
                 "schema_transformations": self.flow_schema.get('schema_transformations', {}),

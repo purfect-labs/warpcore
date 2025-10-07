@@ -2,8 +2,7 @@
   "flow_config": {
     "diagram_type": "flowchart TD",
     "title": "WARPCORE Agent Flow Configuration",
-    "version": "1.0.0",
-    "watermark": "🚀 WARP-DEMO MERMAID CONFIG"
+    "version": "1.0.0"
   },
   "node_styles": {
     "origin": {
@@ -134,6 +133,6 @@
     "include_comments": true,
     "compact_format": false,
     "add_title_comment": true,
-    "add_watermark_comment": true
+    "add_watermark_comment": false
   }
 }

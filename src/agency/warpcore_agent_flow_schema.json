@@ -3,7 +3,6 @@
   "schema_version": "1.0.0",
   "generated_from": "Comprehensive schema definition + real agent files",
   "timestamp": "2025-10-07T16:55:35.921274",
-  "watermark": "🚀 WARP-DEMO FLOW SCHEMA",
   "agent_definitions": {
     "origin": {
       "position": "0a",
