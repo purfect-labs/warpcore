@@ -1,0 +1,1038 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>WARPCORE Agent System - Flow Documentation</title>
+    <script src="https://cdn.jsdelivr.net/npm/mermaid@10.6.1/dist/mermaid.min.js"></script>
+    <style>
+        
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        html, body {
+            height: 100vh;
+            overflow-x: hidden;
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+            background: linear-gradient(135deg, #0f0f23 0%, #1a1a3e 100%);
+            color: #e6e6e6;
+        }
+
+        .container {
+            padding: 20px;
+            max-width: 1400px;
+            margin: 0 auto;
+        }
+
+        .header {
+            text-align: center;
+            padding: 20px;
+            background: rgba(255, 255, 255, 0.1);
+            border-radius: 10px;
+            backdrop-filter: blur(10px);
+            margin-bottom: 20px;
+        }
+
+        .header h1 {
+            color: #00ff88;
+            font-size: 2rem;
+            margin-bottom: 10px;
+            text-shadow: 0 0 20px rgba(0, 255, 136, 0.5);
+        }
+
+        .watermark {
+            background: rgba(255, 0, 0, 0.1);
+            color: #ff6b6b;
+            padding: 5px 10px;
+            border-radius: 5px;
+            font-size: 0.8rem;
+            border: 1px solid #ff6b6b;
+            display: inline-block;
+            margin-top: 10px;
+        }
+
+        .tab-container {
+            background: rgba(255, 255, 255, 0.05);
+            border-radius: 10px;
+            overflow: hidden;
+        }
+
+        .tab-nav {
+            display: flex;
+            background: rgba(255, 255, 255, 0.1);
+        }
+
+        .tab-button {
+            flex: 1;
+            padding: 15px;
+            background: transparent;
+            border: none;
+            color: #b0b0b0;
+            cursor: pointer;
+            font-size: 0.9rem;
+            transition: all 0.3s ease;
+        }
+
+        .tab-button:hover {
+            background: rgba(0, 255, 136, 0.1);
+            color: #00ff88;
+        }
+
+        .tab-button.active {
+            background: rgba(0, 255, 136, 0.2);
+            color: #00ff88;
+            border-bottom: 2px solid #00ff88;
+        }
+
+        .tab-content {
+            display: none;
+            padding: 20px;
+        }
+
+        .tab-content.active {
+            display: block;
+        }
+
+        .stats-grid {
+            display: grid;
+            grid-template-columns: repeat(4, 1fr);
+            gap: 15px;
+            margin-bottom: 20px;
+        }
+
+        .stat-card {
+            background: rgba(255, 255, 255, 0.1);
+            border-radius: 8px;
+            padding: 15px;
+            text-align: center;
+        }
+
+        .stat-value {
+            font-size: 1.5rem;
+            font-weight: bold;
+            color: #00ff88;
+            display: block;
+            margin-bottom: 5px;
+        }
+
+        .stat-label {
+            color: #b0b0b0;
+            font-size: 0.8rem;
+        }
+
+        .mermaid-container {
+            background: rgba(0, 0, 0, 0.3);
+            border-radius: 10px;
+            padding: 20px;
+            margin: 20px 0;
+            text-align: center;
+        }
+
+        .agent-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(300px, 1fr));
+            gap: 15px;
+        }
+
+        .agent-card {
+            background: rgba(255, 255, 255, 0.1);
+            border-radius: 10px;
+            padding: 15px;
+            border: 1px solid rgba(255, 255, 255, 0.2);
+            transition: all 0.3s ease;
+        }
+
+        .agent-card:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 5px 20px rgba(0, 255, 136, 0.3);
+            border-color: #00ff88;
+        }
+
+        .agent-header {
+            display: flex;
+            align-items: center;
+            gap: 10px;
+            margin-bottom: 10px;
+        }
+
+        .agent-position {
+            width: 35px;
+            height: 35px;
+            border-radius: 50%;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-weight: bold;
+            color: #000;
+        }
+
+        .agent-info h3 {
+            color: #00ff88;
+            font-size: 1.1rem;
+            margin-bottom: 2px;
+        }
+
+        .role {
+            color: #b0b0b0;
+            font-size: 0.8rem;
+        }
+
+        .agent-details {
+            font-size: 0.8rem;
+            line-height: 1.4;
+        }
+
+        .agent-details div {
+            margin-bottom: 5px;
+        }
+
+        .file-list {
+            background: rgba(0, 0, 0, 0.3);
+            border-radius: 8px;
+            padding: 15px;
+            font-family: 'Courier New', monospace;
+            font-size: 0.8rem;
+        }
+
+        .file-item {
+            padding: 8px 0;
+            border-bottom: 1px solid rgba(255, 255, 255, 0.1);
+            color: #e6e6e6;
+        }
+
+        .file-item:last-child {
+            border-bottom: none;
+        }
+
+        .schema-preview {
+            background: rgba(0, 0, 0, 0.4);
+            border-radius: 8px;
+            padding: 15px;
+            font-family: 'Courier New', monospace;
+            font-size: 0.7rem;
+            color: #e6e6e6;
+            line-height: 1.4;
+            overflow-x: auto;
+        }
+
+        .flow-patterns {
+            background: rgba(255, 204, 0, 0.1);
+            border-radius: 8px;
+            padding: 15px;
+            margin-top: 20px;
+        }
+
+        .flow-patterns h3 {
+            color: #ffcc00;
+            margin-bottom: 10px;
+        }
+
+        .pattern-grid {
+            display: grid;
+            grid-template-columns: 1fr 1fr;
+            gap: 15px;
+            font-size: 0.85rem;
+        }
+
+        .pattern-item {
+            padding: 10px;
+            background: rgba(0, 0, 0, 0.2);
+            border-radius: 5px;
+        }
+
+        @media (max-width: 768px) {
+            .stats-grid {
+                grid-template-columns: repeat(2, 1fr);
+            }
+            .agent-grid {
+                grid-template-columns: 1fr;
+            }
+            .pattern-grid {
+                grid-template-columns: 1fr;
+            }
+        }
+        
+    </style>
+</head>
+<body>
+    <div class="container">
+        <div class="header">
+            <h1>🤖 WARPCORE Agent System</h1>
+            <p>Dynamic Flow Documentation - Generated from Real Agent Schemas</p>
+            <p class="watermark">🚀 WARP-DEMO FLOW SYSTEM - Generated: 2025-10-07T16:57:42.686102</p>
+        </div>
+
+        <div class="tab-container">
+            <div class="tab-nav">
+                <button class="tab-button active" onclick="showTab('flow')">📊 Flow</button>
+                <button class="tab-button" onclick="showTab('agents')">🤖 Agents</button>
+                <button class="tab-button" onclick="showTab('schema')">📋 Schema</button>
+                <button class="tab-button" onclick="showTab('files')">📁 Files</button>
+            </div>
+
+            <!-- Flow Tab -->
+            <div id="flow-tab" class="tab-content active">
+                <div class="tab-pane">
+                    <div class="stats-grid">
+                        
+                        <div class="stat-card">
+                            <span class="stat-value">9</span>
+                            <span class="stat-label">Total Agents</span>
+                        </div>
+                        <div class="stat-card">
+                            <span class="stat-value">9</span>
+                            <span class="stat-label">Unique Positions</span>
+                        </div>
+                        <div class="stat-card">
+                            <span class="stat-value">0</span>
+                            <span class="stat-label">Loop Patterns</span>
+                        </div>
+                        <div class="stat-card">
+                            <span class="stat-value">2</span>
+                            <span class="stat-label">Parallel Flows</span>
+                        </div>
+        
+                    </div>
+                    <div class="mermaid-container">
+                        <div class="mermaid">
+flowchart TD
+    0a["0a<br/>ORIGIN<br/>Bootstrap Agent"]
+    0b["0b<br/>BOSS<br/>Workflow Orchestrator"]
+    1["1<br/>PATHFINDER<br/>Schema Coherence Reconcil..."]
+    2b["2b<br/>ORACLE<br/>User Input Requirements T..."]
+    2a["2a<br/>ARCHITECT<br/>Requirements Generator"]
+    3["3<br/>ENFORCER<br/>Enhanced Requirements Val..."]
+    4a["4a<br/>CRAFTSMAN<br/>Implementation Agent"]
+    4b["4b<br/>CRAFTBUDDY<br/>Creative Enhancement & De..."]
+    5["5<br/>GATEKEEPER<br/>Gate Promote Agent"]
+    USER(["👤 USER<br/>Requirements Input"])
+    0a -->|"bootstrap"| 0b
+    0b -->|"orchestration"| 1
+    1 -->|"analysis"| 2a
+    2b -->|"user_requirements"| 2a
+    2a -->|"requirements"| 3
+    3 -->|"validation"| 4a
+    4a -->|"implementation"| 4b
+    4b -->|"loop_back_for_enhancement"| 4a
+    4b -->|"promote_for_final_validation"| 5
+    5 -->|"needs_fixes_or_improvements"| 4a
+    5 -->|"complete_cycle_start_new_workflow"| 0b
+    USER -->|"user_specifications"| 2b
+
+    
+    %% Styling
+    classDef origin fill:#ff6b6b,stroke:#333,stroke-width:2px
+    classDef boss fill:#4ecdc4,stroke:#333,stroke-width:2px
+    classDef pathfinder fill:#45b7d1,stroke:#333,stroke-width:2px
+    classDef oracle fill:#ffeaa7,stroke:#333,stroke-width:2px
+    classDef architect fill:#96ceb4,stroke:#333,stroke-width:2px
+    classDef enforcer fill:#fab1a0,stroke:#333,stroke-width:2px
+    classDef craftsman fill:#fd79a8,stroke:#333,stroke-width:2px
+    classDef craftbuddy fill:#e17055,stroke:#333,stroke-width:2px
+    classDef gatekeeper fill:#00b894,stroke:#333,stroke-width:2px
+    classDef complete fill:#a8e6cf,stroke:#333,stroke-width:2px
+    class 0a origin
+    class 0b boss
+    class 1 pathfinder
+    class 2b oracle
+    class 2a architect
+    class 3 enforcer
+    class 4a craftsman
+    class 4b craftbuddy
+    class 5 gatekeeper
+
+                        </div>
+                    </div>
+                    
+                    <div class="flow-patterns">
+                        <h3>🔄 WARPCORE Agent Flow Patterns</h3>
+                        <div class="pattern-grid">
+                            <div class="pattern-item">
+                                <strong>Schema-Driven Flow:</strong><br>
+                                <strong>Schema Version:</strong> 1.0.0<br>
+                                Flow relationships defined in comprehensive schema with input/output types
+                            </div>
+                            <div class="pattern-item">
+                                <strong>Convergent Architecture:</strong><br>
+                                PATHFINDER (codebase analysis) and ORACLE (user specs) both output to ARCHITECT in common schema format
+                            </div>
+                            <div class="pattern-item">
+                                <strong>Decision Loops:</strong><br>
+                                CRAFTBUDDY: loop back to CRAFTSMAN or promote to GATEKEEPER<br>
+                                GATEKEEPER: send fixes to CRAFTSMAN or new cycle to BOSS
+                            </div>
+                            <div class="pattern-item">
+                                <strong>Schema Transformations:</strong><br>
+                                Each agent performs specific data transformations with defined input/output schemas
+                            </div>
+                        </div>
+                    </div>
+        
+                </div>
+            </div>
+
+            <!-- Agents Tab -->
+            <div id="agents-tab" class="tab-content">
+                <div class="tab-pane">
+                    <div class="agent-grid">
+                        
+                        <div class="agent-card">
+                            <div class="agent-header">
+                                <div class="agent-position" style="background: #ff6b6b;">0a</div>
+                                <div class="agent-info">
+                                    <h3>ORIGIN</h3>
+                                    <div class="role">Bootstrap Agent - Agent 0x that initializes the entire WARPCORE gap analysis workflow system. Your mission is to start Agent 0 (Orchestrator) with full steam and manage complete workflow restarts.</div>
+                                </div>
+                            </div>
+                            <div class="agent-details">
+                                <div><strong>File:</strong> 0a_origin_from_none_to_boss.json</div>
+                                <div><strong>Inputs:</strong> None</div>
+                                <div><strong>Outputs:</strong> boss</div>
+                                <div><strong>Cache:</strong> {workflow_id}_bootstrap_state.json</div>
+                            </div>
+                        </div>
+            
+                        <div class="agent-card">
+                            <div class="agent-header">
+                                <div class="agent-position" style="background: #4ecdc4;">0b</div>
+                                <div class="agent-info">
+                                    <h3>BOSS</h3>
+                                    <div class="role">Workflow Orchestrator Agent - Agent 0 that manages the entire WARPCORE gap analysis workflow. You sequence through all 5 agents (1→2→3→4→5) and can restart from any workflow ID and step.</div>
+                                </div>
+                            </div>
+                            <div class="agent-details">
+                                <div><strong>File:</strong> 0b_boss_from_origin_to_pathfinder_oracle.json</div>
+                                <div><strong>Inputs:</strong> origin</div>
+                                <div><strong>Outputs:</strong> pathfinder, oracle</div>
+                                <div><strong>Cache:</strong> {workflow_id}_orchestration_state.json</div>
+                            </div>
+                        </div>
+            
+                        <div class="agent-card">
+                            <div class="agent-header">
+                                <div class="agent-position" style="background: #45b7d1;">1</div>
+                                <div class="agent-info">
+                                    <h3>PATHFINDER</h3>
+                                    <div class="role">Schema Coherence Reconciler Agent - the first agent in the WARPCORE gap analysis workflow. Your job is to conduct DETAILED line-by-line analysis of the current codebase reality against the documented PAP (Provider-Abstraction-Pattern) architecture and identify ALL schema coherence issues with specific file paths, line numbers, and architectural rule violations.</div>
+                                </div>
+                            </div>
+                            <div class="agent-details">
+                                <div><strong>File:</strong> 1_pathfinder_from_boss_to_architect.json</div>
+                                <div><strong>Inputs:</strong> boss</div>
+                                <div><strong>Outputs:</strong> architect</div>
+                                <div><strong>Cache:</strong> {workflow_id}_schema_coherence_analysis.json</div>
+                            </div>
+                        </div>
+            
+                        <div class="agent-card">
+                            <div class="agent-header">
+                                <div class="agent-position" style="background: #96ceb4;">2a</div>
+                                <div class="agent-info">
+                                    <h3>ARCHITECT</h3>
+                                    <div class="role">Requirements Generator Agent - you convert schema coherence analysis into structured implementation requirements. You analyze the CLIENT_DIRECTORY codebase reality and generate requirements to implement workflow features into that codebase.</div>
+                                </div>
+                            </div>
+                            <div class="agent-details">
+                                <div><strong>File:</strong> 2a_architect_from_pathfinder_oracle_to_enforcer.json</div>
+                                <div><strong>Inputs:</strong> pathfinder, oracle</div>
+                                <div><strong>Outputs:</strong> enforcer</div>
+                                <div><strong>Cache:</strong> {workflow_id}_requirements_analysis.json</div>
+                            </div>
+                        </div>
+            
+                        <div class="agent-card">
+                            <div class="agent-header">
+                                <div class="agent-position" style="background: #ffeaa7;">2b</div>
+                                <div class="agent-info">
+                                    <h3>ORACLE</h3>
+                                    <div class="role">User Input Requirements Translator Agent - you convert raw user specifications and workflow specs into structured implementation requirements. You analyze the CLIENT_DIRECTORY codebase reality and generate requirements to implement workflow features into that codebase.</div>
+                                </div>
+                            </div>
+                            <div class="agent-details">
+                                <div><strong>File:</strong> 2b_oracle_from_user_spec_to_architect.json</div>
+                                <div><strong>Inputs:</strong> user, spec</div>
+                                <div><strong>Outputs:</strong> architect</div>
+                                <div><strong>Cache:</strong> {workflow_id}_requirements_analysis.json</div>
+                            </div>
+                        </div>
+            
+                        <div class="agent-card">
+                            <div class="agent-header">
+                                <div class="agent-position" style="background: #fab1a0;">3</div>
+                                <div class="agent-info">
+                                    <h3>ENFORCER</h3>
+                                    <div class="role">Enhanced Requirements Validator Agent - responsible for validating requirements, compressing historical data, and identifying bonus contributions beyond core requirements.</div>
+                                </div>
+                            </div>
+                            <div class="agent-details">
+                                <div><strong>File:</strong> 3_enforcer_from_architect_craftbuddy_to_craftsman.json</div>
+                                <div><strong>Inputs:</strong> architect, craftbuddy</div>
+                                <div><strong>Outputs:</strong> craftsman</div>
+                                <div><strong>Cache:</strong> {workflow_id}_requirements_validation.json</div>
+                            </div>
+                        </div>
+            
+                        <div class="agent-card">
+                            <div class="agent-header">
+                                <div class="agent-position" style="background: #fd79a8;">4a</div>
+                                <div class="agent-info">
+                                    <h3>CRAFTSMAN_IMPLEMENTATION</h3>
+                                    <div class="role">Implementation Agent - the fourth agent in the WARPCORE gap analysis workflow. Your mission is to execute the validated requirements from workflow ID wf_0f432a3ac836 by making actual code changes to the WARPCORE codebase.</div>
+                                </div>
+                            </div>
+                            <div class="agent-details">
+                                <div><strong>File:</strong> 4a_craftsman_from_enforcer_to_craftbuddy.json</div>
+                                <div><strong>Inputs:</strong> enforcer</div>
+                                <div><strong>Outputs:</strong> craftbuddy</div>
+                                <div><strong>Cache:</strong> {workflow_id}_craftsman_implementation_results.json</div>
+                            </div>
+                        </div>
+            
+                        <div class="agent-card">
+                            <div class="agent-header">
+                                <div class="agent-position" style="background: #e17055;">4b</div>
+                                <div class="agent-info">
+                                    <h3>CRAFTBUDDY</h3>
+                                    <div class="role">You are CRAFTBUDDY - the creative handy buddy who reviews CRAFTSMAN's implementation work and makes a critical routing decision.</div>
+                                </div>
+                            </div>
+                            <div class="agent-details">
+                                <div><strong>File:</strong> 4b_craftbuddy_from_craftsman_to_craftsman_gatekeeper.json</div>
+                                <div><strong>Inputs:</strong> craftsman</div>
+                                <div><strong>Outputs:</strong> craftsman, gatekeeper</div>
+                                <div><strong>Cache:</strong> {workflow_id}_craftbuddy_decision.json</div>
+                            </div>
+                        </div>
+            
+                        <div class="agent-card">
+                            <div class="agent-header">
+                                <div class="agent-position" style="background: #00b894;">5</div>
+                                <div class="agent-info">
+                                    <h3>GATEKEEPER</h3>
+                                    <div class="role">Gate Promote Agent - the fifth and final agent in the WARPCORE gap analysis workflow. Your mission is to validate the implementation results from workflow ID wf_0f432a3ac836 against ALL previous agents, execute git operations, and determine if the cycle should repeat or complete.</div>
+                                </div>
+                            </div>
+                            <div class="agent-details">
+                                <div><strong>File:</strong> 5_gatekeeper_from_craftbuddy_to_complete.json</div>
+                                <div><strong>Inputs:</strong> craftbuddy</div>
+                                <div><strong>Outputs:</strong> End</div>
+                                <div><strong>Cache:</strong> {workflow_id}_gate_promotion_results.json</div>
+                            </div>
+                        </div>
+            
+                    </div>
+                </div>
+            </div>
+
+            <!-- Schema Tab -->
+            <div id="schema-tab" class="tab-content">
+                <div class="tab-pane">
+                    <h3>📋 Agent Schema Analysis</h3>
+                    <div class="schema-preview">
+{
+  "flow_pattern": "WARPCORE Agent Flow Schema Definition",
+  "schema_version": "1.0.0",
+  "generated_from": "Comprehensive schema definition + real agent files",
+  "timestamp": "2025-10-07T16:57:42.686201",
+  "watermark": "\ud83d\ude80 WARP-DEMO FLOW SCHEMA",
+  "agent_definitions": {
+    "origin": {
+      "position": "0a",
+      "name": "ORIGIN",
+      "role": "Bootstrap Agent",
+      "description": "Initializes workflow system, performs health checks",
+      "flow": {
+        "inputs_from": [],
+        "outputs_to": [
+          "boss"
+        ],
+        "input_sources": [
+          "SYSTEM_BOOTSTRAP"
+        ],
+        "output_targets": [
+          "ORCHESTRATOR"
+        ]
+      },
+      "schema_types": {
+        "receives": "BOOTSTRAP_REQUEST",
+        "produces": "ORCHESTRATOR_CONTEXT",
+        "transformation": "bootstrap_request \u2192 orchestrator_context"
+      },
+      "data_flow": {
+        "input_schema": "null | bootstrap_request",
+        "output_schema": "orchestrator_context",
+        "cache_pattern": "{workflow_id}_bootstrap_state.json"
+      }
+    },
+    "boss": {
+      "position": "0b",
+      "name": "BOSS",
+      "role": "Workflow Orchestrator",
+      "description": "Manages workflow execution, sequences agents",
+      "flow": {
+        "inputs_from": [
+          "origin"
+        ],
+        "outputs_to": [
+          "pathfinder"
+        ],
+        "input_sources": [
+          "BOOTSTRAP"
+        ],
+        "output_targets": [
+          "ANALYSIS"
+        ]
+      },
+      "schema_types": {
+        "receives": "ORCHESTRATOR_CONTEXT",
+        "produces": "ANALYSIS_REQUEST",
+        "transformation": "orchestrator_context \u2192 analysis_request"
+      },
+      "data_flow": {
+        "input_schema": "orchestrator_context",
+        "output_schema": "analysis_request",
+        "cache_pattern": "{workflow_id}_orchestrator_state.json"
+      }
+    },
+    "pathfinder": {
+      "position": "1",
+      "name": "PATHFINDER",
+      "role": "Schema Coherence Reconciler",
+      "description": "Analyzes codebase, identifies gaps and inconsistencies",
+      "flow": {
+        "inputs_from": [
+          "boss"
+        ],
+        "outputs_to": [
+          "architect"
+        ],
+        "input_sources": [
+          "ORCHESTRATOR"
+        ],
+        "output_targets": [
+          "REQUIREMENTS"
+        ]
+      },
+      "schema_types": {
+        "receives": "ANALYSIS_REQUEST",
+        "produces": "SCHEMA_COHERENCE_ANALYSIS",
+        "transformation": "analysis_request \u2192 schema_coherence_analysis"
+      },
+      "data_flow": {
+        "input_schema": "analysis_request",
+        "output_schema": "schema_coherence_analysis",
+        "cache_pattern": "{workflow_id}_schema_coherence_analysis.json"
+      }
+    },
+    "oracle": {
+      "position": "2b",
+      "name": "ORACLE",
+      "role": "User Input Requirements Translator",
+      "description": "Converts user specs into structured requirements",
+      "flow": {
+        "inputs_from": [
+          "USER_EXTERNAL"
+        ],
+        "outputs_to": [
+          "architect"
+        ],
+        "input_sources": [
+          "HUMAN",
+          "RAW_SPECS"
+        ],
+        "output_targets": [
+          "REQUIREMENTS"
+        ]
+      },
+      "schema_types": {
+        "receives": "USER_SPECIFICATIONS",
+        "produces": "SCHEMA_COHERENCE_ANALYSIS",
+        "transformation": "user_specifications \u2192 schema_coherence_analysis"
+      },
+      "data_flow": {
+        "input_schema": "user_specifications",
+        "output_schema": "schema_coherence_analysis",
+        "cache_pattern": "{workflow_id}_user_requirements_analysis.json"
+      }
+    },
+    "architect": {
+      "position": "2a",
+      "name": "ARCHITECT",
+      "role": "Requirements Generator",
+      "description": "Converts analysis into actionable requirements",
+      "flow": {
+        "inputs_from": [
+          "pathfinder",
+          "oracle"
+        ],
+        "outputs_to": [
+          "enforcer"
+        ],
+        "input_sources": [
+          "ANALYSIS",
+          "USER_REQUIREMENTS"
+        ],
+        "output_targets": [
+          "VALIDATION"
+        ]
+      },
+      "schema_types": {
+        "receives": "SCHEMA_COHERENCE_ANALYSIS",
+        "produces": "REQUIREMENTS_ANALYSIS",
+        "transformation": "schema_coherence_analysis \u2192 requirements_analysis"
+      },
+      "data_flow": {
+        "input_schema": "schema_coherence_analysis",
+        "output_schema": "requirements_analysis",
+        "cache_pattern": "{workflow_id}_requirements_analysis.json"
+      }
+    },
+    "enforcer": {
+      "position": "3",
+      "name": "ENFORCER",
+      "role": "Enhanced Requirements Validator",
+      "description": "Validates requirements for feasibility and PAP compliance",
+      "flow": {
+        "inputs_from": [
+          "architect"
+        ],
+        "outputs_to": [
+          "craftsman"
+        ],
+        "input_sources": [
+          "REQUIREMENTS"
+        ],
+        "output_targets": [
+          "IMPLEMENTATION"
+        ]
+      },
+      "schema_types": {
+        "receives": "REQUIREMENTS_ANALYSIS",
+        "produces": "VALIDATED_REQUIREMENTS",
+        "transformation": "requirements_analysis \u2192 validated_requirements"
+      },
+      "data_flow": {
+        "input_schema": "requirements_analysis",
+        "output_schema": "validated_requirements",
+        "cache_pattern": "{workflow_id}_validated_requirements.json"
+      }
+    },
+    "craftsman": {
+      "position": "4a",
+      "name": "CRAFTSMAN",
+      "role": "Implementation Agent",
+      "description": "Executes approved requirements, modifies code files",
+      "flow": {
+        "inputs_from": [
+          "enforcer",
+          "gatekeeper_feedback"
+        ],
+        "outputs_to": [
+          "craftbuddy"
+        ],
+        "input_sources": [
+          "VALIDATION",
+          "FEEDBACK"
+        ],
+        "output_targets": [
+          "REVIEW"
+        ]
+      },
+      "schema_types": {
+        "receives": "VALIDATED_REQUIREMENTS",
+        "produces": "IMPLEMENTATION_RESULTS",
+        "transformation": "validated_requirements \u2192 implementation_results"
+      },
+      "data_flow": {
+        "input_schema": "validated_requirements",
+        "output_schema": "implementation_results",
+        "cache_pattern": "{workflow_id}_implementation_results.json"
+      }
+    },
+    "craftbuddy": {
+      "position": "4b",
+      "name": "CRAFTBUDDY",
+      "role": "Creative Enhancement & Decision Agent",
+      "description": "Reviews work, decides loop back or promote forward",
+      "flow": {
+        "inputs_from": [
+          "craftsman"
+        ],
+        "outputs_to": [
+          "craftsman",
+          "gatekeeper"
+        ],
+        "input_sources": [
+          "IMPLEMENTATION"
+        ],
+        "output_targets": [
+          "LOOP_BACK",
+          "PROMOTION"
+        ]
+      },
+      "schema_types": {
+        "receives": "IMPLEMENTATION_RESULTS",
+        "produces": "ENHANCEMENT_DECISION",
+        "transformation": "implementation_results \u2192 enhancement_decision"
+      },
+      "data_flow": {
+        "input_schema": "implementation_results",
+        "output_schema": "enhancement_decision",
+        "cache_pattern": "{workflow_id}_enhancement_decision.json"
+      },
+      "decision_logic": {
+        "loop_condition": "enhancement_opportunities_found",
+        "promote_condition": "implementation_complete_and_satisfactory"
+      }
+    },
+    "gatekeeper": {
+      "position": "5",
+      "name": "GATEKEEPER",
+      "role": "Gate Promote Agent",
+      "description": "Final validation, decides completion or cycle restart",
+      "flow": {
+        "inputs_from": [
+          "craftbuddy"
+        ],
+        "outputs_to": [
+          "craftsman",
+          "boss"
+        ],
+        "input_sources": [
+          "PROMOTION"
+        ],
+        "output_targets": [
+          "FIXES",
+          "NEW_CYCLE"
+        ]
+      },
+      "schema_types": {
+        "receives": "ENHANCEMENT_DECISION",
+        "produces": "GATE_DECISION",
+        "transformation": "enhancement_decision \u2192 gate_decision"
+      },
+      "data_flow": {
+        "input_schema": "enhancement_decision",
+        "output_schema": "gate_decision",
+        "cache_pattern": "{workflow_id}_gate_decision.json"
+      },
+      "decision_logic": {
+        "fixes_condition": "quality_standards_not_met",
+        "completion_condition": "all_criteria_satisfied",
+        "new_cycle_condition": "workflow_complete_start_new"
+      }
+    }
+  },
+  "flow_relationships": {
+    "linear_flow": [
+      {
+        "from": "origin",
+        "to": "boss",
+        "type": "bootstrap"
+      },
+      {
+        "from": "boss",
+        "to": "pathfinder",
+        "type": "orchestration"
+      },
+      {
+        "from": "pathfinder",
+        "to": "architect",
+        "type": "analysis"
+      },
+      {
+        "from": "oracle",
+        "to": "architect",
+        "type": "user_requirements"
+      },
+      {
+        "from": "architect",
+        "to": "enforcer",
+        "type": "requirements"
+      },
+      {
+        "from": "enforcer",
+        "to": "craftsman",
+        "type": "validation"
+      },
+      {
+        "from": "craftsman",
+        "to": "craftbuddy",
+        "type": "implementation"
+      }
+    ],
+    "decision_flows": [
+      {
+        "from": "craftbuddy",
+        "to": [
+          "craftsman",
+          "gatekeeper"
+        ],
+        "type": "enhancement_decision",
+        "conditions": {
+          "craftsman": "loop_back_for_enhancement",
+          "gatekeeper": "promote_for_final_validation"
+        }
+      },
+      {
+        "from": "gatekeeper",
+        "to": [
+          "craftsman",
+          "boss"
+        ],
+        "type": "gate_decision",
+        "conditions": {
+          "craftsman": "needs_fixes_or_improvements",
+          "boss": "complete_cycle_start_new_workflow"
+        }
+      }
+    ],
+    "external_inputs": [
+      {
+        "source": "USER",
+        "to": "oracle",
+        "type": "user_specifications"
+      }
+    ]
+  },
+  "schema_transformations": {
+    "bootstrap_request": {
+      "structure": "null | {workflow_priority, focus_areas, execution_strategy}",
+      "purpose": "Initialize workflow system"
+    },
+    "orchestrator_context": {
+      "structure": "{workflow_id, system_health, agent_discovery, bootstrap_mode}",
+      "purpose": "Provide orchestration context"
+    },
+    "analysis_request": {
+      "structure": "{workflow_id, client_directory, analysis_scope, orchestration_data}",
+      "purpose": "Request codebase analysis"
+    },
+    "schema_coherence_analysis": {
+      "structure": "{gaps, inconsistencies, recommendations, file_mappings}",
+      "purpose": "Unified requirements format from analysis or user input"
+    },
+    "requirements_analysis": {
+      "structure": "{requirements[], implementation_phases, dependency_graph}",
+      "purpose": "Structured implementation requirements"
+    },
+    "validated_requirements": {
+      "structure": "{approved_requirements[], validation_results, feasibility_check}",
+      "purpose": "PAP-compliant validated requirements"
+    },
+    "implementation_results": {
+      "structure": "{code_changes[], test_results, git_operations, before_after}",
+      "purpose": "Implementation output with validation"
+    },
+    "enhancement_decision": {
+      "structure": "{decision, enhancements[], promotion_ready, loop_back_reasons}",
+      "purpose": "Creative assessment and routing decision"
+    },
+    "gate_decision": {
+      "structure": "{final_decision, quality_assessment, next_action, cycle_complete}",
+      "purpose": "Final validation and cycle management"
+    }
+  },
+  "flow_patterns": {
+    "convergent_flow": {
+      "description": "Multiple inputs to architect",
+      "agents": [
+        "pathfinder",
+        "oracle"
+      ],
+      "target": "architect",
+      "schema": "Both produce schema_coherence_analysis in common format"
+    },
+    "decision_loops": {
+      "craftbuddy_loop": {
+        "description": "Creative enhancement loop",
+        "from": "craftbuddy",
+        "to": "craftsman",
+        "condition": "enhancement_opportunities_found"
+      },
+      "gatekeeper_fixes": {
+        "description": "Quality improvement loop",
+        "from": "gatekeeper",
+        "to": "craftsman",
+        "condition": "quality_standards_not_met"
+      }
+    },
+    "cycle_restart": {
+      "description": "Complete workflow cycle restart",
+      "from": "gatekeeper",
+      "to": "boss",
+      "condition": "workflow_complete_start_new"
+    }
+  }
+}
+                    </div>
+                </div>
+            </div>
+
+            <!-- Files Tab -->
+            <div id="files-tab" class="tab-content">
+                <div class="tab-pane">
+                    <h3>📁 Agent Files - Current Structure</h3>
+                    <div class="file-list">
+                        <div class="file-item">0a_origin_from_none_to_boss.json</div>
+<div class="file-item">0b_boss_from_origin_to_pathfinder_oracle.json</div>
+<div class="file-item">1_pathfinder_from_boss_to_architect.json</div>
+<div class="file-item">2a_architect_from_pathfinder_oracle_to_enforcer.json</div>
+<div class="file-item">2b_oracle_from_user_spec_to_architect.json</div>
+<div class="file-item">3_enforcer_from_architect_craftbuddy_to_craftsman.json</div>
+<div class="file-item">4a_craftsman_from_enforcer_to_craftbuddy.json</div>
+<div class="file-item">4b_craftbuddy_from_craftsman_to_craftsman_gatekeeper.json</div>
+<div class="file-item">5_gatekeeper_from_craftbuddy_to_complete.json</div>
+
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <script>
+        
+        // Initialize Mermaid
+        mermaid.initialize({
+            startOnLoad: true,
+            theme: 'dark',
+            flowchart: {
+                useMaxWidth: true,
+                htmlLabels: true
+            }
+        });
+
+        // Tab switching function
+        function showTab(tabName) {
+            // Hide all tabs
+            const tabs = document.querySelectorAll('.tab-content');
+            tabs.forEach(tab => tab.classList.remove('active'));
+            
+            // Remove active from all buttons
+            const buttons = document.querySelectorAll('.tab-button');
+            buttons.forEach(button => button.classList.remove('active'));
+            
+            // Show selected tab
+            document.getElementById(tabName + '-tab').classList.add('active');
+            
+            // Activate clicked button
+            event.target.classList.add('active');
+        }
+
+        // Add hover effects
+        document.querySelectorAll('.agent-card').forEach(card => {
+            card.addEventListener('mouseenter', function() {
+                this.style.transform = 'translateY(-3px) scale(1.02)';
+            });
+            
+            card.addEventListener('mouseleave', function() {
+                this.style.transform = 'translateY(0) scale(1)';
+            });
+        });
+        
+    </script>
+</body>
+</html>

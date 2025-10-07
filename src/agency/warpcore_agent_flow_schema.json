@@ -1,0 +1,436 @@
+{
+  "flow_pattern": "WARPCORE Agent Flow Schema Definition",
+  "schema_version": "1.0.0",
+  "generated_from": "Comprehensive schema definition + real agent files",
+  "timestamp": "2025-10-07T16:55:35.921274",
+  "watermark": "🚀 WARP-DEMO FLOW SCHEMA",
+  "agent_definitions": {
+    "origin": {
+      "position": "0a",
+      "name": "ORIGIN",
+      "role": "Bootstrap Agent",
+      "description": "Initializes workflow system, performs health checks",
+      "flow": {
+        "inputs_from": [],
+        "outputs_to": [
+          "boss"
+        ],
+        "input_sources": [
+          "SYSTEM_BOOTSTRAP"
+        ],
+        "output_targets": [
+          "ORCHESTRATOR"
+        ]
+      },
+      "schema_types": {
+        "receives": "BOOTSTRAP_REQUEST",
+        "produces": "ORCHESTRATOR_CONTEXT",
+        "transformation": "bootstrap_request → orchestrator_context"
+      },
+      "data_flow": {
+        "input_schema": "null | bootstrap_request",
+        "output_schema": "orchestrator_context",
+        "cache_pattern": "{workflow_id}_bootstrap_state.json"
+      }
+    },
+    "boss": {
+      "position": "0b",
+      "name": "BOSS",
+      "role": "Workflow Orchestrator",
+      "description": "Manages workflow execution, sequences agents",
+      "flow": {
+        "inputs_from": [
+          "origin"
+        ],
+        "outputs_to": [
+          "pathfinder"
+        ],
+        "input_sources": [
+          "BOOTSTRAP"
+        ],
+        "output_targets": [
+          "ANALYSIS"
+        ]
+      },
+      "schema_types": {
+        "receives": "ORCHESTRATOR_CONTEXT",
+        "produces": "ANALYSIS_REQUEST",
+        "transformation": "orchestrator_context → analysis_request"
+      },
+      "data_flow": {
+        "input_schema": "orchestrator_context",
+        "output_schema": "analysis_request",
+        "cache_pattern": "{workflow_id}_orchestrator_state.json"
+      }
+    },
+    "pathfinder": {
+      "position": "1",
+      "name": "PATHFINDER",
+      "role": "Schema Coherence Reconciler",
+      "description": "Analyzes codebase, identifies gaps and inconsistencies",
+      "flow": {
+        "inputs_from": [
+          "boss"
+        ],
+        "outputs_to": [
+          "architect"
+        ],
+        "input_sources": [
+          "ORCHESTRATOR"
+        ],
+        "output_targets": [
+          "REQUIREMENTS"
+        ]
+      },
+      "schema_types": {
+        "receives": "ANALYSIS_REQUEST",
+        "produces": "SCHEMA_COHERENCE_ANALYSIS",
+        "transformation": "analysis_request → schema_coherence_analysis"
+      },
+      "data_flow": {
+        "input_schema": "analysis_request",
+        "output_schema": "schema_coherence_analysis",
+        "cache_pattern": "{workflow_id}_schema_coherence_analysis.json"
+      }
+    },
+    "oracle": {
+      "position": "2b",
+      "name": "ORACLE",
+      "role": "User Input Requirements Translator",
+      "description": "Converts user specs into structured requirements",
+      "flow": {
+        "inputs_from": [
+          "USER_EXTERNAL"
+        ],
+        "outputs_to": [
+          "architect"
+        ],
+        "input_sources": [
+          "HUMAN",
+          "RAW_SPECS"
+        ],
+        "output_targets": [
+          "REQUIREMENTS"
+        ]
+      },
+      "schema_types": {
+        "receives": "USER_SPECIFICATIONS",
+        "produces": "SCHEMA_COHERENCE_ANALYSIS",
+        "transformation": "user_specifications → schema_coherence_analysis"
+      },
+      "data_flow": {
+        "input_schema": "user_specifications",
+        "output_schema": "schema_coherence_analysis",
+        "cache_pattern": "{workflow_id}_user_requirements_analysis.json"
+      }
+    },
+    "architect": {
+      "position": "2a",
+      "name": "ARCHITECT",
+      "role": "Requirements Generator",
+      "description": "Converts analysis into actionable requirements",
+      "flow": {
+        "inputs_from": [
+          "pathfinder",
+          "oracle"
+        ],
+        "outputs_to": [
+          "enforcer"
+        ],
+        "input_sources": [
+          "ANALYSIS",
+          "USER_REQUIREMENTS"
+        ],
+        "output_targets": [
+          "VALIDATION"
+        ]
+      },
+      "schema_types": {
+        "receives": "SCHEMA_COHERENCE_ANALYSIS",
+        "produces": "REQUIREMENTS_ANALYSIS",
+        "transformation": "schema_coherence_analysis → requirements_analysis"
+      },
+      "data_flow": {
+        "input_schema": "schema_coherence_analysis",
+        "output_schema": "requirements_analysis",
+        "cache_pattern": "{workflow_id}_requirements_analysis.json"
+      }
+    },
+    "enforcer": {
+      "position": "3",
+      "name": "ENFORCER",
+      "role": "Enhanced Requirements Validator",
+      "description": "Validates requirements for feasibility and PAP compliance",
+      "flow": {
+        "inputs_from": [
+          "architect"
+        ],
+        "outputs_to": [
+          "craftsman"
+        ],
+        "input_sources": [
+          "REQUIREMENTS"
+        ],
+        "output_targets": [
+          "IMPLEMENTATION"
+        ]
+      },
+      "schema_types": {
+        "receives": "REQUIREMENTS_ANALYSIS",
+        "produces": "VALIDATED_REQUIREMENTS",
+        "transformation": "requirements_analysis → validated_requirements"
+      },
+      "data_flow": {
+        "input_schema": "requirements_analysis",
+        "output_schema": "validated_requirements",
+        "cache_pattern": "{workflow_id}_validated_requirements.json"
+      }
+    },
+    "craftsman": {
+      "position": "4a",
+      "name": "CRAFTSMAN",
+      "role": "Implementation Agent",
+      "description": "Executes approved requirements, modifies code files",
+      "flow": {
+        "inputs_from": [
+          "enforcer",
+          "gatekeeper_feedback"
+        ],
+        "outputs_to": [
+          "craftbuddy"
+        ],
+        "input_sources": [
+          "VALIDATION",
+          "FEEDBACK"
+        ],
+        "output_targets": [
+          "REVIEW"
+        ]
+      },
+      "schema_types": {
+        "receives": "VALIDATED_REQUIREMENTS",
+        "produces": "IMPLEMENTATION_RESULTS",
+        "transformation": "validated_requirements → implementation_results"
+      },
+      "data_flow": {
+        "input_schema": "validated_requirements",
+        "output_schema": "implementation_results",
+        "cache_pattern": "{workflow_id}_implementation_results.json"
+      }
+    },
+    "craftbuddy": {
+      "position": "4b",
+      "name": "CRAFTBUDDY",
+      "role": "Creative Enhancement & Decision Agent",
+      "description": "Reviews work, decides loop back or promote forward",
+      "flow": {
+        "inputs_from": [
+          "craftsman"
+        ],
+        "outputs_to": [
+          "craftsman",
+          "gatekeeper"
+        ],
+        "input_sources": [
+          "IMPLEMENTATION"
+        ],
+        "output_targets": [
+          "LOOP_BACK",
+          "PROMOTION"
+        ]
+      },
+      "schema_types": {
+        "receives": "IMPLEMENTATION_RESULTS",
+        "produces": "ENHANCEMENT_DECISION",
+        "transformation": "implementation_results → enhancement_decision"
+      },
+      "data_flow": {
+        "input_schema": "implementation_results",
+        "output_schema": "enhancement_decision",
+        "cache_pattern": "{workflow_id}_enhancement_decision.json"
+      },
+      "decision_logic": {
+        "loop_condition": "enhancement_opportunities_found",
+        "promote_condition": "implementation_complete_and_satisfactory"
+      }
+    },
+    "gatekeeper": {
+      "position": "5",
+      "name": "GATEKEEPER",
+      "role": "Gate Promote Agent",
+      "description": "Final validation, decides completion or cycle restart",
+      "flow": {
+        "inputs_from": [
+          "craftbuddy"
+        ],
+        "outputs_to": [
+          "craftsman",
+          "boss"
+        ],
+        "input_sources": [
+          "PROMOTION"
+        ],
+        "output_targets": [
+          "FIXES",
+          "NEW_CYCLE"
+        ]
+      },
+      "schema_types": {
+        "receives": "ENHANCEMENT_DECISION",
+        "produces": "GATE_DECISION",
+        "transformation": "enhancement_decision → gate_decision"
+      },
+      "data_flow": {
+        "input_schema": "enhancement_decision",
+        "output_schema": "gate_decision",
+        "cache_pattern": "{workflow_id}_gate_decision.json"
+      },
+      "decision_logic": {
+        "fixes_condition": "quality_standards_not_met",
+        "completion_condition": "all_criteria_satisfied",
+        "new_cycle_condition": "workflow_complete_start_new"
+      }
+    }
+  },
+  "flow_relationships": {
+    "linear_flow": [
+      {
+        "from": "origin",
+        "to": "boss",
+        "type": "bootstrap"
+      },
+      {
+        "from": "boss",
+        "to": "pathfinder",
+        "type": "orchestration"
+      },
+      {
+        "from": "pathfinder",
+        "to": "architect",
+        "type": "analysis"
+      },
+      {
+        "from": "oracle",
+        "to": "architect",
+        "type": "user_requirements"
+      },
+      {
+        "from": "architect",
+        "to": "enforcer",
+        "type": "requirements"
+      },
+      {
+        "from": "enforcer",
+        "to": "craftsman",
+        "type": "validation"
+      },
+      {
+        "from": "craftsman",
+        "to": "craftbuddy",
+        "type": "implementation"
+      }
+    ],
+    "decision_flows": [
+      {
+        "from": "craftbuddy",
+        "to": [
+          "craftsman",
+          "gatekeeper"
+        ],
+        "type": "enhancement_decision",
+        "conditions": {
+          "craftsman": "loop_back_for_enhancement",
+          "gatekeeper": "promote_for_final_validation"
+        }
+      },
+      {
+        "from": "gatekeeper",
+        "to": [
+          "craftsman",
+          "boss"
+        ],
+        "type": "gate_decision",
+        "conditions": {
+          "craftsman": "needs_fixes_or_improvements",
+          "boss": "complete_cycle_start_new_workflow"
+        }
+      }
+    ],
+    "external_inputs": [
+      {
+        "source": "USER",
+        "to": "oracle",
+        "type": "user_specifications"
+      }
+    ]
+  },
+  "schema_transformations": {
+    "bootstrap_request": {
+      "structure": "null | {workflow_priority, focus_areas, execution_strategy}",
+      "purpose": "Initialize workflow system"
+    },
+    "orchestrator_context": {
+      "structure": "{workflow_id, system_health, agent_discovery, bootstrap_mode}",
+      "purpose": "Provide orchestration context"
+    },
+    "analysis_request": {
+      "structure": "{workflow_id, client_directory, analysis_scope, orchestration_data}",
+      "purpose": "Request codebase analysis"
+    },
+    "schema_coherence_analysis": {
+      "structure": "{gaps, inconsistencies, recommendations, file_mappings}",
+      "purpose": "Unified requirements format from analysis or user input"
+    },
+    "requirements_analysis": {
+      "structure": "{requirements[], implementation_phases, dependency_graph}",
+      "purpose": "Structured implementation requirements"
+    },
+    "validated_requirements": {
+      "structure": "{approved_requirements[], validation_results, feasibility_check}",
+      "purpose": "PAP-compliant validated requirements"
+    },
+    "implementation_results": {
+      "structure": "{code_changes[], test_results, git_operations, before_after}",
+      "purpose": "Implementation output with validation"
+    },
+    "enhancement_decision": {
+      "structure": "{decision, enhancements[], promotion_ready, loop_back_reasons}",
+      "purpose": "Creative assessment and routing decision"
+    },
+    "gate_decision": {
+      "structure": "{final_decision, quality_assessment, next_action, cycle_complete}",
+      "purpose": "Final validation and cycle management"
+    }
+  },
+  "flow_patterns": {
+    "convergent_flow": {
+      "description": "Multiple inputs to architect",
+      "agents": [
+        "pathfinder",
+        "oracle"
+      ],
+      "target": "architect",
+      "schema": "Both produce schema_coherence_analysis in common format"
+    },
+    "decision_loops": {
+      "craftbuddy_loop": {
+        "description": "Creative enhancement loop",
+        "from": "craftbuddy",
+        "to": "craftsman",
+        "condition": "enhancement_opportunities_found"
+      },
+      "gatekeeper_fixes": {
+        "description": "Quality improvement loop",
+        "from": "gatekeeper",
+        "to": "craftsman",
+        "condition": "quality_standards_not_met"
+      }
+    },
+    "cycle_restart": {
+      "description": "Complete workflow cycle restart",
+      "from": "gatekeeper",
+      "to": "boss",
+      "condition": "workflow_complete_start_new"
+    }
+  }
+}

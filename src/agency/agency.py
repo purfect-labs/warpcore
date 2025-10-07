@@ -109,6 +109,7 @@ class WARPCOREAgency:
         workflows[str(workflow_count + 4)] = "System Management - Manage agents and compression"
         workflows["h"] = "Show detailed help information"
         workflows["agents"] = "🎭 Show agent command center with emoji guide"
+        workflows["docs"] = "📋 Generate agent flow documentation"
         
         return workflows
     
@@ -523,7 +524,8 @@ class WARPCOREAgency:
             "2": "Compress old workflow data",
             "3": "Validate all agent specifications", 
             "4": "Create new agent from template",
-            "5": "Inject environment context to all agents"
+            "5": "Inject environment context to all agents",
+            "6": "Generate agent flow documentation"
         }
         
         print("Available operations:")
@@ -562,6 +564,87 @@ class WARPCOREAgency:
             
         else:
             print("⚠️ Operation not yet implemented")
+            return False
+    
+    def generate_docs(self, build_mode: str = "html") -> bool:
+        """Generate agent documentation using flow generator"""
+        print("\n📋 Generating WARPCORE Agent Documentation...")
+        
+        try:
+            # Import the flow generator from agents/docs
+            flow_generator_path = self.agents_path / "docs" / "flow_generator.py"
+            if not flow_generator_path.exists():
+                print(f"❌ Flow generator not found: {flow_generator_path}")
+                return False
+            
+            # Add the agents/docs directory to path for importing
+            import sys
+            docs_path = str(self.agents_path / "docs")
+            if docs_path not in sys.path:
+                sys.path.insert(0, docs_path)
+            
+            from flow_generator import AgentFlowGenerator
+            
+            # Initialize generator with current agents directory
+            generator = AgentFlowGenerator(agents_dir=str(self.agents_path))
+            
+            if build_mode == "flow":
+                print("🎨 Generating Mermaid flow diagram...")
+                mermaid = generator.generate_mermaid_flow()
+                print("\n" + "="*60)
+                print("Generated Mermaid Flow Diagram:")
+                print("="*60)
+                print(mermaid)
+                print("="*60)
+                return True
+            
+            elif build_mode == "html":
+                print("🌐 Building HTML documentation...")
+                docs_dir = self.base_path.parent.parent / "docs" / "agency"
+                output_file = docs_dir / "warpcore_agent_flow_dynamic.html"
+                
+                # Ensure docs directory exists
+                docs_dir.mkdir(parents=True, exist_ok=True)
+                
+                result_file = generator.build_documentation(str(output_file))
+                
+                print(f"\n✅ Documentation generated successfully!")
+                print(f"📄 HTML File: {result_file}")
+                print(f"🌐 Open in browser: file://{os.path.abspath(result_file)}")
+                
+                # Also generate a simple Mermaid flow for terminal display
+                print("\n🎨 Generated flow preview:")
+                mermaid = generator.generate_mermaid_flow()
+                # Show first few lines as preview
+                preview_lines = mermaid.split('\n')[:10]
+                for line in preview_lines:
+                    print(f"  {line}")
+                print(f"  ... (see full flow in HTML documentation)")
+                
+                return True
+            
+            else:
+                print(f"❌ Unknown build mode: {build_mode}")
+                return False
+            
+        except ImportError as e:
+            print(f"❌ Failed to import flow generator: {e}")
+            return False
+        except Exception as e:
+            print(f"❌ Documentation generation failed: {e}")
+            return False
+    
+    def docs_command(self, action: str = "build", build_type: str = "html") -> bool:
+        """Handle docs command with subactions"""
+        if action == "build":
+            return self.generate_docs(build_type)
+        elif action == "flow":
+            return self.generate_docs("flow")
+        elif action == "html":
+            return self.generate_docs("html")
+        else:
+            print(f"❌ Unknown docs action: {action}")
+            print("Available actions: build, flow, html")
             return False
     
     def execute_individual_agent(self, agent_alias: str, workflow_id: Optional[str] = None, user_input_or_spec: Optional[str] = None, user_input: Optional[Dict] = None) -> bool:
@@ -704,6 +787,10 @@ class WARPCOREAgency:
         if workflow_id.lower() in ['agents', 'agent', 'a']:
             self.show_agent_help()
             return True
+        
+        # Handle docs command
+        if workflow_id.lower() == 'docs':
+            return self.docs_command()
         
         # Check if it's an individual agent request
         if workflow_id.lower() in self.agent_aliases.keys():
@@ -875,8 +962,8 @@ def main():
         formatter_class=argparse.RawDescriptionHelpFormatter,
         add_help=False  # We'll handle help manually
     )
-    parser.add_argument('workflow_or_agent', nargs='?', help='Workflow ID (1-6) or Agent alias (origin, boss, pathfinder, etc.)')
-    parser.add_argument('workflow_id_or_input', nargs='?', help='Workflow ID for agents, or JSON input file for workflows')
+    parser.add_argument('workflow_or_agent', nargs='?', help='Workflow ID (1-6), Agent alias (origin, boss, pathfinder, etc.), or "docs"')
+    parser.add_argument('workflow_id_or_input', nargs='?', help='Workflow ID for agents, JSON input file for workflows, or docs action (build, flow, html)')
     parser.add_argument('user_input_or_spec', nargs='?', help='User input or spec file (for oracle agent)')
     parser.add_argument('--client-dir', '-c', type=str, help='Client directory to run analysis against (data cached back to agency)')
     parser.add_argument('--render', '-r', action='store_true', help='Render the full prompt for the specified agent without executing it')
@@ -897,8 +984,13 @@ def main():
             # Command line mode
             workflow_or_agent = args.workflow_or_agent
             
+            # Check if it's a docs command
+            if workflow_or_agent.lower() == 'docs':
+                action = args.workflow_id_or_input or "build"
+                build_type = args.user_input_or_spec or "html"
+                success = agency.docs_command(action, build_type)
             # Check if it's an individual agent request
-            if workflow_or_agent.lower() in agency.agent_aliases.keys():
+            elif workflow_or_agent.lower() in agency.agent_aliases.keys():
                 # Check if render flag is set
                 if args.render:
                     # Just render the prompt without executing

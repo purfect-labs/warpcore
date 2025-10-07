@@ -1,0 +1,659 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>WARPCORE Agent System - Compact Flow</title>
+    <script src="https://cdn.jsdelivr.net/npm/mermaid@10.6.1/dist/mermaid.min.js"></script>
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        html, body {
+            height: 100vh;
+            overflow: hidden;
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+            background: linear-gradient(135deg, #0f0f23 0%, #1a1a3e 100%);
+            color: #e6e6e6;
+        }
+
+        .container {
+            display: flex;
+            flex-direction: column;
+            height: 100vh;
+            padding: 15px;
+            gap: 15px;
+        }
+
+        .header {
+            text-align: center;
+            padding: 10px 20px;
+            background: rgba(255, 255, 255, 0.1);
+            border-radius: 10px;
+            backdrop-filter: blur(10px);
+            flex-shrink: 0;
+        }
+
+        .header h1 {
+            color: #00ff88;
+            font-size: 1.8rem;
+            margin-bottom: 5px;
+            text-shadow: 0 0 20px rgba(0, 255, 136, 0.5);
+        }
+
+        .header p {
+            font-size: 0.9rem;
+            color: #b0b0b0;
+        }
+
+        .tab-container {
+            display: flex;
+            flex-direction: column;
+            flex: 1;
+            min-height: 0;
+        }
+
+        .tab-nav {
+            display: flex;
+            background: rgba(255, 255, 255, 0.1);
+            border-radius: 8px 8px 0 0;
+            padding: 0;
+            flex-shrink: 0;
+        }
+
+        .tab-button {
+            flex: 1;
+            padding: 12px 15px;
+            background: transparent;
+            border: none;
+            color: #b0b0b0;
+            cursor: pointer;
+            font-size: 0.85rem;
+            font-weight: 500;
+            transition: all 0.3s ease;
+        }
+
+        .tab-button:hover {
+            background: rgba(0, 255, 136, 0.1);
+            color: #00ff88;
+        }
+
+        .tab-button.active {
+            background: rgba(0, 255, 136, 0.2);
+            color: #00ff88;
+            border-bottom: 2px solid #00ff88;
+        }
+
+        .tab-content {
+            flex: 1;
+            background: rgba(255, 255, 255, 0.05);
+            border-radius: 0 0 8px 8px;
+            overflow: hidden;
+            display: none;
+        }
+
+        .tab-content.active {
+            display: flex;
+            flex-direction: column;
+        }
+
+        .tab-pane {
+            flex: 1;
+            padding: 20px;
+            overflow-y: auto;
+            overflow-x: hidden;
+        }
+
+        .mermaid-container {
+            background: rgba(0, 0, 0, 0.3);
+            border-radius: 10px;
+            padding: 20px;
+            margin: 20px 0;
+            display: flex;
+            justify-content: center;
+        }
+
+        .mermaid {
+            max-width: 100%;
+            overflow: visible;
+        }
+
+        .flow-node {
+            background: linear-gradient(135deg, #1a1a3e 0%, #2d2d5f 100%);
+            border: 2px solid #00ff88;
+            border-radius: 8px;
+            padding: 12px;
+            text-align: center;
+            font-size: 0.75rem;
+            min-width: 100px;
+            max-width: 140px;
+        }
+
+        .flow-node.origin { grid-area: origin; border-color: #ff6b6b; }
+        .flow-node.boss { grid-area: boss; border-color: #4ecdc4; }
+        .flow-node.pathfinder { grid-area: pathfinder; border-color: #45b7d1; }
+        .flow-node.oracle { grid-area: oracle; border-color: #ffeaa7; }
+        .flow-node.architect { grid-area: architect; border-color: #96ceb4; }
+        .flow-node.enforcer { grid-area: enforcer; border-color: #fab1a0; }
+        .flow-node.craftsman { grid-area: craftsman; border-color: #fd79a8; }
+        .flow-node.craftbuddy { grid-area: craftbuddy; border-color: #e17055; }
+        .flow-node.gatekeeper { grid-area: gatekeeper; border-color: #00b894; }
+
+        .flow-arrow {
+            color: #00ff88;
+            font-size: 1.5rem;
+            font-weight: bold;
+        }
+
+        .agent-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(280px, 1fr));
+            gap: 15px;
+            padding: 10px 0;
+        }
+
+        .agent-card {
+            background: rgba(255, 255, 255, 0.1);
+            border-radius: 10px;
+            padding: 15px;
+            backdrop-filter: blur(10px);
+            border: 1px solid rgba(255, 255, 255, 0.2);
+            transition: all 0.3s ease;
+        }
+
+        .agent-card:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 5px 20px rgba(0, 255, 136, 0.3);
+            border-color: #00ff88;
+        }
+
+        .agent-header {
+            display: flex;
+            align-items: center;
+            gap: 10px;
+            margin-bottom: 10px;
+        }
+
+        .agent-position {
+            background: #00ff88;
+            color: #000;
+            width: 30px;
+            height: 30px;
+            border-radius: 50%;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-weight: bold;
+            font-size: 0.9rem;
+        }
+
+        .agent-info h3 {
+            color: #00ff88;
+            font-size: 1rem;
+            margin-bottom: 2px;
+        }
+
+        .agent-info .role {
+            color: #b0b0b0;
+            font-size: 0.8rem;
+        }
+
+        .stats-grid {
+            display: grid;
+            grid-template-columns: repeat(4, 1fr);
+            gap: 15px;
+            margin-bottom: 20px;
+        }
+
+        .stat-card {
+            background: rgba(255, 255, 255, 0.1);
+            border-radius: 8px;
+            padding: 15px;
+            text-align: center;
+        }
+
+        .stat-value {
+            font-size: 1.5rem;
+            font-weight: bold;
+            color: #00ff88;
+            display: block;
+            margin-bottom: 5px;
+        }
+
+        .stat-label {
+            color: #b0b0b0;
+            font-size: 0.8rem;
+        }
+
+        .file-list {
+            background: rgba(0, 0, 0, 0.3);
+            border-radius: 8px;
+            padding: 15px;
+            font-family: 'Courier New', monospace;
+            font-size: 0.8rem;
+        }
+
+        .file-item {
+            padding: 5px 0;
+            border-bottom: 1px solid rgba(255, 255, 255, 0.1);
+            color: #e6e6e6;
+        }
+
+        .file-item:last-child {
+            border-bottom: none;
+        }
+
+        .schema-preview {
+            background: rgba(0, 0, 0, 0.4);
+            border-radius: 8px;
+            padding: 15px;
+            font-family: 'Courier New', monospace;
+            font-size: 0.7rem;
+            color: #e6e6e6;
+            line-height: 1.4;
+        }
+
+        .watermark {
+            position: absolute;
+            top: 10px;
+            right: 10px;
+            background: rgba(255, 0, 0, 0.1);
+            color: #ff6b6b;
+            padding: 5px 10px;
+            border-radius: 5px;
+            font-size: 0.7rem;
+            border: 1px solid #ff6b6b;
+            z-index: 1000;
+        }
+
+        @media (max-width: 768px) {
+            .stats-grid {
+                grid-template-columns: repeat(2, 1fr);
+            }
+            .agent-grid {
+                grid-template-columns: 1fr;
+            }
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <div class="header">
+            <h1>🤖 WARPCORE Agent System</h1>
+            <p>Compact Data Flow Visualization</p>
+            <p style="font-size: 0.75rem; margin-top: 3px; color: #888;">
+                <span id="timestamp"></span> | Corrected Flow Pattern
+            </p>
+        </div>
+
+        <div class="tab-container">
+            <div class="tab-nav">
+                <button class="tab-button active" onclick="showTab('flow')">📊 Flow</button>
+                <button class="tab-button" onclick="showTab('agents')">🤖 Agents</button>
+                <button class="tab-button" onclick="showTab('files')">📁 Files</button>
+                <button class="tab-button" onclick="showTab('schema')">📋 Schema</button>
+            </div>
+
+            <!-- Flow Tab -->
+            <div id="flow-tab" class="tab-content active">
+                <div class="tab-pane">
+                    <div class="stats-grid">
+                        <div class="stat-card">
+                            <span class="stat-value">10</span>
+                            <span class="stat-label">Agents</span>
+                        </div>
+                        <div class="stat-card">
+                            <span class="stat-value">0a→5</span>
+                            <span class="stat-label">Flow</span>
+                        </div>
+                        <div class="stat-card">
+                            <span class="stat-value">4b</span>
+                            <span class="stat-label">Loop Agent</span>
+                        </div>
+                        <div class="stat-card">
+                            <span class="stat-value">2a/2b</span>
+                            <span class="stat-label">Parallel</span>
+                        </div>
+                    </div>
+
+                    <div class="mermaid-container">
+                        <div class="mermaid">
+flowchart TD
+    A["0a<br/>ORIGIN<br/>Bootstrap"] --> B["0b<br/>BOSS<br/>Orchestrator"]
+    B --> C["1<br/>PATHFINDER<br/>Schema Analysis"]
+    B --> D["2b<br/>ORACLE<br/>User Spec"]
+    C --> E["2a<br/>ARCHITECT<br/>Requirements"]
+    D --> E
+    E --> F["3<br/>ENFORCER<br/>Validator"]
+    F --> G["4a<br/>CRAFTSMAN<br/>Implementation"]
+    G --> H["4b<br/>CRAFTBUDDY<br/>Creative Decision"]
+    H -->|"Loop Back"| F
+    H -->|"Promote"| I["5<br/>GATEKEEPER<br/>Final Validation"]
+    I --> J["COMPLETE"]
+    
+    %% Styling
+    classDef origin fill:#ff6b6b,stroke:#333,stroke-width:2px
+    classDef boss fill:#4ecdc4,stroke:#333,stroke-width:2px
+    classDef pathfinder fill:#45b7d1,stroke:#333,stroke-width:2px
+    classDef oracle fill:#ffeaa7,stroke:#333,stroke-width:2px
+    classDef architect fill:#96ceb4,stroke:#333,stroke-width:2px
+    classDef enforcer fill:#fab1a0,stroke:#333,stroke-width:2px
+    classDef craftsman fill:#fd79a8,stroke:#333,stroke-width:2px
+    classDef craftbuddy fill:#e17055,stroke:#333,stroke-width:2px
+    classDef gatekeeper fill:#00b894,stroke:#333,stroke-width:2px
+    classDef complete fill:#a8e6cf,stroke:#333,stroke-width:2px
+    
+    class A origin
+    class B boss
+    class C pathfinder
+    class D oracle
+    class E architect
+    class F enforcer
+    class G craftsman
+    class H craftbuddy
+    class I gatekeeper
+    class J complete
+                        </div>
+                    </div>
+
+                    <div style="background: rgba(255, 204, 0, 0.1); border-radius: 8px; padding: 15px; margin-top: 20px;">
+                        <h3 style="color: #ffcc00; margin-bottom: 10px;">🔄 Key Flow Patterns</h3>
+                        <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 15px; font-size: 0.85rem;">
+                            <div>
+                                <strong>Polymorphic Inputs:</strong><br>
+                                • PATHFINDER (1) & ORACLE (2b) → ARCHITECT (2a)<br>
+                                • Different sources, same output schema
+                            </div>
+                            <div>
+                                <strong>Creative Loop:</strong><br>
+                                • CRAFTBUDDY (4b) decides: loop back to ENFORCER (3) OR promote to GATEKEEPER (5)<br>
+                                • Preserves all changes during loops
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Agents Tab -->
+            <div id="agents-tab" class="tab-content">
+                <div class="tab-pane">
+                    <div class="agent-grid">
+                        <div class="agent-card">
+                            <div class="agent-header">
+                                <div class="agent-position" style="background: #ff6b6b;">0a</div>
+                                <div class="agent-info">
+                                    <h3>ORIGIN</h3>
+                                    <div class="role">System Bootstrap</div>
+                                </div>
+                            </div>
+                            <div style="font-size: 0.8rem; color: #d0d0d0;">
+                                Initializes workflow system, performs health checks, discovers all agents, launches orchestrator.
+                            </div>
+                        </div>
+
+                        <div class="agent-card">
+                            <div class="agent-header">
+                                <div class="agent-position" style="background: #4ecdc4;">0b</div>
+                                <div class="agent-info">
+                                    <h3>BOSS</h3>
+                                    <div class="role">Workflow Orchestrator</div>
+                                </div>
+                            </div>
+                            <div style="font-size: 0.8rem; color: #d0d0d0;">
+                                Manages workflow execution, sequences agents, handles restarts and coordination.
+                            </div>
+                        </div>
+
+                        <div class="agent-card">
+                            <div class="agent-header">
+                                <div class="agent-position" style="background: #45b7d1;">1</div>
+                                <div class="agent-info">
+                                    <h3>PATHFINDER</h3>
+                                    <div class="role">Schema Reconciler</div>
+                                </div>
+                            </div>
+                            <div style="font-size: 0.8rem; color: #d0d0d0;">
+                                Analyzes codebase, identifies schema issues, locates FAKE/DEMO contamination.
+                            </div>
+                        </div>
+
+                        <div class="agent-card">
+                            <div class="agent-header">
+                                <div class="agent-position" style="background: #ffeaa7;">2b</div>
+                                <div class="agent-info">
+                                    <h3>ORACLE</h3>
+                                    <div class="role">User Spec Translator</div>
+                                </div>
+                            </div>
+                            <div style="font-size: 0.8rem; color: #d0d0d0;">
+                                Processes generic workflow spec files, converts to requirements schema.
+                            </div>
+                        </div>
+
+                        <div class="agent-card">
+                            <div class="agent-header">
+                                <div class="agent-position" style="background: #96ceb4;">2a</div>
+                                <div class="agent-info">
+                                    <h3>ARCHITECT</h3>
+                                    <div class="role">Requirements Generator</div>
+                                </div>
+                            </div>
+                            <div style="font-size: 0.8rem; color: #d0d0d0;">
+                                Converts pathfinder/oracle inputs into detailed implementation requirements.
+                            </div>
+                        </div>
+
+                        <div class="agent-card">
+                            <div class="agent-header">
+                                <div class="agent-position" style="background: #fab1a0;">3</div>
+                                <div class="agent-info">
+                                    <h3>ENFORCER</h3>
+                                    <div class="role">Requirements Validator</div>
+                                </div>
+                            </div>
+                            <div style="font-size: 0.8rem; color: #d0d0d0;">
+                                Validates requirements for PAP compliance, feasibility, and dependency resolution.
+                            </div>
+                        </div>
+
+                        <div class="agent-card">
+                            <div class="agent-header">
+                                <div class="agent-position" style="background: #fd79a8;">4a</div>
+                                <div class="agent-info">
+                                    <h3>CRAFTSMAN</h3>
+                                    <div class="role">Implementation Agent</div>
+                                </div>
+                            </div>
+                            <div style="font-size: 0.8rem; color: #d0d0d0;">
+                                Executes approved requirements, makes code changes, runs comprehensive testing.
+                            </div>
+                        </div>
+
+                        <div class="agent-card">
+                            <div class="agent-header">
+                                <div class="agent-position" style="background: #e17055;">4b</div>
+                                <div class="agent-info">
+                                    <h3>CRAFTBUDDY</h3>
+                                    <div class="role">Creative Enhancement</div>
+                                </div>
+                            </div>
+                            <div style="font-size: 0.8rem; color: #d0d0d0;">
+                                Reviews craftsman work, spots opportunities, decides: loop back or promote forward.
+                            </div>
+                        </div>
+
+                        <div class="agent-card">
+                            <div class="agent-header">
+                                <div class="agent-position" style="background: #00b894;">5</div>
+                                <div class="agent-info">
+                                    <h3>GATEKEEPER</h3>
+                                    <div class="role">Final Validation</div>
+                                </div>
+                            </div>
+                            <div style="font-size: 0.8rem; color: #d0d0d0;">
+                                Cross-validates all work, performs git operations, makes final promotion decisions.
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Files Tab -->
+            <div id="files-tab" class="tab-content">
+                <div class="tab-pane">
+                    <h3 style="color: #00ff88; margin-bottom: 15px;">📁 Agent Files - Corrected Naming Pattern</h3>
+                    <div class="file-list">
+                        <div class="file-item">0a_origin_from_none_to_boss.json</div>
+                        <div class="file-item">0b_boss_from_origin_to_pathfinder_oracle.json</div>
+                        <div class="file-item">1_pathfinder_from_boss_to_architect.json</div>
+                        <div class="file-item">2b_oracle_from_user_spec_to_architect.json</div>
+                        <div class="file-item">2a_architect_from_pathfinder_oracle_to_enforcer.json</div>
+                        <div class="file-item">3_enforcer_from_architect_craftbuddy_to_craftsman.json</div>
+                        <div class="file-item">4a_craftsman_from_enforcer_to_craftbuddy.json</div>
+                        <div class="file-item">4b_craftbuddy_from_craftsman_to_enforcer_gatekeeper.json</div>
+                        <div class="file-item">5_gatekeeper_from_craftbuddy_to_complete.json</div>
+                        <div class="file-item">mama_bear.json</div>
+                    </div>
+                    
+                    <div style="margin-top: 20px; background: rgba(0, 255, 136, 0.1); border-radius: 8px; padding: 15px;">
+                        <h4 style="color: #00ff88; margin-bottom: 10px;">📋 Naming Pattern Benefits</h4>
+                        <div style="font-size: 0.85rem; line-height: 1.6;">
+                            <strong>Pattern:</strong> <code>{position}_{agent}_from_{inputs}_to_{outputs}.json</code><br><br>
+                            ✅ <strong>Easy scripting:</strong> <code>./run_agent.sh craftsman</code><br>
+                            ✅ <strong>Clear relationships:</strong> See inputs and outputs in filename<br>
+                            ✅ <strong>Flow visibility:</strong> Loop patterns and polymorphic flows obvious<br>
+                            ✅ <strong>Sorted execution:</strong> Files sort in logical order
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Schema Tab -->
+            <div id="schema-tab" class="tab-content">
+                <div class="tab-pane">
+                    <h3 style="color: #00ff88; margin-bottom: 15px;">📋 Corrected Flow Schema</h3>
+                    <div class="schema-preview">
+{
+  "flow_pattern": "Corrected WARPCORE Agent Data Flow",
+  "agents": {
+    "0a_origin": {
+      "inputs": [],
+      "outputs": ["0b_boss"],
+      "role": "System bootstrap and health checks"
+    },
+    "0b_boss": {
+      "inputs": ["0a_origin"], 
+      "outputs": ["1_pathfinder", "2b_oracle"],
+      "role": "Workflow orchestration and sequencing"
+    },
+    "1_pathfinder": {
+      "inputs": ["0b_boss"],
+      "outputs": ["2a_architect"],
+      "role": "Codebase analysis and schema reconciliation"
+    },
+    "2b_oracle": {
+      "inputs": ["user_spec_file"],
+      "outputs": ["2a_architect"], 
+      "role": "Generic workflow spec processing"
+    },
+    "2a_architect": {
+      "inputs": ["1_pathfinder", "2b_oracle"],
+      "outputs": ["3_enforcer"],
+      "role": "Requirements generation from multiple sources"
+    },
+    "3_enforcer": {
+      "inputs": ["2a_architect", "4b_craftbuddy"],
+      "outputs": ["4a_craftsman"],
+      "role": "Requirements validation and loop handling"
+    },
+    "4a_craftsman": {
+      "inputs": ["3_enforcer"],
+      "outputs": ["4b_craftbuddy"],
+      "role": "Code implementation and testing"
+    },
+    "4b_craftbuddy": {
+      "inputs": ["4a_craftsman"],
+      "outputs": ["3_enforcer", "5_gatekeeper"],
+      "role": "Creative assessment and routing decision",
+      "decision_logic": "Loop back to enforcer OR promote to gatekeeper"
+    },
+    "5_gatekeeper": {
+      "inputs": ["4b_craftbuddy"],
+      "outputs": ["COMPLETE"],
+      "role": "Final validation, git operations, and promotion"
+    }
+  },
+  "polymorphic_flows": [
+    {
+      "description": "Multiple sources to architect",
+      "sources": ["1_pathfinder", "2b_oracle"],
+      "target": "2a_architect",
+      "schema": "identical_requirements_format"
+    }
+  ],
+  "loop_patterns": [
+    {
+      "description": "Creative enhancement loop", 
+      "from": "4b_craftbuddy",
+      "to": "3_enforcer",
+      "condition": "Enhancement opportunities found"
+    }
+  ]
+}
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <div class="watermark">
+        🚀 WARP-DEMO FLOW SYSTEM
+    </div>
+
+    <script>
+        // Initialize Mermaid
+        mermaid.initialize({
+            startOnLoad: true,
+            theme: 'dark',
+            flowchart: {
+                useMaxWidth: true,
+                htmlLabels: true
+            }
+        });
+
+        // Set current timestamp
+        document.getElementById('timestamp').textContent = new Date().toISOString().substring(0, 19);
+
+        // Tab switching function
+        function showTab(tabName) {
+            // Hide all tabs
+            const tabs = document.querySelectorAll('.tab-content');
+            tabs.forEach(tab => tab.classList.remove('active'));
+            
+            // Remove active from all buttons
+            const buttons = document.querySelectorAll('.tab-button');
+            buttons.forEach(button => button.classList.remove('active'));
+            
+            // Show selected tab
+            document.getElementById(tabName + '-tab').classList.add('active');
+            
+            // Activate clicked button
+            event.target.classList.add('active');
+        }
+
+        // Add hover effects
+        document.querySelectorAll('.agent-card').forEach(card => {
+            card.addEventListener('mouseenter', function() {
+                this.style.transform = 'translateY(-3px) scale(1.02)';
+            });
+            
+            card.addEventListener('mouseleave', function() {
+                this.style.transform = 'translateY(0) scale(1)';
+            });
+        });
+    </script>
+</body>
+</html>
