@@ -70,6 +70,18 @@
       "stroke": "#6d28d9",
       "stroke_width": "2px",
       "shape": "circle"
+    },
+    "mama_bear": {
+      "fill": "#f97316",
+      "stroke": "#ea580c",
+      "stroke_width": "2px",
+      "shape": "hexagon"
+    },
+    "harmony": {
+      "fill": "#ec4899",
+      "stroke": "#db2777",
+      "stroke_width": "2px",
+      "shape": "diamond"
     }
   },
   "node_templates": {

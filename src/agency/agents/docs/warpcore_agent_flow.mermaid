@@ -10,6 +10,10 @@ flowchart TD
     4b["4b<br/>CRAFTBUDDY<br/>Creative Enhancement & De..."]
     5["5<br/>GATEKEEPER<br/>Gate Promote Agent"]
     USER(["👤 USER<br/>Requirements Input"])
+
+    %% Development Tools
+    MAMA_BEAR{{🤱 MAMA BEAR<br/>QA & Production Readiness}}
+    HARMONY{🎭 HARMONY<br/>Coherence Guardian}
     0a -->|"bootstrap"| 0b
     0b -->|"orchestration"| 1
     1 -->|"analysis"| 2a
@@ -34,6 +38,8 @@ flowchart TD
     classDef craftbuddy fill:#84cc16,stroke:#65a30d,stroke-width:2px
     classDef gatekeeper fill:#10b981,stroke:#059669,stroke-width:2px
     classDef complete fill:#22c55e,stroke:#16a34a,stroke-width:2px
+    classDef mama_bear fill:#f97316,stroke:#ea580c,stroke-width:2px
+    classDef harmony fill:#ec4899,stroke:#db2777,stroke-width:2px
     class 0a origin
     class 0b boss
     class 1 pathfinder
@@ -43,3 +49,5 @@ flowchart TD
     class 4a craftsman
     class 4b craftbuddy
     class 5 gatekeeper
+    class MAMA_BEAR mama_bear
+    class HARMONY harmony

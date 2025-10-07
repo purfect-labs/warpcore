@@ -306,7 +306,7 @@
         <div class="header">
             <h1>🤖 WARPCORE Agent System</h1>
             <p>Dynamic Flow Documentation - Generated from Real Agent Schemas</p>
-            <p class="watermark">Generated: 2025-10-07T17:27:43.320566</p>
+            <p class="watermark">Generated: 2025-10-07T17:38:49.073875</p>
         </div>
 
         <div class="tab-container">
@@ -323,11 +323,11 @@
                     <div class="stats-grid">
                         
                         <div class="stat-card">
-                            <span class="stat-value">9</span>
+                            <span class="stat-value">10</span>
                             <span class="stat-label">Total Agents</span>
                         </div>
                         <div class="stat-card">
-                            <span class="stat-value">9</span>
+                            <span class="stat-value">10</span>
                             <span class="stat-label">Unique Positions</span>
                         </div>
                         <div class="stat-card">
@@ -354,6 +354,10 @@ flowchart TD
     4b["4b<br/>CRAFTBUDDY<br/>Creative Enhancement & De..."]
     5["5<br/>GATEKEEPER<br/>Gate Promote Agent"]
     USER(["👤 USER<br/>Requirements Input"])
+
+    %% Development Tools
+    MAMA_BEAR{{🤱 MAMA BEAR<br/>QA & Production Readiness}}
+    HARMONY{🎭 HARMONY<br/>Coherence Guardian}
     0a -->|"bootstrap"| 0b
     0b -->|"orchestration"| 1
     1 -->|"analysis"| 2a
@@ -378,6 +382,8 @@ flowchart TD
     classDef craftbuddy fill:#84cc16,stroke:#65a30d,stroke-width:2px
     classDef gatekeeper fill:#10b981,stroke:#059669,stroke-width:2px
     classDef complete fill:#22c55e,stroke:#16a34a,stroke-width:2px
+    classDef mama_bear fill:#f97316,stroke:#ea580c,stroke-width:2px
+    classDef harmony fill:#ec4899,stroke:#db2777,stroke-width:2px
     class 0a origin
     class 0b boss
     class 1 pathfinder
@@ -387,6 +393,8 @@ flowchart TD
     class 4a craftsman
     class 4b craftbuddy
     class 5 gatekeeper
+    class MAMA_BEAR mama_bear
+    class HARMONY harmony
 
                         </div>
                     </div>
@@ -567,6 +575,22 @@ flowchart TD
                             </div>
                         </div>
             
+                        <div class="agent-card">
+                            <div class="agent-header">
+                                <div class="agent-position" style="background: #00ff88;">?</div>
+                                <div class="agent-info">
+                                    <h3>HARMONY</h3>
+                                    <div class="role">" || echo "0")</div>
+                                </div>
+                            </div>
+                            <div class="agent-details">
+                                <div><strong>File:</strong> harmony_meta_coherence_agent.json</div>
+                                <div><strong>Inputs:</strong> None</div>
+                                <div><strong>Outputs:</strong> End</div>
+                                <div><strong>Cache:</strong> {workflow_id}_harmony_coherence_results.json</div>
+                            </div>
+                        </div>
+            
                     </div>
                 </div>
             </div>
@@ -580,7 +604,7 @@ flowchart TD
   "flow_pattern": "WARPCORE Agent Flow Schema Definition",
   "schema_version": "1.0.0",
   "generated_from": "Comprehensive schema definition + real agent files",
-  "timestamp": "2025-10-07T17:27:43.320664",
+  "timestamp": "2025-10-07T17:38:49.073988",
   "agent_definitions": {
     "origin": {
       "position": "0a",
@@ -1029,6 +1053,7 @@ flowchart TD
 <div class="file-item">4a_craftsman_from_enforcer_to_craftbuddy.json</div>
 <div class="file-item">4b_craftbuddy_from_craftsman_to_craftsman_gatekeeper.json</div>
 <div class="file-item">5_gatekeeper_from_craftbuddy_to_complete.json</div>
+<div class="file-item">harmony_meta_coherence_agent.json</div>
 
                     </div>
                 </div>

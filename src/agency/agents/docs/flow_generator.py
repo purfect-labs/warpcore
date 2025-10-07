@@ -409,6 +409,21 @@ class AgentFlowGenerator:
         user_node = user_template.format(description="Requirements Input")
         mermaid += f"    {user_node}\n"
         
+        # Add development tools section
+        mermaid += "\n    %% Development Tools\n"
+        dev_tools = [
+            ("MAMA_BEAR", "🤱 MAMA BEAR<br/>QA & Production Readiness", "hexagon"),
+            ("HARMONY", "🎭 HARMONY<br/>Coherence Guardian", "diamond")
+        ]
+        
+        for tool_id, tool_label, shape in dev_tools:
+            if shape == "hexagon":
+                mermaid += f"    {tool_id}{{{{{tool_label}}}}}\n"
+            elif shape == "diamond":
+                mermaid += f"    {tool_id}{{{tool_label}}}\n"
+            else:
+                mermaid += f"    {tool_id}[\"{tool_label}\"]\n"
+        
         return mermaid
     
     def _generate_connections_from_schema(self, config: Dict) -> str:
@@ -488,6 +503,10 @@ class AgentFlowGenerator:
                     if style_name in name or (style_name == 'craftbuddy' and 'buddy' in name):
                         mermaid += f"    class {pos} {style_name}\n"
                         break
+        
+        # Apply styles to development tools
+        mermaid += f"    class MAMA_BEAR mama_bear\n"
+        mermaid += f"    class HARMONY harmony\n"
         
         return mermaid
     
