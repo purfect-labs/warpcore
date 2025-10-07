@@ -2,7 +2,7 @@
 GCP Provider Package
 """
 
-from .auth import GCPAuth
-from .k8s import GCPK8s
+from .gcp_auth import GCPAuth
+from .gcp_k8s import GCPK8s
 
 __all__ = ['GCPAuth', 'GCPK8s']

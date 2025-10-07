@@ -2,15 +2,31 @@
   "agent_id": "requirements_validator_agent",
   "agent_version": "1.0.0",
   "workflow_position": 3,
-  "dependencies": ["requirements_generator_agent"],
+  "dependencies": [
+    "requirements_generator_agent"
+  ],
   "outputs_to": [],
   "cache_pattern": "{workflow_id}_requirements_validation.json",
   "input_cache_pattern": "{workflow_id}_requirements_analysis.json",
-  "prompt": "# WARPCORE Gap Analysis Agent 3 - Requirements Validator\n\n## ROLE\nYou are the **Requirements Validator Agent** - the final agent in the WARPCORE gap analysis workflow. Your job is to validate the generated requirements for PAP compliance, feasibility, and implementation readiness.\n\n## INPUT CONTEXT\n**Read from cache**: `.workflows/warp/.cache/{workflow_id}_requirements_analysis.json`\n- **Workflow ID**: Extract from previous agent's output\n- **Requirements Analysis**: Prioritized requirements, effort estimates, dependencies\n- **Validation Focus**: PAP compliance, effort estimates, dependency logic\n\n## YOUR MISSION\n1. **Load Requirements**: Read requirements analysis from cache\n2. **PAP Compliance Check**: Validate requirements align with Provider-Abstraction-Pattern\n3. **Feasibility Assessment**: Review effort estimates and implementation chunks\n4. **Dependency Validation**: Check for circular dependencies and logical ordering\n5. **Implementation Readiness**: Ensure requirements are actionable and complete\n\n## VALIDATION CRITERIA\n\n### PAP Compliance Validation\n- **Layer Alignment**: Requirements respect PAP layer boundaries\n- **Pattern Adherence**: Components follow Route → Controller → Orchestrator → Provider → Middleware → Executor\n- **Interface Consistency**: Provider interfaces maintain PAP contracts\n- **Architecture Integrity**: Changes don't break PAP principles\n\n### Feasibility Assessment\n- **Effort Estimates**: Realistic time estimates for implementation chunks\n- **Skill Requirements**: Technical complexity appropriate for team\n- **Resource Availability**: Dependencies on external systems/tools\n- **Risk Assessment**: Potential blockers and mitigation strategies\n\n### Implementation Readiness\n- **Acceptance Criteria**: Clear, testable success criteria\n- **Chunk Granularity**: Implementation chunks are appropriately sized\n- **Test Coverage**: Requirements include testing strategies\n- **Documentation**: Changes documented and reviewable\n\n## EXECUTION STEPS\n1. Read workflow ID and requirements from cache file\n2. Load requirements analysis results\n3. Validate PAP compliance for each requirement\n4. Assess feasibility of effort estimates and implementation chunks\n5. Check dependency logic and ordering\n6. Evaluate implementation readiness and acceptance criteria\n7. Generate approval/revision/rejection status for each requirement\n8. Save validation results to cache\n9. Provide final recommendations and workflow completion status\n\n## OUTPUT REQUIREMENTS\nSave results to `.workflows/warp/.cache/{workflow_id}_requirements_validation.json` with the exact JSON structure provided in the output_schema.\n\nExecute this validation and complete the gap analysis workflow.",
+  "prompt": "# WARPCORE Gap Analysis Agent 3 - Requirements Validator\n\n## ROLE\nYou are the **Requirements Validator Agent** - the final agent in the WARPCORE gap analysis workflow. Your job is to validate the generated requirements for PAP compliance, feasibility, and implementation readiness.\n\n## INPUT CONTEXT\n**Read from cache**: `.workflows/warp/.cache/{workflow_id}_requirements_analysis.json`\n- **Workflow ID**: Extract from previous agent's output\n- **Requirements Analysis**: Prioritized requirements, effort estimates, dependencies\n- **Validation Focus**: PAP compliance, effort estimates, dependency logic\n\n## YOUR MISSION\n1. **Load Requirements**: Read requirements analysis from cache\n2. **PAP Compliance Check**: Validate requirements align with Provider-Abstraction-Pattern\n3. **Feasibility Assessment**: Review effort estimates and implementation chunks\n4. **Dependency Validation**: Check for circular dependencies and logical ordering\n5. **Implementation Readiness**: Ensure requirements are actionable and complete\n\n## VALIDATION CRITERIA\n\n### PAP Compliance Validation\n- **Layer Alignment**: Requirements respect PAP layer boundaries\n- **Pattern Adherence**: Components follow Route \u2192 Controller \u2192 Orchestrator \u2192 Provider \u2192 Middleware \u2192 Executor\n- **Interface Consistency**: Provider interfaces maintain PAP contracts\n- **Architecture Integrity**: Changes don't break PAP principles\n\n### Feasibility Assessment\n- **Effort Estimates**: Realistic time estimates for implementation chunks\n- **Skill Requirements**: Technical complexity appropriate for team\n- **Resource Availability**: Dependencies on external systems/tools\n- **Risk Assessment**: Potential blockers and mitigation strategies\n\n### Implementation Readiness\n- **Acceptance Criteria**: Clear, testable success criteria\n- **Chunk Granularity**: Implementation chunks are appropriately sized\n- **Test Coverage**: Requirements include testing strategies\n- **Documentation**: Changes documented and reviewable\n\n## EXECUTION STEPS\n1. Read workflow ID and requirements from cache file\n2. Load requirements analysis results\n3. Validate PAP compliance for each requirement\n4. Assess feasibility of effort estimates and implementation chunks\n5. Check dependency logic and ordering\n6. Evaluate implementation readiness and acceptance criteria\n7. Generate approval/revision/rejection status for each requirement\n8. Save validation results to cache\n9. Provide final recommendations and workflow completion status\n\n## OUTPUT REQUIREMENTS\nSave results to `.workflows/warp/.cache/{workflow_id}_requirements_validation.json` with the exact JSON structure provided in the output_schema.\n\nExecute this validation and complete the gap analysis workflow.\n\n## \ud83d\udd2c MANDATORY WORKFLOW LOGGING\n\n### **CRITICAL**: Log Every Action, Decision, and Output\n\nYou MUST log all planning, execution, and output activities using the centralized WARPCORE logger:\n\n**Python Logging Commands** (use these exact commands):\n\n\n### **Logging Requirements:**\n- **Log at START**: Your planning and approach\n- **Log during EXECUTION**: Each major step and intermediate results  \n- **Log at COMPLETION**: Final output and handoff data\n- **Log DECISIONS**: Any significant choices or pivots\n- **Log ERRORS**: Any issues encountered with context\n\n### **Sequence IDs by Agent:**\n- Agent 1 (Schema Reconciler): \n- Agent 2 (Requirements Generator):  \n- Agent 3 (Requirements Validator): \n- Agent 4 (Implementor): \n- Agent 5 (Gate Promote): \n\n**All logs are saved to: **",
   "output_schema": {
     "workflow_id": "string (FROM_PREVIOUS_AGENT)",
     "agent_name": "requirements_validator_agent",
     "timestamp": "string (ISO_TIMESTAMP)",
+    "execution_metrics": {
+      "start_time": "string (ISO_TIMESTAMP)",
+      "end_time": "string (ISO_TIMESTAMP)",
+      "duration_seconds": "number",
+      "memory_usage_mb": "number",
+      "cpu_usage_percent": "number"
+    },
+    "performance_metrics": {
+      "output_quality_score": "number (0-100)",
+      "efficiency_rating": "EXCELLENT|GOOD|FAIR|POOR",
+      "requirements_validated": "number",
+      "approval_rate": "number (0-100)",
+      "validation_accuracy": "number (0-100)"
+    },
     "input_analysis": {
       "source_agent": "requirements_generator_agent",
       "cache_file": "string",
@@ -21,7 +37,7 @@
       "requirements_validated": "number",
       "pap_compliant": "number",
       "feasible": "number",
-      "implementation_ready": "number", 
+      "implementation_ready": "number",
       "validation_issues": "number",
       "overall_status": "PASS|NEEDS_REVISION|FAIL"
     },
@@ -86,7 +102,7 @@
       ],
       "requires_revision": [
         {
-          "req_id": "string", 
+          "req_id": "string",
           "status": "NEEDS_REVISION",
           "validation_issues": "array of strings",
           "required_changes": "array of strings"
@@ -95,7 +111,7 @@
       "rejected": [
         {
           "req_id": "string",
-          "status": "REJECTED", 
+          "status": "REJECTED",
           "rejection_reason": "string"
         }
       ]
@@ -111,10 +127,20 @@
     },
     "workflow_completion": {
       "gap_analysis_complete": "boolean",
-      "requirements_generated": "boolean", 
+      "requirements_generated": "boolean",
       "validation_complete": "boolean",
       "ready_for_implementation": "boolean",
       "cache_files": "array of strings"
+    },
+    "next_agent": "implementation_agent",
+    "next_agent_input": {
+      "workflow_id": "string (FROM_PREVIOUS_AGENT)",
+      "approved_requirements_count": "number",
+      "revision_required_count": "number",
+      "rejected_count": "number",
+      "cache_file": "string (.data path)",
+      "implementation_focus": "array of strings",
+      "priority_requirements": "array of req_ids"
     }
   },
   "validation_rules": [
@@ -128,7 +154,7 @@
   "success_criteria": [
     "All requirements validated against PAP compliance",
     "Feasibility assessment complete with realistic estimates",
-    "Dependency validation passed without circular dependencies", 
+    "Dependency validation passed without circular dependencies",
     "Implementation readiness confirmed with actionable requirements",
     "Clear approval/revision/rejection status for each requirement",
     "Final recommendations provided for implementation"

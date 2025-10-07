@@ -1,0 +1,88 @@
+{
+  "workflow_id": "wf_1759802068",
+  "sequence_id": "seq_001",
+  "agent_name": "schema_coherence_reconciler_agent",
+  "timestamp": "2025-10-07T01:53:42Z",
+  
+  "input_source": {
+    "llm_collector_results": "llm-collector/results.json",
+    "total_files_analyzed": 188,
+    "total_lines_analyzed": 51180,
+    "analysis_timestamp": "2025-10-07T01:53:42Z"
+  },
+  
+  "progress_metrics": {
+    "coherence_issues_identified": 52,
+    "fake_markers_found": 127,
+    "architectural_violations": 18,
+    "pap_compliance_score": 78,
+    "files_analyzed": 188,
+    "lines_analyzed": 51180
+  },
+  
+  "coherence_analysis": {
+    "total_issues": 52,
+    "fake_markers_found": 127,
+    "architectural_violations": 18,
+    "pap_compliance_score": 78,
+    "overall_status": "SIGNIFICANT_GAPS_IDENTIFIED"
+  },
+  
+  "detailed_findings": {
+    "critical_issues": [
+      {
+        "issue_id": "SC001",
+        "priority": "CRITICAL",
+        "title": "Template Manager Demo Data Contamination",
+        "description": "src/web/template_manager.py contains extensive demo data throughout implementation",
+        "file_path": "src/web/template_manager.py",
+        "line_numbers": [23, 45, 67, 89, 123, 145, 167, 189, 201, 234, 256, 278, 289, 301, 323],
+        "estimated_effort_hours": 24
+      },
+      {
+        "issue_id": "SC002",
+        "priority": "CRITICAL", 
+        "title": "Missing Executor Layer Violates PAP Architecture",
+        "description": "PAP architecture requires executor layer between API and providers - completely missing",
+        "expected_location": "src/api/executors/",
+        "estimated_effort_hours": 32
+      }
+    ]
+  },
+  
+  "pap_layer_compliance": {
+    "web_layer": {
+      "compliance_score": 65,
+      "status": "PARTIAL_COMPLIANCE",
+      "issues_count": 15,
+      "fake_markers_count": 16
+    },
+    "api_layer": {
+      "compliance_score": 70,
+      "status": "CRITICAL_GAPS", 
+      "issues_count": 23,
+      "fake_markers_count": 23
+    },
+    "data_layer": {
+      "compliance_score": 85,
+      "status": "GOOD_WITH_GAPS",
+      "issues_count": 8,
+      "fake_markers_count": 2
+    },
+    "provider_layer": {
+      "compliance_score": 90,
+      "status": "COMPLIANT",
+      "issues_count": 6,
+      "fake_markers_count": 86
+    }
+  },
+  
+  "next_agent": "requirements_generator_agent",
+  "next_agent_input": {
+    "workflow_id": "wf_1759802068",
+    "sequence_id": "seq_002",
+    "critical_issues_count": 2,
+    "total_fake_markers": 127,
+    "pap_compliance_score": 78
+  }
+}

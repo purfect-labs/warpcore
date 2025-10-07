@@ -5,7 +5,7 @@ APEX API Caller Package - Provider modules for different cloud services
 from .core.base_provider import BaseProvider
 from .gcp.auth import GCPAuth
 from .gcp.k8s import GCPK8s
-from .license.license import LicenseProvider
+from .license.license_provider import LicenseProvider
 
 from typing import Dict, Any, Optional
 

@@ -1,8 +1,8 @@
 #!/usr/bin/env python3
 """
-License Provider - Integration Layer
-Handles direct license operations, keychain access, and license generation
-Following APEX BaseProvider pattern
+WARPCORE License Provider - APEX Implementation
+Real working license operations from APEX system
+Handles keychain access, license generation, and validation
 """
 
 import json
@@ -14,34 +14,83 @@ from typing import Dict, Any, Optional
 from cryptography.fernet import Fernet
 from ..core.base_provider import BaseProvider
 
+# Import native WARPCORE license manager (APEX-aligned)
+try:
+    import sys
+    from pathlib import Path
+    sys.path.insert(0, str(Path(__file__).parent.parent.parent.parent / 'native'))
+    from warpcore_license import WARPCORELicenseManager
+    NATIVE_LICENSE_AVAILABLE = True
+except ImportError:
+    WARPCORELicenseManager = None
+    NATIVE_LICENSE_AVAILABLE = False
+
 
 class LicenseProvider(BaseProvider):
-    """License operations provider with keychain integration"""
+    """WARPCORE License operations provider - APEX implementation with native integration"""
     
     def __init__(self):
         super().__init__("license")
-        # Fixed demo encryption key - for production use proper key management
-        self._demo_key = base64.urlsafe_b64encode(b"apex_demo_license_key_32_chars_!").decode()
+        
+        # Initialize native license manager if available
+        if NATIVE_LICENSE_AVAILABLE:
+            self._native_manager = WARPCORELicenseManager()
+        else:
+            self._native_manager = None
+        
+        # APEX-compatible encryption setup with WARP watermarking
+        self._demo_key = base64.urlsafe_b64encode(b"warpcore_license_key_32_chars_!!").decode()
         self._fernet = Fernet(self._demo_key.encode())
-        self._keychain_service = "apex-license"
-        self._keychain_account = "APEX"
+        self._keychain_service = "warpcore-license"
+        self._keychain_account = "WARPCORE"
 
     async def get_license_status(self) -> Dict[str, Any]:
-        """Get current license status from keychain"""
+        """Get current license status from native manager or keychain fallback"""
         try:
-            # Get stored license from keychain
+            # Try native status check first if available
+            if self._native_manager:
+                try:
+                    license_info = self._native_manager.get_license_info()
+                    if license_info and license_info.get("valid", False):
+                        expires_str = license_info.get("expires")
+                        days_remaining = None
+                        
+                        if expires_str:
+                            try:
+                                expires_date = datetime.fromisoformat(expires_str.replace('Z', '+00:00'))
+                                days_remaining = max(0, (expires_date - datetime.now()).days)
+                            except:
+                                pass
+                        
+                        return {
+                            "success": True,
+                            "status": "active",
+                            "message": "License is active via native manager",
+                            "user_email": license_info.get("user", "WARP-NATIVE-USER"),
+                            "user_name": license_info.get("user", "WARP User"),
+                            "expires": expires_str,
+                            "features": license_info.get("features", []),
+                            "license_type": license_info.get("license_type", "basic"),
+                            "days_remaining": days_remaining,
+                            "source": "NATIVE_WARPCORE_MANAGER"
+                        }
+                except Exception as native_error:
+                    self.logger.warning(f"Native license status check failed: {native_error}")
+            
+            # Fallback to keychain stored license - Get stored license from keychain
             stored_license = keyring.get_password(self._keychain_service, self._keychain_account)
             
             if not stored_license:
                 return {
                     "success": True,
                     "status": "inactive",
-                    "message": "No license found",
+                    "message": "No license found - WARP FAKE SUB TEST DEMO",
                     "user_email": None,
                     "expires": None,
                     "features": [],
                     "license_type": None,
-                    "days_remaining": None
+                    "days_remaining": None,
+                    "source": "WARP FAKE SUB TEST DEMO KEYCHAIN"
                 }
             
             # Validate and decode license
@@ -53,12 +102,13 @@ class LicenseProvider(BaseProvider):
                 return {
                     "success": True,
                     "status": "invalid",
-                    "message": license_data.get("error", "License validation failed"),
+                    "message": license_data.get("error", "License validation failed - WARP FAKE SUB TEST"),
                     "user_email": None,
                     "expires": None,
                     "features": [],
                     "license_type": None,
-                    "days_remaining": None
+                    "days_remaining": None,
+                    "source": "WARP FAKE SUB TEST DEMO KEYCHAIN"
                 }
             
             # Return active license status
@@ -76,13 +126,14 @@ class LicenseProvider(BaseProvider):
             return {
                 "success": True,
                 "status": "active",
-                "message": "License is active",
+                "message": "License is active via keychain fallback",
                 "user_email": license_info.get("user_email"),
                 "user_name": license_info.get("user_name"),
                 "expires": expires_str,
                 "features": license_info.get("features", []),
                 "license_type": license_info.get("license_type", "standard"),
-                "days_remaining": days_remaining
+                "days_remaining": days_remaining,
+                "source": "WARP FAKE SUB TEST DEMO KEYCHAIN"
             }
             
         except Exception as e:
@@ -93,9 +144,28 @@ class LicenseProvider(BaseProvider):
             }
 
     async def activate_license(self, license_key: str, user_email: str = None) -> Dict[str, Any]:
-        """Activate a license key with validation and keychain storage"""
+        """Activate a license key with native manager or keychain fallback"""
         try:
-            # Validate the license key
+            # Try native activation first if available
+            if self._native_manager:
+                try:
+                    success = self._native_manager.activate_license(license_key, user_email or "WARP-USER")
+                    if success:
+                        license_info = self._native_manager.get_license_info()
+                        return {
+                            "success": True,
+                            "message": "License activated successfully via native manager",
+                            "user_email": license_info.get("user", user_email),
+                            "user_name": license_info.get("user", "WARP User"),
+                            "expires": license_info.get("expires"),
+                            "features": license_info.get("features", []),
+                            "license_type": license_info.get("license_type", "standard"),
+                            "source": "NATIVE_WARPCORE_MANAGER"
+                        }
+                except Exception as native_error:
+                    self.logger.warning(f"Native license activation failed: {native_error}")
+            
+            # Fallback to encrypted validation and keychain storage
             validation_result = await self._validate_license_key(license_key)
             
             if not validation_result.get("valid", False):
@@ -110,21 +180,22 @@ class LicenseProvider(BaseProvider):
             if user_email and license_info.get("user_email") != user_email:
                 return {
                     "success": False,
-                    "error": f"License key does not match email {user_email}"
+                    "error": f"License key does not match email {user_email} - WARP FAKE SUB TEST"
                 }
             
-            # Store license in keychain
+            # Store license in keychain (fallback method)
             keyring.set_password(self._keychain_service, self._keychain_account, license_key)
             
-            # Return activation result
+            # Return activation result with WARP watermark for fallback
             return {
                 "success": True,
-                "message": "License activated successfully",
+                "message": "License activated successfully via keychain fallback",
                 "user_email": license_info.get("user_email"),
                 "user_name": license_info.get("user_name"),
                 "expires": license_info.get("expires"),
                 "features": license_info.get("features", []),
-                "license_type": license_info.get("license_type", "standard")
+                "license_type": license_info.get("license_type", "standard"),
+                "source": "WARP FAKE SUB TEST DEMO ENCRYPTED"
             }
             
         except Exception as e:
@@ -134,17 +205,32 @@ class LicenseProvider(BaseProvider):
             }
 
     async def deactivate_license(self) -> Dict[str, Any]:
-        """Remove license from keychain"""
+        """Deactivate license using native manager or keychain fallback"""
         try:
+            # Try native deactivation first if available
+            if self._native_manager:
+                try:
+                    success = self._native_manager.deactivate_license()
+                    if success:
+                        return {
+                            "success": True,
+                            "message": "License deactivated successfully via native manager",
+                            "source": "NATIVE_WARPCORE_MANAGER"
+                        }
+                except Exception as native_error:
+                    self.logger.warning(f"Native license deactivation failed: {native_error}")
+            
+            # Fallback to keychain removal
             keyring.delete_password(self._keychain_service, self._keychain_account)
             return {
                 "success": True,
-                "message": "License deactivated successfully"
+                "message": "License deactivated successfully via keychain fallback",
+                "source": "WARP FAKE SUB TEST DEMO KEYCHAIN"
             }
         except keyring.errors.PasswordDeleteError:
             return {
                 "success": True,
-                "message": "No license was active"
+                "message": "No license was active - WARP FAKE SUB TEST"
             }
         except Exception as e:
             return {
@@ -153,9 +239,26 @@ class LicenseProvider(BaseProvider):
             }
 
     async def generate_trial_license(self, user_email: str, days: int = 7) -> Dict[str, Any]:
-        """Generate a trial license for the given email"""
+        """Generate a trial license using native manager or encrypted fallback"""
         try:
-            # Create trial license data
+            # Try native trial generation first if available
+            if self._native_manager:
+                try:
+                    trial_key = self._native_manager.generate_trial_license(user_email, days)
+                    if trial_key:
+                        return {
+                            "success": True,
+                            "license_key": trial_key,
+                            "user_email": user_email,
+                            "expires": (datetime.now() + timedelta(days=days)).isoformat(),
+                            "days": days,
+                            "message": f"{days}-day trial license generated via native manager",
+                            "source": "NATIVE_WARPCORE_MANAGER"
+                        }
+                except Exception as native_error:
+                    self.logger.warning(f"Native trial generation failed: {native_error}")
+            
+            # Fallback to encrypted trial generation - WARP FAKE SUB TEST DEMO
             expires_date = datetime.now() + timedelta(days=days)
             
             license_data = {
@@ -164,7 +267,8 @@ class LicenseProvider(BaseProvider):
                 "expires": expires_date.isoformat(),
                 "features": ["basic"],  # Trial gets basic features
                 "license_type": "trial",
-                "generated_at": datetime.now().isoformat()
+                "generated_at": datetime.now().isoformat(),
+                "source": "WARP FAKE SUB TEST DEMO TRIAL"
             }
             
             # Encrypt and encode the license
@@ -181,7 +285,8 @@ class LicenseProvider(BaseProvider):
                 "user_email": user_email,
                 "expires": expires_date.isoformat(),
                 "days": days,
-                "message": f"{days}-day trial license generated successfully"
+                "message": f"{days}-day trial license generated successfully via encrypted fallback",
+                "source": "WARP FAKE SUB TEST DEMO TRIAL"
             }
             
         except Exception as e:
@@ -192,9 +297,9 @@ class LicenseProvider(BaseProvider):
 
     async def generate_full_license(self, user_email: str, user_name: str, 
                                    days: int, features: list) -> Dict[str, Any]:
-        """Generate a full license with specified features"""
+        """Generate a full license with specified features - WARP FAKE SUB TEST DEMO"""
         try:
-            # Create full license data
+            # Create full license data with WARP watermarking
             expires_date = datetime.now() + timedelta(days=days)
             
             license_data = {
@@ -203,7 +308,8 @@ class LicenseProvider(BaseProvider):
                 "expires": expires_date.isoformat(),
                 "features": features,
                 "license_type": "standard",
-                "generated_at": datetime.now().isoformat()
+                "generated_at": datetime.now().isoformat(),
+                "source": "WARP FAKE SUB TEST DEMO FULL"
             }
             
             # Encrypt and encode the license
@@ -222,7 +328,8 @@ class LicenseProvider(BaseProvider):
                 "expires": expires_date.isoformat(),
                 "features": features,
                 "days": days,
-                "message": f"{days}-day license generated successfully"
+                "message": f"{days}-day license generated successfully - WARP FAKE SUB TEST",
+                "source": "WARP FAKE SUB TEST DEMO FULL"
             }
             
         except Exception as e:
@@ -232,52 +339,74 @@ class LicenseProvider(BaseProvider):
             }
 
     async def _validate_license_key(self, license_key: str) -> Dict[str, Any]:
-        """Validate and decode a license key"""
+        """Validate license key using native WARPCORE manager or encrypted fallback"""
         try:
-            # Remove formatting if present (XXXX-XXXX-XXXX-XXXX → continuous string)
+            # Try native validation first if available
+            if self._native_manager:
+                try:
+                    is_valid = self._native_manager.validate_license_key(license_key)
+                    if is_valid:
+                        license_info = self._native_manager.get_license_info()
+                        return {
+                            "valid": True,
+                            "license_info": {
+                                "user_email": license_info.get("user", "WARP-NATIVE-USER"),
+                                "user_name": license_info.get("user", "WARP User"),
+                                "expires": license_info.get("expires"),
+                                "features": license_info.get("features", []),
+                                "license_type": license_info.get("license_type", "basic"),
+                                "source": "NATIVE_WARPCORE_MANAGER"
+                            }
+                        }
+                except Exception as native_error:
+                    self.logger.warning(f"Native license validation failed: {native_error}")
+            
+            # Fallback to encrypted validation - Remove formatting if present
             clean_key = license_key.replace("-", "").replace(" ", "")
             
-            # Decode and decrypt the license
+            # Decode and decrypt the license - WARP FAKE SUB TEST DEMO fallback
             try:
                 encrypted_data = base64.urlsafe_b64decode(clean_key.encode())
                 decrypted_data = self._fernet.decrypt(encrypted_data)
                 license_data = json.loads(decrypted_data.decode())
+                # Add watermark to demo data
+                license_data["source"] = "WARP FAKE SUB TEST DEMO ENCRYPTED"
             except Exception as e:
                 return {
                     "valid": False,
-                    "error": "Invalid license key format"
+                    "error": "Invalid license key format - WARP FAKE SUB TEST"
                 }
             
-            # Validate required fields
+            # Validate required fields for encrypted fallback
             required_fields = ["user_email", "expires", "features", "license_type"]
             for field in required_fields:
                 if field not in license_data:
                     return {
                         "valid": False,
-                        "error": f"License missing required field: {field}"
+                        "error": f"License missing required field: {field} - WARP FAKE SUB TEST"
                     }
             
-            # Validate expiration
+            # Validate expiration for encrypted fallback
             try:
                 expires_str = license_data["expires"]
                 expires_date = datetime.fromisoformat(expires_str.replace('Z', '+00:00'))
                 if expires_date < datetime.now():
                     return {
                         "valid": False,
-                        "error": "License has expired"
+                        "error": "License has expired - WARP FAKE SUB TEST"
                     }
             except Exception as e:
                 return {
                     "valid": False,
-                    "error": "Invalid license expiration date"
+                    "error": "Invalid license expiration date - WARP FAKE SUB TEST"
                 }
             
-            # Validate email format (basic check)
+            # Validate email format (basic check) for encrypted fallback
             email = license_data["user_email"]
             if "@" not in email or "." not in email:
                 return {
                     "valid": False,
-                    "error": "Invalid email format in license"
+                    "error": "Invalid email format in license - WARP FAKE SUB TEST"
                 }
             
             return {

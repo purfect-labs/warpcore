@@ -1,0 +1,198 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>WARPCORE Analytics Dashboard - Real-Time Intelligence</title>
+    <link rel="stylesheet" href="css/dashboard.css">
+    <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+    <script src="https://d3js.org/d3.v7.min.js"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/gsap/3.12.2/gsap.min.js"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/three.js/r128/three.min.js"></script>
+</head>
+<body>
+    <div class="dashboard-container">
+        <header class="dashboard-header">
+            <div class="header-content">
+                <h1 class="dashboard-title">WARPCORE Analytics</h1>
+                <div class="workflow-status">
+                    <span class="status-indicator" id="workflowStatus"></span>
+                    <span class="status-text" id="statusText">Loading...</span>
+                </div>
+                <div class="last-updated">
+                    <span id="lastUpdated">--:--</span>
+                </div>
+            </div>
+        </header>
+
+        <div class="dashboard-grid">
+            <!-- Real-Time Agent Flow Visualization -->
+            <div class="dashboard-card flow-card full-width">
+                <div class="card-header">
+                    <h2>🔥 Agent Workflow Intelligence</h2>
+                    <div class="real-time-indicator">
+                        <span class="pulse-dot"></span>
+                        <span>LIVE ANALYTICS</span>
+                    </div>
+                </div>
+                <div class="card-content">
+                    <div id="agentFlowViz" class="flow-visualization"></div>
+                    <div class="flow-stats">
+                        <div class="stat-pod">
+                            <div class="stat-value" id="totalWorkflows">0</div>
+                            <div class="stat-label">Active Workflows</div>
+                        </div>
+                        <div class="stat-pod">
+                            <div class="stat-value" id="agentEfficiency">0%</div>
+                            <div class="stat-label">Agent Efficiency</div>
+                        </div>
+                        <div class="stat-pod">
+                            <div class="stat-value" id="avgDuration">0s</div>
+                            <div class="stat-label">Avg Duration</div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Schema Compliance Heatmap -->
+            <div class="dashboard-card heatmap-card">
+                <div class="card-header">
+                    <h2>📊 Schema Validation Matrix</h2>
+                </div>
+                <div class="card-content">
+                    <div id="schemaHeatmap" class="schema-heatmap"></div>
+                </div>
+            </div>
+
+            <!-- Performance Intelligence Grid -->
+            <div class="dashboard-card metrics-grid performance-grid">
+                <div class="card-header">
+                    <h2>⚡ Performance Intelligence</h2>
+                    <div class="performance-badge" id="performanceBadge">OPTIMIZING</div>
+                </div>
+                <div class="metrics-container">
+                    <div class="metric-item trending-up">
+                        <div class="metric-icon">🎯</div>
+                        <div class="metric-value" id="validationAccuracy">--</div>
+                        <div class="metric-label">Validation Accuracy</div>
+                        <div class="metric-trend" id="accuracyTrend"></div>
+                    </div>
+                    <div class="metric-item trending-neutral">
+                        <div class="metric-icon">⚡</div>
+                        <div class="metric-value" id="executionVelocity">--</div>
+                        <div class="metric-label">Execution Velocity</div>
+                        <div class="metric-trend" id="velocityTrend"></div>
+                    </div>
+                    <div class="metric-item trending-up">
+                        <div class="metric-icon">🧠</div>
+                        <div class="metric-value" id="agentQuality">--</div>
+                        <div class="metric-label">Agent Quality Score</div>
+                        <div class="metric-trend" id="qualityTrend"></div>
+                    </div>
+                    <div class="metric-item trending-down">
+                        <div class="metric-icon">⏱️</div>
+                        <div class="metric-value" id="avgProcessingTime">--</div>
+                        <div class="metric-label">Avg Processing Time</div>
+                        <div class="metric-trend" id="timeTrend"></div>
+                    </div>
+                </div>
+                <div class="performance-insights">
+                    <div class="insight-item" id="topInsight">Analyzing workflow patterns...</div>
+                </div>
+            </div>
+
+            <!-- Agent Excellence Radar -->
+            <div class="dashboard-card radar-card agent-excellence">
+                <div class="card-header">
+                    <h2>🎆 Agent Excellence Matrix</h2>
+                    <div class="excellence-score" id="excellenceScore">97.3</div>
+                </div>
+                <div class="card-content">
+                    <canvas id="agentRadar" width="400" height="400"></canvas>
+                    <div class="radar-legend">
+                        <div class="legend-item">
+                            <span class="legend-dot" style="background: #ff6b6b"></span>
+                            <span>Requirements Analysis</span>
+                        </div>
+                        <div class="legend-item">
+                            <span class="legend-dot" style="background: #4ecdc4"></span>
+                            <span>Validation Engine</span>
+                        </div>
+                        <div class="legend-item">
+                            <span class="legend-dot" style="background: #45b7d1"></span>
+                            <span>Schema Coherence</span>
+                        </div>
+                        <div class="legend-item">
+                            <span class="legend-dot" style="background: #f9ca24"></span>
+                            <span>Implementation</span>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Workflow Intelligence Stream -->
+            <div class="dashboard-card stream-card">
+                <div class="card-header">
+                    <h2>🔍 Workflow Intelligence Stream</h2>
+                    <div class="stream-controls">
+                        <button class="stream-btn active" data-filter="all">ALL</button>
+                        <button class="stream-btn" data-filter="critical">CRITICAL</button>
+                        <button class="stream-btn" data-filter="insights">INSIGHTS</button>
+                    </div>
+                </div>
+                <div class="card-content">
+                    <div id="intelligenceStream" class="intelligence-stream"></div>
+                </div>
+            </div>
+
+            <!-- Predictive Analytics Engine -->
+            <div class="dashboard-card prediction-engine">
+                <div class="card-header">
+                    <h2>🔮 Predictive Analytics Engine</h2>
+                    <div class="confidence-indicator">
+                        <span class="confidence-label">Confidence:</span>
+                        <span class="confidence-value" id="predictionConfidence">94.7%</span>
+                    </div>
+                </div>
+                <div class="card-content">
+                    <div class="prediction-grid">
+                        <div class="prediction-card">
+                            <div class="prediction-title">Next Bottleneck</div>
+                            <div class="prediction-value" id="nextBottleneck">Schema Validation</div>
+                            <div class="prediction-eta">in ~4.2hrs</div>
+                        </div>
+                        <div class="prediction-card">
+                            <div class="prediction-title">Optimal Workflow</div>
+                            <div class="prediction-value" id="optimalPath">Route B (3x faster)</div>
+                            <div class="prediction-eta">Est. savings: 2.1hrs</div>
+                        </div>
+                        <div class="prediction-card">
+                            <div class="prediction-title">Quality Forecast</div>
+                            <div class="prediction-value" id="qualityForecast">98.4% accuracy</div>
+                            <div class="prediction-eta">trending ↑ +2.1%</div>
+                        </div>
+                    </div>
+                    <div class="prediction-trends" id="predictionTrends"></div>
+                </div>
+            </div>
+
+            <!-- Real-Time Workflow Sequences -->
+            <div class="dashboard-card sequences-live">
+                <div class="card-header">
+                    <h2>📊 Live Sequence Analysis</h2>
+                    <div class="sequence-health" id="sequenceHealth">OPTIMAL</div>
+                </div>
+                <div class="card-content">
+                    <div id="liveSequences" class="live-sequences"></div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <script src="js/analytics-engine.js"></script>
+    <script src="js/real-data-dashboard.js"></script>
+    
+    <!-- WARP FAKE SUB TEST DEMO WATERMARK -->
+    <div style="position: fixed; bottom: 10px; right: 10px; background: rgba(0,212,255,0.1); color: #00d4ff; padding: 5px 10px; border-radius: 5px; font-size: 12px; z-index: 1000;">WARP DEMO DATA</div>
+</body>
+</html>

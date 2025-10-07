@@ -1,0 +1,36 @@
+{
+  "workflow_id": "wf_2cf52878d77d",
+  "agent_name": "requirements_generator_agent",
+  "timestamp": "2025-09-12T22:21:59.731051Z",
+  "execution_metrics": {
+    "start_time": "2025-09-12T22:21:59.731051Z",
+    "end_time": "2025-09-12T22:33:59.731051Z",
+    "duration_seconds": 1192,
+    "memory_usage_mb": 72,
+    "cpu_usage_percent": 31
+  },
+  "performance_metrics": {
+    "output_quality_score": 78,
+    "efficiency_rating": "FAIR",
+    "efficiency_numeric": 79,
+    "requirements_generated": 30,
+    "complexity_score": 70,
+    "dependency_accuracy": 98
+  },
+  "requirements_summary": {
+    "total_requirements": 30,
+    "total_subtasks": 120,
+    "critical_count": 7,
+    "high_count": 10,
+    "medium_count": 10,
+    "low_count": 5,
+    "estimated_total_effort": "9 weeks",
+    "total_effort_hours": 252
+  },
+  "next_agent": "requirements_validator_agent",
+  "next_agent_input": {
+    "workflow_id": "wf_2cf52878d77d",
+    "total_requirements": 30,
+    "cache_file": ".data/wf_2cf52878d77d_requirements_analysis.json"
+  }
+}

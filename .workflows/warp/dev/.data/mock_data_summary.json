@@ -1,0 +1,184 @@
+{
+  "generation_timestamp": "2025-10-06T20:21:59.740948Z",
+  "total_workflows": 12,
+  "total_agent_executions": 60,
+  "total_execution_logs": 228,
+  "total_cache_files": 60,
+  "data_directory": "../.data",
+  "workflows": [
+    {
+      "workflow_id": "wf_e4a75904195c",
+      "run_number": 1,
+      "files_created": [
+        "wf_e4a75904195c_schema_coherence_analysis.json",
+        "wf_e4a75904195c_requirements_analysis.json",
+        "wf_e4a75904195c_requirements_validation.json",
+        "wf_e4a75904195c_implementation_results.json",
+        "wf_e4a75904195c_gate_promotion_results.json"
+      ],
+      "agents_completed": 5,
+      "execution_log_entries": 19
+    },
+    {
+      "workflow_id": "wf_efc720ac084c",
+      "run_number": 2,
+      "files_created": [
+        "wf_efc720ac084c_schema_coherence_analysis.json",
+        "wf_efc720ac084c_requirements_analysis.json",
+        "wf_efc720ac084c_requirements_validation.json",
+        "wf_efc720ac084c_implementation_results.json",
+        "wf_efc720ac084c_gate_promotion_results.json"
+      ],
+      "agents_completed": 5,
+      "execution_log_entries": 19
+    },
+    {
+      "workflow_id": "wf_907ffb251fcd",
+      "run_number": 3,
+      "files_created": [
+        "wf_907ffb251fcd_schema_coherence_analysis.json",
+        "wf_907ffb251fcd_requirements_analysis.json",
+        "wf_907ffb251fcd_requirements_validation.json",
+        "wf_907ffb251fcd_implementation_results.json",
+        "wf_907ffb251fcd_gate_promotion_results.json"
+      ],
+      "agents_completed": 5,
+      "execution_log_entries": 19
+    },
+    {
+      "workflow_id": "wf_e7bc4206b606",
+      "run_number": 4,
+      "files_created": [
+        "wf_e7bc4206b606_schema_coherence_analysis.json",
+        "wf_e7bc4206b606_requirements_analysis.json",
+        "wf_e7bc4206b606_requirements_validation.json",
+        "wf_e7bc4206b606_implementation_results.json",
+        "wf_e7bc4206b606_gate_promotion_results.json"
+      ],
+      "agents_completed": 5,
+      "execution_log_entries": 19
+    },
+    {
+      "workflow_id": "wf_3727c90a96b0",
+      "run_number": 5,
+      "files_created": [
+        "wf_3727c90a96b0_schema_coherence_analysis.json",
+        "wf_3727c90a96b0_requirements_analysis.json",
+        "wf_3727c90a96b0_requirements_validation.json",
+        "wf_3727c90a96b0_implementation_results.json",
+        "wf_3727c90a96b0_gate_promotion_results.json"
+      ],
+      "agents_completed": 5,
+      "execution_log_entries": 19
+    },
+    {
+      "workflow_id": "wf_2cf52878d77d",
+      "run_number": 6,
+      "files_created": [
+        "wf_2cf52878d77d_schema_coherence_analysis.json",
+        "wf_2cf52878d77d_requirements_analysis.json",
+        "wf_2cf52878d77d_requirements_validation.json",
+        "wf_2cf52878d77d_implementation_results.json",
+        "wf_2cf52878d77d_gate_promotion_results.json"
+      ],
+      "agents_completed": 5,
+      "execution_log_entries": 19
+    },
+    {
+      "workflow_id": "wf_c8965e2062bc",
+      "run_number": 7,
+      "files_created": [
+        "wf_c8965e2062bc_schema_coherence_analysis.json",
+        "wf_c8965e2062bc_requirements_analysis.json",
+        "wf_c8965e2062bc_requirements_validation.json",
+        "wf_c8965e2062bc_implementation_results.json",
+        "wf_c8965e2062bc_gate_promotion_results.json"
+      ],
+      "agents_completed": 5,
+      "execution_log_entries": 19
+    },
+    {
+      "workflow_id": "wf_20c1e8b9b0df",
+      "run_number": 8,
+      "files_created": [
+        "wf_20c1e8b9b0df_schema_coherence_analysis.json",
+        "wf_20c1e8b9b0df_requirements_analysis.json",
+        "wf_20c1e8b9b0df_requirements_validation.json",
+        "wf_20c1e8b9b0df_implementation_results.json",
+        "wf_20c1e8b9b0df_gate_promotion_results.json"
+      ],
+      "agents_completed": 5,
+      "execution_log_entries": 19
+    },
+    {
+      "workflow_id": "wf_3018d2038212",
+      "run_number": 9,
+      "files_created": [
+        "wf_3018d2038212_schema_coherence_analysis.json",
+        "wf_3018d2038212_requirements_analysis.json",
+        "wf_3018d2038212_requirements_validation.json",
+        "wf_3018d2038212_implementation_results.json",
+        "wf_3018d2038212_gate_promotion_results.json"
+      ],
+      "agents_completed": 5,
+      "execution_log_entries": 19
+    },
+    {
+      "workflow_id": "wf_f8ba498e613a",
+      "run_number": 10,
+      "files_created": [
+        "wf_f8ba498e613a_schema_coherence_analysis.json",
+        "wf_f8ba498e613a_requirements_analysis.json",
+        "wf_f8ba498e613a_requirements_validation.json",
+        "wf_f8ba498e613a_implementation_results.json",
+        "wf_f8ba498e613a_gate_promotion_results.json"
+      ],
+      "agents_completed": 5,
+      "execution_log_entries": 19
+    },
+    {
+      "workflow_id": "wf_45322c4e647c",
+      "run_number": 11,
+      "files_created": [
+        "wf_45322c4e647c_schema_coherence_analysis.json",
+        "wf_45322c4e647c_requirements_analysis.json",
+        "wf_45322c4e647c_requirements_validation.json",
+        "wf_45322c4e647c_implementation_results.json",
+        "wf_45322c4e647c_gate_promotion_results.json"
+      ],
+      "agents_completed": 5,
+      "execution_log_entries": 19
+    },
+    {
+      "workflow_id": "wf_742fa2b8d0f3",
+      "run_number": 12,
+      "files_created": [
+        "wf_742fa2b8d0f3_schema_coherence_analysis.json",
+        "wf_742fa2b8d0f3_requirements_analysis.json",
+        "wf_742fa2b8d0f3_requirements_validation.json",
+        "wf_742fa2b8d0f3_implementation_results.json",
+        "wf_742fa2b8d0f3_gate_promotion_results.json"
+      ],
+      "agents_completed": 5,
+      "execution_log_entries": 19
+    }
+  ],
+  "performance_trends": {
+    "avg_quality_improvement": 2.5,
+    "avg_velocity_improvement": 1.8,
+    "success_rate_progression": [
+      0.7,
+      0.725,
+      0.75,
+      0.7749999999999999,
+      0.7999999999999999,
+      0.825,
+      0.85,
+      0.875,
+      0.8999999999999999,
+      0.9249999999999999,
+      0.95,
+      0.975
+    ]
+  }
+}

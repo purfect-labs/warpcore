@@ -1,0 +1,35 @@
+{
+  "workflow_id": "wf_907ffb251fcd",
+  "agent_name": "schema_coherence_reconciler_agent",
+  "timestamp": "2025-09-09T21:21:59.731051Z",
+  "execution_metrics": {
+    "start_time": "2025-09-09T21:21:59.731051Z",
+    "end_time": "2025-09-09T21:35:59.731051Z",
+    "duration_seconds": 785,
+    "memory_usage_mb": 63,
+    "cpu_usage_percent": 29
+  },
+  "performance_metrics": {
+    "output_quality_score": 76,
+    "efficiency_rating": "FAIR",
+    "efficiency_numeric": 78,
+    "issues_identified": 42,
+    "files_analyzed": 184,
+    "compliance_score": 95
+  },
+  "analysis_summary": {
+    "total_files_analyzed": 184,
+    "total_lines": 47194,
+    "pap_compliance_score": "92%",
+    "coherence_issues_found": 42,
+    "fake_demo_markers_total": 787,
+    "architectural_violations_total": 20
+  },
+  "next_agent": "requirements_generator_agent",
+  "next_agent_input": {
+    "workflow_id": "wf_907ffb251fcd",
+    "total_issues_found": 42,
+    "critical_issues_count": 14,
+    "cache_file": ".data/wf_907ffb251fcd_schema_coherence_analysis.json"
+  }
+}
