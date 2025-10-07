@@ -2,7 +2,7 @@
 """
 WARPCORE Security Licensing Database Schema
 Provides database schema definitions and management for security licensing
-WARP-DEMO-KEY/VALIDATION watermarks in methods for test mode
+Production-ready database operations with comprehensive audit logging
 """
 
 import sqlite3
@@ -41,8 +41,7 @@ class DatabaseSchemaProvider(BaseProvider):
             self.connection.row_factory = sqlite3.Row
             self._apply_schema()
             
-            if self.config.is_test_mode():
-                self.logger.info("WARP-DEMO-KEY: Database initialized in test mode")
+            self.logger.info("License database initialized and ready for production use")
             
         except Exception as e:
             self.logger.error(f"Database initialization failed: {str(e)}")
@@ -63,8 +62,7 @@ class DatabaseSchemaProvider(BaseProvider):
                 cursor.executescript(schema_sql)
                 self.connection.commit()
                 
-                if self.config.is_test_mode():
-                    self.logger.info("WARP-DEMO-VALIDATION: Schema applied with test data")
+                self.logger.info("License database schema applied successfully")
                     
             else:
                 self.logger.warning("Migration file not found, creating basic schema")
@@ -94,11 +92,11 @@ class DatabaseSchemaProvider(BaseProvider):
         self.connection.commit()
     
     def create_license_key_record(self, license_data: Dict[str, Any]) -> int:
-        """Create new license key record with WARP-DEMO-KEY watermarking"""
+        """Create new license key record for production use"""
         try:
-            # Add test watermark if in test mode
-            if self.config.is_test_mode() and 'watermark' not in license_data:
-                license_data['watermark'] = 'WARP-DEMO-KEY-CREATION'
+            # Add created timestamp if not present
+            if 'created_at' not in license_data:
+                license_data['created_at'] = datetime.utcnow().isoformat()
             
             # Prepare insert query
             columns = ', '.join(license_data.keys())
@@ -111,8 +109,7 @@ class DatabaseSchemaProvider(BaseProvider):
             
             license_id = cursor.lastrowid
             
-            if self.config.is_test_mode():
-                self.logger.info(f"WARP-DEMO-KEY: Created license record {license_id}")
+            self.logger.info(f"Created license record {license_id} for key ending in ...{license_data.get('license_key', '')[-4:]}")
             
             return license_id
             
@@ -121,7 +118,7 @@ class DatabaseSchemaProvider(BaseProvider):
             raise
     
     def get_license_key_record(self, license_key: str) -> Optional[Dict[str, Any]]:
-        """Get license key record with WARP-DEMO-VALIDATION watermarking"""
+        """Get license key record from database"""
         try:
             cursor = self.connection.cursor()
             cursor.execute("SELECT * FROM license_keys WHERE license_key = ?", (license_key,))
@@ -129,9 +126,9 @@ class DatabaseSchemaProvider(BaseProvider):
             
             if row:
                 result = dict(row)
-                if self.config.is_test_mode():
-                    result['validation_watermark'] = 'WARP-DEMO-VALIDATION'
-                    self.logger.info(f"WARP-DEMO-KEY: Retrieved license record for {license_key}")
+                # Add access timestamp for audit
+                result['accessed_at'] = datetime.utcnow().isoformat()
+                self.logger.debug(f"Retrieved license record for key ending in ...{license_key[-4:]}")
                 return result
             
             return None
@@ -141,12 +138,8 @@ class DatabaseSchemaProvider(BaseProvider):
             raise
     
     def update_license_key_record(self, license_key: str, update_data: Dict[str, Any]) -> bool:
-        """Update license key record with WARP-DEMO-KEY watermarking"""
+        """Update license key record in database"""
         try:
-            # Add test watermark if in test mode
-            if self.config.is_test_mode():
-                update_data['updated_watermark'] = 'WARP-DEMO-KEY-UPDATE'
-            
             # Add updated timestamp
             update_data['updated_at'] = datetime.utcnow().isoformat()
             
@@ -160,8 +153,8 @@ class DatabaseSchemaProvider(BaseProvider):
             
             success = cursor.rowcount > 0
             
-            if self.config.is_test_mode() and success:
-                self.logger.info(f"WARP-DEMO-KEY: Updated license record for {license_key}")
+            if success:
+                self.logger.info(f"Updated license record for key ending in ...{license_key[-4:]}")
             
             return success
             
@@ -170,15 +163,15 @@ class DatabaseSchemaProvider(BaseProvider):
             raise
     
     def log_validation_event(self, validation_data: Dict[str, Any]) -> int:
-        """Log validation event with WARP-DEMO-VALIDATION watermarking"""
+        """Log validation event for audit and compliance"""
         try:
-            # Add test watermark if in test mode
-            if self.config.is_test_mode():
-                validation_data['watermark'] = 'WARP-DEMO-VALIDATION-LOG'
-            
             # Add timestamp if not provided
             if 'validation_timestamp' not in validation_data:
                 validation_data['validation_timestamp'] = datetime.utcnow().isoformat()
+            
+            # Add event type if not present
+            if 'event_type' not in validation_data:
+                validation_data['event_type'] = 'license_validation'
             
             # Prepare insert query
             columns = ', '.join(validation_data.keys())
@@ -191,8 +184,7 @@ class DatabaseSchemaProvider(BaseProvider):
             
             log_id = cursor.lastrowid
             
-            if self.config.is_test_mode():
-                self.logger.info(f"WARP-DEMO-VALIDATION: Logged validation event {log_id}")
+            self.logger.info(f"Logged validation event {log_id} of type {validation_data['event_type']}")
             
             return log_id
             

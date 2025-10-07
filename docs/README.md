@@ -51,13 +51,13 @@ aws sts get-caller-identity --profile dev
 ```bash  
 # Authentication
 gcloud auth login --no-launch-browser
-gcloud config set project warp-demo-service-dev
+gcloud config set project your-gcp-project-id
 ```
 
 **✅ Kubernetes Integration** - See [Provider Integration Docs](./architecture/providers/)
 ```bash
 # Cluster authentication + Kiali port forwarding
-gcloud container clusters get-credentials dev-cluster --project warp-demo-service-dev
+gcloud container clusters get-credentials dev-cluster --project your-gcp-project-id
 kubectl port-forward kiali-pod -n istio-system 20002:20001 &
 ```
 
@@ -65,8 +65,8 @@ kubectl port-forward kiali-pod -n istio-system 20002:20001 &
 
 **Web Server Mode:**
 ```bash
-cd /Users/warp-demo-user/code/github/waRPCORe
-python web/main.py
+cd /path/to/warpcore
+python src/api/main.py
 # Access at http://localhost:8000
 ```
 
@@ -163,7 +163,7 @@ STANDARD_ENVIRONMENTS = ["dev", "stage", "prod"]
 
 # But actual configuration maps to real resources:
 get_aws_profile_for_env("dev")    # → "dev" 
-get_gcp_project_for_env("dev")    # → "warp-demo-service-dev"
+get_gcp_project_for_env("dev")    # → "your-project-dev"
 ```
 
 ### Configuration Files
@@ -213,6 +213,55 @@ test('AWS authentication flow', async ({ page }) => {
 - **Environment Variable Support**: `waRpcoRE_CONFIG_DIR` for custom config paths
 - **Secure Electron**: `nodeIntegration: false`, `contextIsolation: true`
 - **Input Validation**: Environment validation and parameter sanitization
+- **Production License System**: Stripe-based license purchasing with hardware binding
+
+## 💳 License Management
+
+### Production License Purchase Flow
+
+WarpCore includes a comprehensive license management system with Stripe integration:
+
+```bash
+# License status check
+GET /api/license/status
+
+# Purchase license
+POST /api/license/purchase
+{
+  "tier": "premium",
+  "user_email": "user@company.com",
+  "billing_info": {...}
+}
+
+# License activation
+POST /api/license/activate
+{
+  "license_key": "PRD-PREMIUM-...",
+  "user_email": "user@company.com"
+}
+```
+
+### License Tiers
+
+- **Basic** ($29): Core functionality, kubectl access, basic cloud operations
+- **Standard** ($99): Full cloud integrations, monitoring, priority support
+- **Premium** ($299): Advanced analytics, multi-environment, enterprise features
+- **Enterprise** ($999): All features, dedicated support, SLA, custom integrations
+
+### Feature Gating
+
+Features are automatically enabled/disabled based on license tier:
+
+```python
+# In templates
+{% if has_feature('aws_sso') %}
+    <!-- AWS SSO features -->
+{% endif %}
+
+# In controllers
+if not self.license_manager.has_feature('advanced_analytics'):
+    return {"error": "Feature requires premium license"}
+```
 
 ---
 

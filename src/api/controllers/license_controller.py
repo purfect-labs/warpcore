@@ -409,3 +409,117 @@ class LicenseController(BaseController):
                 "error": f"Controller subscription info failed: {str(e)}",
                 "watermark": watermark["error"]
             }
+    
+    async def initiate_license_purchase(self, tier: str, user_email: str, billing_info: Optional[Dict[str, Any]] = None) -> Dict[str, Any]:
+        """Initiate license purchase via purchase orchestrator"""
+        try:
+            if not hasattr(self, 'purchase_orchestrator') or not self.purchase_orchestrator:
+                return {
+                    "success": False,
+                    "error": "Purchase system not available",
+                    "step": "controller_initialization"
+                }
+            
+            # Use purchase orchestrator for complete workflow
+            result = await self.purchase_orchestrator.initiate_license_purchase(
+                tier=tier,
+                user_email=user_email,
+                billing_info=billing_info
+            )
+            
+            # Add controller metadata
+            if result.get("success"):
+                result["controller_processed"] = True
+                result["pap_flow_initiated"] = True
+            
+            # Broadcast purchase initiation if configured
+            if self.config.should_broadcast_events() and result.get("success"):
+                await self.broadcast_message({
+                    "type": "license_purchase_initiated",
+                    "data": {
+                        "controller": self.name,
+                        "tier": tier,
+                        "user_email": user_email,
+                        "payment_intent_id": result.get("payment_intent_id"),
+                        "amount": result.get("amount"),
+                        "message": "License purchase initiated via PAP flow"
+                    }
+                })
+            
+            return result
+            
+        except Exception as e:
+            return {
+                "success": False,
+                "error": f"Controller purchase initiation failed: {str(e)}",
+                "step": "controller_error"
+            }
+    
+    async def complete_license_purchase(self, payment_intent_id: str) -> Dict[str, Any]:
+        """Complete license purchase after payment confirmation"""
+        try:
+            if not hasattr(self, 'purchase_orchestrator') or not self.purchase_orchestrator:
+                return {
+                    "success": False,
+                    "error": "Purchase system not available",
+                    "step": "controller_initialization"
+                }
+            
+            # Use purchase orchestrator for completion workflow
+            result = await self.purchase_orchestrator.complete_license_purchase(payment_intent_id)
+            
+            # Add controller metadata
+            if result.get("success"):
+                result["controller_processed"] = True
+                result["pap_flow_completed"] = True
+            
+            # Broadcast purchase completion if configured
+            if self.config.should_broadcast_events() and result.get("success"):
+                await self.broadcast_message({
+                    "type": "license_purchase_completed",
+                    "data": {
+                        "controller": self.name,
+                        "payment_intent_id": payment_intent_id,
+                        "user_email": result.get("user_email"),
+                        "tier": result.get("tier"),
+                        "license_key": result.get("license_key"),
+                        "message": "License purchase completed via PAP flow"
+                    }
+                })
+            
+            return result
+            
+        except Exception as e:
+            return {
+                "success": False,
+                "error": f"Controller purchase completion failed: {str(e)}",
+                "step": "controller_error"
+            }
+    
+    async def get_purchase_status(self, payment_intent_id: str) -> Dict[str, Any]:
+        """Get purchase status by payment intent ID"""
+        try:
+            if not hasattr(self, 'purchase_orchestrator') or not self.purchase_orchestrator:
+                return {
+                    "success": False,
+                    "error": "Purchase system not available"
+                }
+            
+            result = await self.purchase_orchestrator.get_purchase_status(payment_intent_id)
+            
+            # Add controller metadata
+            if result.get("success"):
+                result["controller_processed"] = True
+            
+            return result
+            
+        except Exception as e:
+            return {
+                "success": False,
+                "error": f"Controller purchase status check failed: {str(e)}"
+            }
+    
+    def set_purchase_orchestrator(self, purchase_orchestrator):
+        """Set purchase orchestrator for license purchase workflows"""
+        self.purchase_orchestrator = purchase_orchestrator
+        self.logger.info("LICENSE CONTROLLER: Purchase orchestrator wired")

@@ -388,49 +388,110 @@ class WARPCOREAPIServer:
             except Exception as e:
                 return {"success": False, "error": str(e)}
         
-        # License Purchase Stub for POC Demo
+        # Production License Purchase Endpoint (placeholder for REQ-003 implementation)
         class LicensePurchaseRequest(BaseModel):
             tier: str = "premium"
             user_email: str
             billing_info: Optional[dict] = None
         
         @self.app.post("/api/license/purchase")
-        async def purchase_license_stub(request: LicensePurchaseRequest):
-            """License purchase stub - always returns success for POC demo"""
+        async def purchase_license(request: LicensePurchaseRequest):
+            """Production license purchase endpoint with Stripe integration"""
             try:
-                # POC Demo: Always return successful purchase
-                demo_license_key = f"DEMO-{request.tier.upper()}-{datetime.now().strftime('%Y%m%d%H%M%S')}"
+                license_controller = self.controller_registry.get_license_controller()
+                if license_controller:
+                    # Use controller to initiate purchase via orchestrator and provider pattern
+                    result = await license_controller.initiate_license_purchase(
+                        tier=request.tier,
+                        user_email=request.user_email,
+                        billing_info=request.billing_info
+                    )
+                    return result
+                else:
+                    return {"success": False, "error": "License controller not available"}
+            except Exception as e:
+                return {"success": False, "error": str(e)}
+        
+        # Purchase completion endpoint
+        class PurchaseCompletionRequest(BaseModel):
+            payment_intent_id: str
+        
+        @self.app.post("/api/license/purchase/complete")
+        async def complete_license_purchase(request: PurchaseCompletionRequest):
+            """Complete license purchase after successful payment"""
+            try:
+                license_controller = self.controller_registry.get_license_controller()
+                if license_controller:
+                    result = await license_controller.complete_license_purchase(request.payment_intent_id)
+                    return result
+                else:
+                    return {"success": False, "error": "License controller not available"}
+            except Exception as e:
+                return {"success": False, "error": str(e)}
+        
+        # Purchase status endpoint
+        @self.app.get("/api/license/purchase/status/{payment_intent_id}")
+        async def get_purchase_status(payment_intent_id: str):
+            """Get purchase status by payment intent ID"""
+            try:
+                license_controller = self.controller_registry.get_license_controller()
+                if license_controller:
+                    result = await license_controller.get_purchase_status(payment_intent_id)
+                    return result
+                else:
+                    return {"success": False, "error": "License controller not available"}
+            except Exception as e:
+                return {"success": False, "error": str(e)}
+        
+        # Stripe webhook endpoint
+        from fastapi import Request as FastAPIRequest
+        
+        @self.app.post("/api/webhooks/stripe")
+        async def handle_stripe_webhook(request: FastAPIRequest):
+            """Handle Stripe webhook events for payment processing"""
+            try:
+                # Get raw body and signature
+                body = await request.body()
+                signature = request.headers.get("stripe-signature")
+                
+                if not signature:
+                    return {"success": False, "error": "Missing Stripe signature"}
+                
+                # Get payment provider to process webhook
+                payment_provider = await self.provider_registry.get_payment_provider()
+                if not payment_provider:
+                    return {"success": False, "error": "Payment provider not available"}
+                
+                # Process webhook
+                result = await payment_provider.process_webhook(body.decode(), signature)
+                
+                # If payment succeeded, complete the license purchase
+                if result.get("event_type") == "payment_succeeded":
+                    license_controller = self.controller_registry.get_license_controller()
+                    if license_controller:
+                        completion_result = await license_controller.complete_license_purchase(
+                            result.get("payment_intent_id")
+                        )
+                        return {
+                            "success": True,
+                            "webhook_processed": True,
+                            "event_type": "payment_succeeded",
+                            "license_generated": completion_result.get("success", False),
+                            "license_details": completion_result if completion_result.get("success") else None
+                        }
                 
                 return {
                     "success": True,
-                    "message": "Demo purchase successful",
-                    "demo_mode": True,
-                    "purchase_details": {
-                        "license_key": demo_license_key,
-                        "tier": request.tier,
-                        "user_email": request.user_email,
-                        "status": "completed",
-                        "expires_at": (datetime.now() + timedelta(days=365)).isoformat(),
-                        "features": {
-                            "premium": ["advanced_features", "priority_support", "unlimited_usage"],
-                            "enterprise": ["all_features", "dedicated_support", "sla_guarantee", "custom_integrations"]
-                        }.get(request.tier, ["basic_features"]),
-                        "watermark": "DEMO-PURCHASE-STUB"
-                    },
-                    "next_steps": {
-                        "activate_license": f"/api/license/activate",
-                        "license_key": demo_license_key,
-                        "message": "Use the provided license key to activate your purchase"
-                    },
-                    "timestamp": datetime.now().isoformat()
+                    "webhook_processed": True,
+                    "event_type": result.get("event_type"),
+                    "processed": result.get("processed", False)
                 }
                 
             except Exception as e:
                 return {
                     "success": False,
-                    "error": f"Purchase stub failed: {str(e)}",
-                    "demo_mode": True,
-                    "timestamp": datetime.now().isoformat()
+                    "error": f"Webhook processing failed: {str(e)}",
+                    "webhook_processed": False
                 }
         
         @self.app.post("/api/command")

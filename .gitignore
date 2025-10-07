@@ -2,7 +2,12 @@
 __pycache__/
 *.py[cod]
 *$py.class
+*.pyo
+*.pyd
 *.so
+*.o
+*.dylib
+*.a
 .Python
 build/
 develop-eggs/
@@ -39,8 +44,10 @@ coverage.xml
 *.cover
 .hypothesis/
 .pytest_cache/
+.nyc_output/
+coverage/
 
-# Environments
+# Python environments
 .env
 .venv
 env/
@@ -48,70 +55,6 @@ venv/
 ENV/
 env.bak/
 venv.bak/
-
-# IDEs
-.vscode/
-.idea/
-*.swp
-*.swo
-*~
-
-# OS
-.DS_Store
-.DS_Store?
-._*
-.Spotlight-V100
-.Trashes
-ehthumbs.db
-Thumbs.db
-
-# Logs
-*.log
-/tmp/
-logs/
-
-# WARPCORE specific
-llm-collector/results.json
-# LLM Collector output
-llm-collector/results.json
-
-# Backup directory
-.backup
-.swiggit.json
-# Python cache and compiled files
-__pycache__/
-*.py[cod]
-*.pyo
-*.pyd
-*.so
-*.egg-info/
-.pytest_cache/
-.coverage
-htmlcov/
-.nyc_output/
-coverage/
-.cache
-# Python environments
-venv/
-.venv/
-env/
-.env/
-ENV/
-env.bak/
-venv.bak/
-
-# PyInstaller build artifacts
-build/
-dist/
-
-# All build cache and artifacts
-*.pak
-*.asar
-*.dat
-*.nib
-*.plist
-*.jar
-*.pem
 
 # Node.js
 node_modules/
@@ -122,24 +65,18 @@ yarn-error.log*
 package-lock.json
 yarn.lock
 
-# Electron build artifacts
-electron/dist/
-electron/node_modules/
-
 # Native build artifacts
-native/build/
-native/dist/
-native/cache/
-linux-native/build/
-linux-native/dist/
-linux-native/cache/
-build/
-dist/
+native/
+linux-native/
 .dist/
 unified_dist/
 cache/
 
-# Electron/PyInstaller/macOS app bundle artifacts
+# Electron build artifacts
+electron/dist/
+electron/node_modules/
+
+# macOS app bundle artifacts
 *.app/
 *.dmg
 *.pkg
@@ -147,10 +84,17 @@ Contents/
 Frameworks/
 Resources/
 
-# macOS
-.DS_Store
-.AppleDouble
-.LSOverride
+# Build artifacts
+*.pak
+*.asar
+*.dat
+*.nib
+*.plist
+*.jar
+*.pem
+
+# WARP DEMO FAKE TEST workflow system
+.workflows/
 
 # Testing
 test-results/
@@ -161,6 +105,9 @@ test_results/
 # Logs
 *.log
 logs/
+tmp/
+temp/
+.tmp/
 
 # IDE and editor files
 .vscode/
@@ -168,13 +115,28 @@ logs/
 *.swp
 *.swo
 *~
-# Temporary files
-tmp/
-temp/
-.tmp/
-.data/
-.data/*.json
-src/agency/.data/*.json
-# OS generated files
+
+# macOS
+.DS_Store
+.DS_Store?
+._*
+.AppleDouble
+.LSOverride
+.Spotlight-V100
+.Trashes
+
+# Windows
 Thumbs.db
 ehthumbs.db
+
+# Data directories
+.data
+.data/*.json
+src/agency/.data/*.json
+
+# Backup directory
+.backup
+.swiggit.json
+
+# LLM Collector output
+llm-collector/results.json

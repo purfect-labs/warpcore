@@ -49,19 +49,19 @@ class LicenseServerConfig:
             self.allowed_origins = ["*"]  # Allow all for testing
             self.stripe_test_mode = True
         
-        # Common settings
-        self.jwt_secret_key = os.getenv("LICENSE_JWT_SECRET", "WARP_LICENSE_SECRET_KEY_CHANGE_IN_PROD")
-        self.stripe_api_key = os.getenv("STRIPE_API_KEY", "sk_test_WARP_DEMO_STRIPE_KEY")
-        self.stripe_webhook_secret = os.getenv("STRIPE_WEBHOOK_SECRET", "whsec_WARP_DEMO_WEBHOOK")
+        # Common settings - production values required via environment
+        self.jwt_secret_key = os.getenv("LICENSE_JWT_SECRET")
+        self.stripe_api_key = os.getenv("STRIPE_API_KEY")
+        self.stripe_webhook_secret = os.getenv("STRIPE_WEBHOOK_SECRET")
         
-        # Email configuration
+        # Email configuration - production values required via environment
         self.smtp_host = os.getenv("SMTP_HOST", "smtp.gmail.com")
         self.smtp_port = int(os.getenv("SMTP_PORT", "587"))
-        self.smtp_user = os.getenv("SMTP_USER", "warp-licenses@example.com")
-        self.smtp_password = os.getenv("SMTP_PASSWORD", "WARP_DEMO_EMAIL_PASSWORD")
+        self.smtp_user = os.getenv("SMTP_USER")
+        self.smtp_password = os.getenv("SMTP_PASSWORD")
         
-        # License settings
-        self.license_encryption_key = os.getenv("LICENSE_ENCRYPTION_KEY", "WARP_DEMO_FERNET_KEY_32_CHARS_!")
+        # License settings - production values required via environment
+        self.license_encryption_key = os.getenv("LICENSE_ENCRYPTION_KEY")
         self.trial_days = int(os.getenv("TRIAL_DAYS", "7"))
         self.standard_license_price = float(os.getenv("STANDARD_LICENSE_PRICE", "99.00"))
         self.enterprise_license_price = float(os.getenv("ENTERPRISE_LICENSE_PRICE", "299.00"))

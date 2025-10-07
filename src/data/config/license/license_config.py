@@ -33,58 +33,36 @@ class LicenseConfig:
             "compliance": self.base_config.get_section('compliance', {})
         }
     
-    def _get_warp_demo_defaults(self) -> Dict[str, Any]:
-        """WARP demo defaults with proper watermarking"""
+    def _get_production_defaults(self) -> Dict[str, Any]:
+        """Production defaults - no demo or test data"""
         return {
             "license": {
                 "provider": {
-                    "encryption_key": base64.urlsafe_b64encode(b"warpcore_license_key_32_chars_!!").decode(),
                     "keychain_service": "warpcore-license",
                     "keychain_account": "WARPCORE",
-                    "demo_mode": True,
-                    "watermark": "WARP FAKE SUB TEST DEMO"
+                    "production_mode": True
                 },
                 "orchestrator": {
                     "trial_duration_days": 7,
-                    "default_features": ["basic", "test"],
-                    "max_trial_per_email": 3,
-                    "auto_cleanup_expired": True,
-                    "watermark": "WARP DEMO ORCHESTRATOR"
+                    "default_features": ["basic"],
+                    "max_trial_per_email": 1,
+                    "auto_cleanup_expired": True
                 },
                 "controller": {
                     "broadcast_events": True,
                     "cache_duration_minutes": 15,
-                    "validate_on_startup": True,
-                    "watermark": "WARP DEMO CONTROLLER"
+                    "validate_on_startup": True
                 },
                 "routes": {
                     "rate_limit_per_minute": 60,
-                    "require_auth": False,
-                    "background_tasks": True,
-                    "watermark": "WARP DEMO ROUTES"
+                    "require_auth": True,
+                    "background_tasks": True
                 },
                 "features": {
                     "basic": ["license_status", "validate"],
                     "standard": ["license_status", "validate", "activate", "deactivate"],
                     "premium": ["license_status", "validate", "activate", "deactivate", "generate_trial", "generate_full"],
-                    "test": ["all_features", "watermark_testing"]
-                },
-                "demo_data": {
-                    "test_users": [
-                        {
-                            "email": "warp-demo-user@warp-fake-sub-test-demo.com",
-                            "name": "WARP Demo User",
-                            "license_type": "test",
-                            "features": ["basic", "test"]
-                        },
-                        {
-                            "email": "warp-trial@warp-fake-sub-test-demo.com", 
-                            "name": "WARP Trial User",
-                            "license_type": "trial",
-                            "features": ["basic"]
-                        }
-                    ],
-                    "watermark": "WARP FAKE SUB TEST DEMO WATER"
+                    "enterprise": ["all_features", "advanced_security", "custom_integrations"]
                 }
             }
         }
@@ -120,9 +98,9 @@ class LicenseConfig:
         """Get features configuration"""
         return self._license_config.get("license", {}).get("features", {})
     
-    def get_demo_data(self) -> Dict[str, Any]:
-        """Get demo data for testing"""
-        return self._license_config.get("license", {}).get("demo_data", {})
+    def get_production_data(self) -> Dict[str, Any]:
+        """Get production license configuration - no demo data"""
+        return {}
     
     def get_encryption_key(self) -> str:
         """Get encryption key for license operations"""
@@ -136,9 +114,9 @@ class LicenseConfig:
             "account": provider_config.get("keychain_account", "WARPCORE")
         }
     
-    def is_demo_mode(self) -> bool:
-        """Check if running in demo mode"""
-        return self.get_provider_config().get("demo_mode", True)
+    def is_production_mode_enabled(self) -> bool:
+        """Check if running in production mode"""
+        return self.get_provider_config().get("production_mode", True)
     
     def get_trial_config(self) -> Dict[str, Any]:
         """Get trial license configuration from WARPCORE config"""
@@ -154,15 +132,15 @@ class LicenseConfig:
         features_config = self._license_config.get("license_features", {})
         return features_config.get(license_type, ["core", "api"])
     
-    def get_watermark_config(self) -> Dict[str, str]:
-        """Get watermarking configuration (disabled for production)"""
+    def get_branding_config(self) -> Dict[str, str]:
+        """Get production branding configuration"""
         return {
-            "provider": "",
-            "orchestrator": "", 
-            "controller": "",
-            "routes": "",
-            "main": "",
-            "error": ""
+            "provider": "WarpCore License Provider",
+            "orchestrator": "WarpCore License Orchestrator", 
+            "controller": "WarpCore License Controller",
+            "routes": "WarpCore License API",
+            "main": "WarpCore License System",
+            "error": "WarpCore License Error"
         }
     
     def get_security_features(self) -> List[str]:
