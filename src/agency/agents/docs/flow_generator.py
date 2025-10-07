@@ -237,37 +237,47 @@ class AgentFlowGenerator:
         body {{
             margin: 0;
             padding: 20px;
-            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
-            background: linear-gradient(135deg, #0f0f23 0%, #1a1a3e 100%);
-            color: #e6e6e6;
+            font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
+            background: linear-gradient(135deg, #0f172a 0%, #1e293b 50%, #334155 100%);
+            color: #f8fafc;
             min-height: 100vh;
+            line-height: 1.6;
         }}
         .header {{
             text-align: center;
             margin-bottom: 20px;
         }}
         .header h1 {{
-            color: #00ff88;
-            font-size: 2rem;
-            margin-bottom: 10px;
-            text-shadow: 0 0 20px rgba(0, 255, 136, 0.5);
+            color: #8b5cf6;
+            font-size: 2.5rem;
+            font-weight: 700;
+            margin-bottom: 15px;
+            text-shadow: 0 0 20px rgba(139, 92, 246, 0.3);
+            background: linear-gradient(135deg, #8b5cf6, #7c3aed);
+            background-clip: text;
+            -webkit-background-clip: text;
+            -webkit-text-fill-color: transparent;
         }}
         .watermark {{
-            background: rgba(255, 0, 0, 0.1);
-            color: #ff6b6b;
-            padding: 5px 10px;
-            border-radius: 5px;
-            font-size: 0.8rem;
-            border: 1px solid #ff6b6b;
+            background: rgba(139, 92, 246, 0.1);
+            color: #a78bfa;
+            padding: 8px 16px;
+            border-radius: 8px;
+            font-size: 0.85rem;
+            border: 1px solid rgba(139, 92, 246, 0.3);
             display: inline-block;
+            font-weight: 500;
         }}
         .mermaid-container {{
-            background: rgba(0, 0, 0, 0.3);
-            border-radius: 10px;
-            padding: 20px;
+            background: linear-gradient(135deg, rgba(15, 23, 42, 0.8) 0%, rgba(30, 41, 59, 0.6) 100%);
+            border-radius: 16px;
+            padding: 30px;
             text-align: center;
-            margin: 20px auto;
+            margin: 30px auto;
             max-width: 1200px;
+            border: 1px solid rgba(139, 92, 246, 0.1);
+            backdrop-filter: blur(20px);
+            box-shadow: 0 8px 32px rgba(139, 92, 246, 0.1);
         }}
         .info {{
             text-align: center;
@@ -781,9 +791,10 @@ class AgentFlowGenerator:
         html, body {
             height: 100vh;
             overflow-x: hidden;
-            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
-            background: linear-gradient(135deg, #0f0f23 0%, #1a1a3e 100%);
-            color: #e6e6e6;
+            font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
+            background: linear-gradient(135deg, #0f172a 0%, #1e293b 50%, #334155 100%);
+            color: #f8fafc;
+            line-height: 1.6;
         }
 
         .container {
@@ -794,62 +805,77 @@ class AgentFlowGenerator:
 
         .header {
             text-align: center;
-            padding: 20px;
-            background: rgba(255, 255, 255, 0.1);
-            border-radius: 10px;
-            backdrop-filter: blur(10px);
-            margin-bottom: 20px;
+            padding: 30px;
+            background: linear-gradient(135deg, rgba(139, 92, 246, 0.1) 0%, rgba(124, 58, 237, 0.05) 100%);
+            border-radius: 16px;
+            backdrop-filter: blur(20px);
+            border: 1px solid rgba(139, 92, 246, 0.2);
+            margin-bottom: 30px;
+            box-shadow: 0 8px 32px rgba(139, 92, 246, 0.1);
         }
 
         .header h1 {
-            color: #00ff88;
-            font-size: 2rem;
+            color: #8b5cf6;
+            font-size: 2.5rem;
+            font-weight: 700;
             margin-bottom: 10px;
-            text-shadow: 0 0 20px rgba(0, 255, 136, 0.5);
+            text-shadow: 0 0 20px rgba(139, 92, 246, 0.3);
+            background: linear-gradient(135deg, #8b5cf6, #7c3aed);
+            background-clip: text;
+            -webkit-background-clip: text;
+            -webkit-text-fill-color: transparent;
         }
 
         .watermark {
-            background: rgba(255, 0, 0, 0.1);
-            color: #ff6b6b;
-            padding: 5px 10px;
-            border-radius: 5px;
-            font-size: 0.8rem;
-            border: 1px solid #ff6b6b;
+            background: rgba(139, 92, 246, 0.1);
+            color: #a78bfa;
+            padding: 8px 16px;
+            border-radius: 8px;
+            font-size: 0.85rem;
+            border: 1px solid rgba(139, 92, 246, 0.3);
             display: inline-block;
-            margin-top: 10px;
+            margin-top: 12px;
+            font-weight: 500;
         }
 
         .tab-container {
-            background: rgba(255, 255, 255, 0.05);
-            border-radius: 10px;
+            background: rgba(255, 255, 255, 0.02);
+            border-radius: 16px;
             overflow: hidden;
+            border: 1px solid rgba(139, 92, 246, 0.1);
+            backdrop-filter: blur(10px);
         }
 
         .tab-nav {
             display: flex;
-            background: rgba(255, 255, 255, 0.1);
+            background: rgba(139, 92, 246, 0.05);
+            border-bottom: 1px solid rgba(139, 92, 246, 0.1);
         }
 
         .tab-button {
             flex: 1;
-            padding: 15px;
+            padding: 16px 20px;
             background: transparent;
             border: none;
-            color: #b0b0b0;
+            color: #94a3b8;
             cursor: pointer;
-            font-size: 0.9rem;
-            transition: all 0.3s ease;
+            font-size: 0.95rem;
+            font-weight: 500;
+            transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+            position: relative;
         }
 
         .tab-button:hover {
-            background: rgba(0, 255, 136, 0.1);
-            color: #00ff88;
+            background: rgba(139, 92, 246, 0.1);
+            color: #a78bfa;
+            transform: translateY(-1px);
         }
 
         .tab-button.active {
-            background: rgba(0, 255, 136, 0.2);
-            color: #00ff88;
-            border-bottom: 2px solid #00ff88;
+            background: rgba(139, 92, 246, 0.15);
+            color: #8b5cf6;
+            border-bottom: 3px solid #8b5cf6;
+            font-weight: 600;
         }
 
         .tab-content {
@@ -869,31 +895,50 @@ class AgentFlowGenerator:
         }
 
         .stat-card {
-            background: rgba(255, 255, 255, 0.1);
-            border-radius: 8px;
-            padding: 15px;
+            background: linear-gradient(135deg, rgba(139, 92, 246, 0.1) 0%, rgba(124, 58, 237, 0.05) 100%);
+            border-radius: 12px;
+            padding: 20px;
             text-align: center;
+            border: 1px solid rgba(139, 92, 246, 0.2);
+            backdrop-filter: blur(10px);
+            transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+        }
+
+        .stat-card:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 8px 25px rgba(139, 92, 246, 0.15);
+            border-color: rgba(139, 92, 246, 0.3);
         }
 
         .stat-value {
-            font-size: 1.5rem;
-            font-weight: bold;
-            color: #00ff88;
+            font-size: 2rem;
+            font-weight: 700;
+            color: #8b5cf6;
             display: block;
-            margin-bottom: 5px;
+            margin-bottom: 8px;
+            background: linear-gradient(135deg, #8b5cf6, #7c3aed);
+            background-clip: text;
+            -webkit-background-clip: text;
+            -webkit-text-fill-color: transparent;
         }
 
         .stat-label {
-            color: #b0b0b0;
-            font-size: 0.8rem;
+            color: #cbd5e1;
+            font-size: 0.85rem;
+            font-weight: 500;
+            text-transform: uppercase;
+            letter-spacing: 0.05em;
         }
 
         .mermaid-container {
-            background: rgba(0, 0, 0, 0.3);
-            border-radius: 10px;
-            padding: 20px;
-            margin: 20px 0;
+            background: linear-gradient(135deg, rgba(15, 23, 42, 0.8) 0%, rgba(30, 41, 59, 0.6) 100%);
+            border-radius: 16px;
+            padding: 30px;
+            margin: 30px 0;
             text-align: center;
+            border: 1px solid rgba(139, 92, 246, 0.1);
+            backdrop-filter: blur(20px);
+            box-shadow: 0 8px 32px rgba(139, 92, 246, 0.1);
         }
 
         .agent-grid {
@@ -903,17 +948,19 @@ class AgentFlowGenerator:
         }
 
         .agent-card {
-            background: rgba(255, 255, 255, 0.1);
-            border-radius: 10px;
-            padding: 15px;
-            border: 1px solid rgba(255, 255, 255, 0.2);
-            transition: all 0.3s ease;
+            background: linear-gradient(135deg, rgba(255, 255, 255, 0.02) 0%, rgba(139, 92, 246, 0.05) 100%);
+            border-radius: 12px;
+            padding: 20px;
+            border: 1px solid rgba(139, 92, 246, 0.15);
+            transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+            backdrop-filter: blur(10px);
         }
 
         .agent-card:hover {
-            transform: translateY(-2px);
-            box-shadow: 0 5px 20px rgba(0, 255, 136, 0.3);
-            border-color: #00ff88;
+            transform: translateY(-4px) scale(1.02);
+            box-shadow: 0 12px 40px rgba(139, 92, 246, 0.2);
+            border-color: rgba(139, 92, 246, 0.4);
+            background: linear-gradient(135deg, rgba(139, 92, 246, 0.08) 0%, rgba(124, 58, 237, 0.06) 100%);
         }
 
         .agent-header {
@@ -935,14 +982,21 @@ class AgentFlowGenerator:
         }
 
         .agent-info h3 {
-            color: #00ff88;
-            font-size: 1.1rem;
-            margin-bottom: 2px;
+            color: #8b5cf6;
+            font-size: 1.2rem;
+            font-weight: 600;
+            margin-bottom: 4px;
+            background: linear-gradient(135deg, #8b5cf6, #7c3aed);
+            background-clip: text;
+            -webkit-background-clip: text;
+            -webkit-text-fill-color: transparent;
         }
 
         .role {
-            color: #b0b0b0;
-            font-size: 0.8rem;
+            color: #cbd5e1;
+            font-size: 0.85rem;
+            font-weight: 400;
+            line-height: 1.4;
         }
 
         .agent-details {

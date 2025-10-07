@@ -6,68 +6,68 @@
   },
   "node_styles": {
     "origin": {
-      "fill": "#ff6b6b",
-      "stroke": "#333",
+      "fill": "#8b5cf6",
+      "stroke": "#6d28d9",
       "stroke_width": "2px",
       "shape": "rectangle"
     },
     "boss": {
-      "fill": "#4ecdc4",
-      "stroke": "#333",
+      "fill": "#7c3aed",
+      "stroke": "#6d28d9",
       "stroke_width": "2px",
       "shape": "rectangle"
     },
     "pathfinder": {
-      "fill": "#45b7d1",
-      "stroke": "#333",
+      "fill": "#3b82f6",
+      "stroke": "#2563eb",
       "stroke_width": "2px",
       "shape": "rectangle"
     },
     "oracle": {
-      "fill": "#ffeaa7",
-      "stroke": "#333",
+      "fill": "#f59e0b",
+      "stroke": "#d97706",
       "stroke_width": "2px",
       "shape": "rectangle"
     },
     "architect": {
-      "fill": "#96ceb4",
-      "stroke": "#333",
+      "fill": "#22c55e",
+      "stroke": "#16a34a",
       "stroke_width": "2px",
       "shape": "rectangle"
     },
     "enforcer": {
-      "fill": "#fab1a0",
-      "stroke": "#333",
+      "fill": "#ef4444",
+      "stroke": "#dc2626",
       "stroke_width": "2px",
       "shape": "rectangle"
     },
     "craftsman": {
-      "fill": "#fd79a8",
-      "stroke": "#333",
+      "fill": "#06b6d4",
+      "stroke": "#0891b2",
       "stroke_width": "2px",
       "shape": "rectangle"
     },
     "craftbuddy": {
-      "fill": "#e17055",
-      "stroke": "#333",
+      "fill": "#84cc16",
+      "stroke": "#65a30d",
       "stroke_width": "2px",
       "shape": "rectangle"
     },
     "gatekeeper": {
-      "fill": "#00b894",
-      "stroke": "#333",
+      "fill": "#10b981",
+      "stroke": "#059669",
       "stroke_width": "2px",
       "shape": "rectangle"
     },
     "complete": {
-      "fill": "#a8e6cf",
-      "stroke": "#333",
+      "fill": "#22c55e",
+      "stroke": "#16a34a",
       "stroke_width": "2px",
       "shape": "rectangle"
     },
     "user": {
-      "fill": "#74b9ff",
-      "stroke": "#333",
+      "fill": "#8b5cf6",
+      "stroke": "#6d28d9",
       "stroke_width": "2px",
       "shape": "circle"
     }

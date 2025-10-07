@@ -9,37 +9,47 @@
         body {
             margin: 0;
             padding: 20px;
-            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
-            background: linear-gradient(135deg, #0f0f23 0%, #1a1a3e 100%);
-            color: #e6e6e6;
+            font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
+            background: linear-gradient(135deg, #0f172a 0%, #1e293b 50%, #334155 100%);
+            color: #f8fafc;
             min-height: 100vh;
+            line-height: 1.6;
         }
         .header {
             text-align: center;
             margin-bottom: 20px;
         }
         .header h1 {
-            color: #00ff88;
-            font-size: 2rem;
-            margin-bottom: 10px;
-            text-shadow: 0 0 20px rgba(0, 255, 136, 0.5);
+            color: #8b5cf6;
+            font-size: 2.5rem;
+            font-weight: 700;
+            margin-bottom: 15px;
+            text-shadow: 0 0 20px rgba(139, 92, 246, 0.3);
+            background: linear-gradient(135deg, #8b5cf6, #7c3aed);
+            background-clip: text;
+            -webkit-background-clip: text;
+            -webkit-text-fill-color: transparent;
         }
         .watermark {
-            background: rgba(255, 0, 0, 0.1);
-            color: #ff6b6b;
-            padding: 5px 10px;
-            border-radius: 5px;
-            font-size: 0.8rem;
-            border: 1px solid #ff6b6b;
+            background: rgba(139, 92, 246, 0.1);
+            color: #a78bfa;
+            padding: 8px 16px;
+            border-radius: 8px;
+            font-size: 0.85rem;
+            border: 1px solid rgba(139, 92, 246, 0.3);
             display: inline-block;
+            font-weight: 500;
         }
         .mermaid-container {
-            background: rgba(0, 0, 0, 0.3);
-            border-radius: 10px;
-            padding: 20px;
+            background: linear-gradient(135deg, rgba(15, 23, 42, 0.8) 0%, rgba(30, 41, 59, 0.6) 100%);
+            border-radius: 16px;
+            padding: 30px;
             text-align: center;
-            margin: 20px auto;
+            margin: 30px auto;
             max-width: 1200px;
+            border: 1px solid rgba(139, 92, 246, 0.1);
+            backdrop-filter: blur(20px);
+            box-shadow: 0 8px 32px rgba(139, 92, 246, 0.1);
         }
         .info {
             text-align: center;
@@ -52,7 +62,7 @@
 <body>
     <div class="header">
         <h1>🤖 WARPCORE Agent Flow</h1>
-        <div class="watermark">Generated: 2025-10-07T17:10:04.225190</div>
+        <div class="watermark">Generated: 2025-10-07T17:27:43.320308</div>
     </div>
     
     <div class="mermaid-container">
@@ -83,16 +93,16 @@ flowchart TD
     USER -->|"user_specifications"| 2b
 
     %% Styling
-    classDef origin fill:#ff6b6b,stroke:#333,stroke-width:2px
-    classDef boss fill:#4ecdc4,stroke:#333,stroke-width:2px
-    classDef pathfinder fill:#45b7d1,stroke:#333,stroke-width:2px
-    classDef oracle fill:#ffeaa7,stroke:#333,stroke-width:2px
-    classDef architect fill:#96ceb4,stroke:#333,stroke-width:2px
-    classDef enforcer fill:#fab1a0,stroke:#333,stroke-width:2px
-    classDef craftsman fill:#fd79a8,stroke:#333,stroke-width:2px
-    classDef craftbuddy fill:#e17055,stroke:#333,stroke-width:2px
-    classDef gatekeeper fill:#00b894,stroke:#333,stroke-width:2px
-    classDef complete fill:#a8e6cf,stroke:#333,stroke-width:2px
+    classDef origin fill:#8b5cf6,stroke:#6d28d9,stroke-width:2px
+    classDef boss fill:#7c3aed,stroke:#6d28d9,stroke-width:2px
+    classDef pathfinder fill:#3b82f6,stroke:#2563eb,stroke-width:2px
+    classDef oracle fill:#f59e0b,stroke:#d97706,stroke-width:2px
+    classDef architect fill:#22c55e,stroke:#16a34a,stroke-width:2px
+    classDef enforcer fill:#ef4444,stroke:#dc2626,stroke-width:2px
+    classDef craftsman fill:#06b6d4,stroke:#0891b2,stroke-width:2px
+    classDef craftbuddy fill:#84cc16,stroke:#65a30d,stroke-width:2px
+    classDef gatekeeper fill:#10b981,stroke:#059669,stroke-width:2px
+    classDef complete fill:#22c55e,stroke:#16a34a,stroke-width:2px
     class 0a origin
     class 0b boss
     class 1 pathfinder
