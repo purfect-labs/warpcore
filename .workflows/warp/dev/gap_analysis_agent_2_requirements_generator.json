@@ -29,6 +29,21 @@
       "complexity_score": "number (0-100)",
       "dependency_accuracy": "number (0-100)"
     },
+    "data_compression": {
+      "compressed_past_workflows": "boolean",
+      "compression_ratio": "number (0-1)",
+      "archived_workflow_count": "number",
+      "storage_saved_mb": "number",
+      "compression_method": "gzip|json_minify|archive"
+    },
+    "bonus_contributions": {
+      "extra_analysis_performed": "boolean",
+      "additional_requirements_discovered": "number",
+      "enhanced_validation_checks": "array of strings",
+      "proactive_improvements_suggested": "number",
+      "cross_workflow_insights": "array of insight objects",
+      "contribution_value_score": "number (0-100)"
+    },
     "input_analysis": {
       "source_agent": "schema_coherence_reconciler_agent",
       "cache_file": ".data/wf_0f432a3ac836_schema_coherence_analysis.json",
@@ -207,14 +222,16 @@
     "before/after code samples required for refactoring requirements"
   ],
   "success_criteria": [
-    "100% coverage of identified gaps from schema analysis",
-    "Extreme detail level with file paths and line numbers for all requirements",
-    "Realistic 6-8 week timeline with weekly breakdown",
-    "Clear critical path identification and risk mitigation",
-    "Actionable implementation chunks ready for daily execution",
-    "Comprehensive testing strategy for each requirement",
     "Production-ready replacement for all fake/demo components",
+    "Extreme detail level with file paths and line numbers for all requirements",
+    "Comprehensive testing strategy for each requirement",
+    "Realistic 6-8 week timeline with weekly breakdown",
+    "Requirements structured for automated validation by next agent",
     "Complete AWS removal strategy with GCP migration path",
-    "Requirements structured for automated validation by next agent"
+    "Historical workflow data compressed for storage efficiency",
+    "Bonus contributions identified and tracked for system improvement",
+    "Clear critical path identification and risk mitigation",
+    "100% coverage of identified gaps from schema analysis",
+    "Actionable implementation chunks ready for daily execution"
   ]
 }

@@ -1,6 +1,6 @@
 #!/usr/bin/env python3
 """
-WARPCORE Native License Integration Test - WARP FAKE SUB TEST DEMO
+WARPCORE Native License Integration Test - WARP TEST FRAMEWORK
 Test script to validate native license manager integration in license provider
 """
 

@@ -1,6 +1,6 @@
 #!/usr/bin/env python3
 """
-WARPCORE Licensing Integration Validation - WARP FAKE SUB TEST DEMO
+WARPCORE Licensing Integration Validation - WARP TEST FRAMEWORK
 Comprehensive test to validate that licensing is actually working
 """
 

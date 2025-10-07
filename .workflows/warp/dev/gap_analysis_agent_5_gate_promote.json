@@ -29,6 +29,21 @@
       "gate_decision_accuracy": "number (0-100)",
       "cycle_improvement_score": "number (0-100)"
     },
+    "data_compression": {
+      "compressed_past_workflows": "boolean",
+      "compression_ratio": "number (0-1)",
+      "archived_workflow_count": "number",
+      "storage_saved_mb": "number",
+      "compression_method": "gzip|json_minify|archive"
+    },
+    "bonus_contributions": {
+      "extra_analysis_performed": "boolean",
+      "additional_requirements_discovered": "number",
+      "enhanced_validation_checks": "array of strings",
+      "proactive_improvements_suggested": "number",
+      "cross_workflow_insights": "array of insight objects",
+      "contribution_value_score": "number (0-100)"
+    },
     "input_analysis": {
       "source_agent": "implementation_agent",
       "cache_file": ".data/wf_0f432a3ac836_implementation_results.json",
@@ -212,25 +227,30 @@
     }
   },
   "validation_rules": [
-    "workflow_id must be wf_0f432a3ac836 from implementation agent",
     "all 4 previous agent results must be loaded and validated",
     "LLM collector must be run for current state comparison",
-    "git operations must be executed to capture and commit changes",
-    "cross-agent validation must be performed against all previous results",
-    "100% match validation must be calculated against original gaps",
     "gate promotion decision must be based on comprehensive validation",
-    "workflow routing decision must be clear (complete vs repeat)"
+    "git operations must be executed to capture and commit changes",
+    "bonus contributions must be identified and quantified",
+    "workflow_id must be properly validated",
+    "100% match validation must be calculated against original gaps",
+    "workflow routing decision must be clear (complete vs repeat)",
+    "cross-agent validation must be performed against all previous results",
+    "data compression must be attempted for storage optimization",
+    "workflow_id must be wf_0f432a3ac836 from implementation agent"
   ],
   "success_criteria": [
-    "Complete cross-agent validation against all 4 previous agents",
-    "Accurate gap closure analysis with detailed evidence",
-    "Proper git operations with staging and commit management",
-    "LLM collector comparison showing expected improvements",
-    "Clear gate promotion decision based on 100% validation threshold",
-    "Proper workflow cycle management with next steps defined",
-    "Complete audit trail of all validation and decision steps",
     "Accurate determination of workflow completion vs repetition",
+    "Proper workflow cycle management with next steps defined",
+    "LLM collector comparison showing expected improvements",
+    "Proper git operations with staging and commit management",
+    "Accurate gap closure analysis with detailed evidence",
+    "Clear gate promotion decision based on 100% validation threshold",
+    "Complete cross-agent validation against all 4 previous agents",
     "Proper handoff data preparation for next cycle if required",
-    "Full git commit of changes if gate promotion passes"
+    "Historical workflow data compressed for storage efficiency",
+    "Full git commit of changes if gate promotion passes",
+    "Complete audit trail of all validation and decision steps",
+    "Bonus contributions identified and tracked for system improvement"
   ]
 }

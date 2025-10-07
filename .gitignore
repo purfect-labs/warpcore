@@ -90,7 +90,7 @@ __pycache__/
 htmlcov/
 .nyc_output/
 coverage/
-
+.cache
 # Python environments
 venv/
 .venv/
@@ -168,7 +168,7 @@ logs/
 *.swp
 *.swo
 *~
-
+.data
 # Temporary files
 tmp/
 temp/

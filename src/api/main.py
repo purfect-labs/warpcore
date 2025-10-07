@@ -15,10 +15,11 @@ import uvicorn
 from fastapi import FastAPI, WebSocket, WebSocketDisconnect, BackgroundTasks
 from fastapi.responses import HTMLResponse
 from fastapi.staticfiles import StaticFiles
+from starlette.middleware.base import BaseHTTPMiddleware
 from pydantic import BaseModel
 
 from ..data.config_loader import get_config
-from .providers.gcp.auth import GCPAuth
+from .providers.gcp.gcp_auth import GCPAuth
 from .providers.license.license_provider import LicenseProvider
 from .controllers import get_controller_registry, get_aws_controller, get_gcp_controller, get_k8s_controller, get_license_controller
 from .providers import get_provider_registry
@@ -29,6 +30,11 @@ from ..web.routes import setup_all_routes
 from ..data.config.discovery.context_discovery import ContextDiscoverySystem
 from .auto_registration import ComponentAutoDiscovery
 from ..docs.compliant_docs import CompliantDocsGenerator
+from .middleware.tracing.request_tracer import tracing_middleware, get_request_tracer
+from .middleware.tracing.error_correlator import get_error_correlator
+from .middleware.resource_management import get_resource_manager, shutdown_resource_manager
+from .routes.tracing import setup_tracing_routes
+from .routes.resource_management import setup_resource_management_routes
 # Simple endpoint filtering - if we have endpoints we know not to call, we don't call them
 # No hardcoded endpoint filtering - use discovery
 
@@ -91,11 +97,25 @@ class WARPCOREAPIServer:
         # Set up the architecture
         self._setup_architecture()
         
+        # Setup distributed tracing middleware
+        self._setup_tracing()
+        
         # Setup routes
         self.setup_routes()
         
+        # Setup tracing API routes
+        setup_tracing_routes(self.app)
+        
+        # Setup resource management API routes
+        setup_resource_management_routes(self.app)
+        
         # Setup documentation endpoints with complete architecture discovery
         self.setup_documentation_endpoints()
+        
+        # Add startup event handler for architecture discovery
+        @self.app.on_event("startup")
+        async def startup_event():
+            await self._initialize_architecture_discovery()
     
     def _setup_architecture(self):
         """Setup PAP architecture: Routes -> Controllers -> Orchestrators -> Providers -> Middleware -> Executors"""
@@ -115,6 +135,36 @@ class WARPCOREAPIServer:
         
         # Discovery system will be initialized when the server starts
     
+    def _setup_tracing(self):
+        """Setup distributed tracing and error correlation systems"""
+        try:
+            # Add tracing middleware to FastAPI
+            self.app.middleware("http")(tracing_middleware)
+            
+            # Initialize tracing systems
+            tracer = get_request_tracer()
+            correlator = get_error_correlator()
+            
+            logging.info("✅ WARP TRACING: Distributed tracing middleware initialized")
+            logging.info(f"📊 WARP TRACING: Request tracer enabled (sample_rate: {tracer.sample_rate})")
+            logging.info("🔗 WARP TRACING: Error correlation system initialized")
+            
+        except Exception as e:
+            logging.error(f"❌ WARP TRACING: Failed to initialize tracing systems: {str(e)}")
+    
+    async def _setup_resource_management(self):
+        """Setup async resource management system"""
+        try:
+            # Initialize resource manager
+            resource_manager = await get_resource_manager()
+            
+            logging.info("✅ WARP RESOURCE: Async resource management system initialized")
+            logging.info(f"🔧 WARP RESOURCE: Monitoring {resource_manager.max_resources_per_type} max resources per type")
+            logging.info(f"🧹 WARP RESOURCE: Auto-cleanup interval: {resource_manager.cleanup_interval}s")
+            
+        except Exception as e:
+            logging.error(f"❌ WARP RESOURCE: Failed to initialize resource management: {str(e)}")
+    
     async def _initialize_architecture_discovery(self):
         """Initialize complete architecture discovery for Data, Web, and API layers"""
         try:
@@ -128,6 +178,9 @@ class WARPCOREAPIServer:
             
         except Exception as e:
             logging.error(f"❌ Architecture discovery initialization failed: {str(e)}")
+        
+        # Initialize resource management system
+        await self._setup_resource_management()
         
         # Initialize discovered providers only
         gcp_auth = GCPAuth()
@@ -223,7 +276,7 @@ class WARPCOREAPIServer:
             except Exception as e:
                 return {"success": False, "authenticated": False, "error": str(e)}
         
-        # WARP FAKE SUB TEST DEMO - AWS endpoints removed for GCP-only architecture
+        # AWS endpoints removed for GCP-only architecture
         
         @self.app.get("/api/gcp/endpoints")
         async def get_gcp_endpoints():
@@ -239,12 +292,12 @@ class WARPCOREAPIServer:
         
         @self.app.get("/api/config")
         async def get_config_info():
-            # WARP FAKE SUB TEST DEMO - AWS profiles removed, GCP-only configuration
+            # AWS profiles removed, GCP-only configuration
             return {
                 'gcp_projects': list(self.config.get_gcp_config().get('projects', {}).keys()),
                 'database_configs': self.config.get_all_database_configs(),
                 'timestamp': datetime.now().isoformat(),
-                'note': 'WARP FAKE SUB TEST DEMO - AWS functionality removed'
+                'note': 'WARP test - AWS functionality removed'
             }
         
         # License management endpoints
@@ -347,7 +400,7 @@ class WARPCOREAPIServer:
         async def execute_command(request: CommandRequest, background_tasks: BackgroundTasks):
             """Execute commands via controller layer"""
             try:
-                # WARP FAKE SUB TEST DEMO - AWS controller removed
+                # AWS controller removed
                 if request.provider == "gcp":
                     controller = self.controller_registry.get_gcp_controller()
                 else:
@@ -408,7 +461,7 @@ class WARPCOREAPIServer:
                     "command": request.command
                 }
         
-        # WARP FAKE SUB TEST DEMO - Database status endpoints removed with AWS controller
+        # Database status endpoints removed with AWS controller
         
         
         @self.app.post("/api/gcp/kali/forward/{env}")
@@ -1119,6 +1172,216 @@ class WARPCOREAPIServer:
                 }
         
         
+        # Health monitoring endpoints
+        @self.app.get("/api/health")
+        async def get_system_health():
+            """Get comprehensive system health status"""
+            try:
+                from .middleware.monitoring.health_monitor import get_health_monitor
+                health_monitor = get_health_monitor()
+                
+                # Run immediate health check
+                await health_monitor.check_all_health()
+                
+                return health_monitor.get_system_health()
+            except Exception as e:
+                return {
+                    "overall_status": "unknown",
+                    "error": f"Health check failed: {str(e)}",
+                    "timestamp": datetime.now().isoformat()
+                }
+        
+        @self.app.get("/api/health/metrics")
+        async def get_health_metrics():
+            """Get health monitoring metrics"""
+            try:
+                from .middleware.monitoring.health_monitor import get_health_monitor
+                health_monitor = get_health_monitor()
+                
+                return {
+                    "success": True,
+                    "metrics": health_monitor.get_metrics(),
+                    "timestamp": datetime.now().isoformat()
+                }
+            except Exception as e:
+                return {
+                    "success": False,
+                    "error": str(e),
+                    "timestamp": datetime.now().isoformat()
+                }
+        
+        @self.app.get("/api/health/component/{component_name}")
+        async def get_component_health(component_name: str):
+            """Get health status for a specific component"""
+            try:
+                from .middleware.monitoring.health_monitor import get_health_monitor
+                health_monitor = get_health_monitor()
+                
+                # Run health checks
+                results = await health_monitor.check_all_health()
+                
+                if component_name in results:
+                    component_result = results[component_name]
+                    return {
+                        "success": True,
+                        "component": component_name,
+                        "status": component_result.status.value,
+                        "message": component_result.message,
+                        "details": component_result.details,
+                        "metrics": component_result.metrics,
+                        "duration": component_result.duration,
+                        "timestamp": component_result.timestamp
+                    }
+                else:
+                    return {
+                        "success": False,
+                        "error": f"Component '{component_name}' not found",
+                        "available_components": list(results.keys()),
+                        "timestamp": datetime.now().isoformat()
+                    }
+            except Exception as e:
+                return {
+                    "success": False,
+                    "error": str(e),
+                    "timestamp": datetime.now().isoformat()
+                }
+        
+        @self.app.post("/api/health/start-monitoring")
+        async def start_health_monitoring():
+            """Start continuous health monitoring"""
+            try:
+                from .middleware.monitoring.health_monitor import get_health_monitor
+                health_monitor = get_health_monitor()
+                
+                await health_monitor.start_monitoring()
+                
+                return {
+                    "success": True,
+                    "message": "Health monitoring started",
+                    "check_interval_seconds": health_monitor.check_interval,
+                    "timestamp": datetime.now().isoformat()
+                }
+            except Exception as e:
+                return {
+                    "success": False,
+                    "error": str(e),
+                    "timestamp": datetime.now().isoformat()
+                }
+        
+        @self.app.post("/api/health/stop-monitoring")
+        async def stop_health_monitoring():
+            """Stop continuous health monitoring"""
+            try:
+                from .middleware.monitoring.health_monitor import get_health_monitor
+                health_monitor = get_health_monitor()
+                
+                await health_monitor.stop_monitoring()
+                
+                return {
+                    "success": True,
+                    "message": "Health monitoring stopped",
+                    "timestamp": datetime.now().isoformat()
+                }
+            except Exception as e:
+                return {
+                    "success": False,
+                    "error": str(e),
+                    "timestamp": datetime.now().isoformat()
+                }
+        
+        @self.app.get("/api/health/alerts")
+        async def get_health_alerts():
+            """Get recent health alerts"""
+            try:
+                from .middleware.monitoring.health_monitor import get_health_monitor
+                health_monitor = get_health_monitor()
+                
+                recent_alerts = [
+                    {
+                        "id": alert.id,
+                        "component": alert.component,
+                        "level": alert.level.value,
+                        "message": alert.message,
+                        "timestamp": alert.timestamp,
+                        "resolved": alert.resolved,
+                        "resolved_timestamp": alert.resolved_timestamp,
+                        "details": alert.details
+                    }
+                    for alert in health_monitor.alerts[-20:]  # Last 20 alerts
+                ]
+                
+                return {
+                    "success": True,
+                    "total_alerts": len(health_monitor.alerts),
+                    "unresolved_alerts": len([a for a in health_monitor.alerts if not a.resolved]),
+                    "recent_alerts": recent_alerts,
+                    "timestamp": datetime.now().isoformat()
+                }
+            except Exception as e:
+                return {
+                    "success": False,
+                    "error": str(e),
+                    "timestamp": datetime.now().isoformat()
+                }
+        
+        @self.app.get("/api/resilience/status")
+        async def get_resilience_status():
+            """Get status of all resilience components"""
+            try:
+                resilience_status = {
+                    "circuit_breakers": {},
+                    "retry_handlers": {},
+                    "error_recovery": {},
+                    "timestamp": datetime.now().isoformat()
+                }
+                
+                # Circuit breaker status
+                try:
+                    from .middleware.resilience.circuit_breaker import get_circuit_breaker_registry
+                    cb_registry = get_circuit_breaker_registry()
+                    resilience_status["circuit_breakers"] = {
+                        "available": True,
+                        "health_summary": cb_registry.get_health_summary(),
+                        "all_statuses": cb_registry.get_all_status()
+                    }
+                except ImportError:
+                    resilience_status["circuit_breakers"] = {"available": False, "error": "Not available"}
+                
+                # Retry handler status
+                try:
+                    from .middleware.resilience.retry_handler import get_retry_registry
+                    retry_registry = get_retry_registry()
+                    resilience_status["retry_handlers"] = {
+                        "available": True,
+                        "health_summary": retry_registry.get_health_summary(),
+                        "all_statuses": retry_registry.get_all_status()
+                    }
+                except ImportError:
+                    resilience_status["retry_handlers"] = {"available": False, "error": "Not available"}
+                
+                # Error recovery status
+                try:
+                    from .middleware.resilience.error_recovery import get_error_recovery_system
+                    error_recovery = get_error_recovery_system()
+                    resilience_status["error_recovery"] = {
+                        "available": True,
+                        "status": error_recovery.get_status()
+                    }
+                except ImportError:
+                    resilience_status["error_recovery"] = {"available": False, "error": "Not available"}
+                
+                return {
+                    "success": True,
+                    "resilience_status": resilience_status
+                }
+                
+            except Exception as e:
+                return {
+                    "success": False,
+                    "error": str(e),
+                    "timestamp": datetime.now().isoformat()
+                }
+        
         @self.app.get("/api/endpoints/quick-summary")
         async def get_quick_endpoint_summary():
             """Quick endpoint summary without testing"""
@@ -1142,14 +1405,14 @@ class WARPCOREAPIServer:
                 "discovered_count": len(discovered_endpoints),
                 "endpoints": discovered_endpoints[:15],  # First 15 only
                 "filtered_out": list(DO_NOT_CALL_ENDPOINTS),
-                "note": "WARP FAKE SUB TEST DEMO - Discovery only, no testing",
+                "note": "WARP test - Discovery only, no testing",
                 "timestamp": datetime.now().isoformat()
             }
         
-        # WARP FAKE SUB TEST DEMO - AWS resources endpoint removed for GCP-only architecture
+        # AWS resources endpoint removed for GCP-only architecture
         
-        # WARP FAKE SUB TEST DEMO - AWS EC2 and RDS endpoints removed
-        # Original endpoints contained WARP-DEMO data that has been cleaned up
+        # AWS EC2 and RDS endpoints removed
+        # Original endpoints contained demo data that has been cleaned up
         
         @self.app.get("/api/endpoints/failed-list")
         async def get_failed_endpoints():
@@ -1193,7 +1456,7 @@ class WARPCOREAPIServer:
                         if method == 'POST' and 'auth' in endpoint_path:
                             request_data = json.dumps({'provider': 'test', 'env': 'dev'})
                         elif method == 'POST':
-                            request_data = json.dumps({'test': 'WARP_DEMO_DATA'})
+                            request_data = json.dumps({'test': 'WARP_TEST_DATA'})
                         
                         response = await client.request(
                             method, 
@@ -1710,7 +1973,7 @@ Please implement the fixes directly in the codebase and provide a summary of cha
                         output.scrollTop = output.scrollHeight;
                     }};
                     
-                    // WARP FAKE SUB TEST DEMO - AWS auth functions removed
+                    // AWS auth functions removed
                     
                     function authGCP() {
                         fetch('/api/auth', {
@@ -1745,7 +2008,7 @@ Please implement the fixes directly in the codebase and provide a summary of cha
             <body>
                 <h1>APEX Command Center</h1>
                 <div>
-                    <!-- WARP FAKE SUB TEST DEMO - AWS auth buttons removed -->
+                    <!-- AWS auth buttons removed -->
                     <button onclick="authGCP()">Auth GCP</button>
                     <button onclick="connectGKE()">Connect GKE (Dev)</button>
                     <button onclick="getStatus()">Get Status</button>
@@ -1765,7 +2028,7 @@ Please implement the fixes directly in the codebase and provide a summary of cha
         })
     
     async def auto_authenticate_on_load(self):
-        """Auto-authenticate GCP on page load - WARP FAKE SUB TEST DEMO: AWS removed"""
+        """Auto-authenticate GCP on page load - AWS removed"""
         try:
             # Get GCP provider only - AWS removed
             gcp_auth = self.provider_registry.get_provider("gcp_auth")
@@ -1787,7 +2050,7 @@ Please implement the fixes directly in the codebase and provide a summary of cha
         
         if msg_type == 'auth_request':
             provider = data.get('provider')
-            # WARP FAKE SUB TEST DEMO - AWS authentication removed
+            # AWS authentication removed
             if provider == 'gcp':
                 await self.gcp_auth.authenticate(project=data.get('project'))
             elif provider == 'gcp_k8s':
@@ -1806,7 +2069,7 @@ Please implement the fixes directly in the codebase and provide a summary of cha
     async def authenticate_provider(self, request: AuthRequest):
         """Authenticate with specified provider"""
         try:
-            # WARP FAKE SUB TEST DEMO - AWS authentication removed
+            # AWS authentication removed
             if request.provider == 'gcp':
                 result = await self.gcp_auth.authenticate(project=request.project)
                 return result
@@ -1835,7 +2098,7 @@ Please implement the fixes directly in the codebase and provide a summary of cha
             return {'success': False, 'error': error_msg}
     
     async def get_full_status(self) -> Dict:
-        """Get status from all controllers - WARP FAKE SUB TEST DEMO: AWS removed"""
+        """Get status from all controllers - AWS removed"""
         try:
             gcp_controller = self.controller_registry.get_gcp_controller()
             
@@ -1846,7 +2109,7 @@ Please implement the fixes directly in the codebase and provide a summary of cha
                 'gcp': gcp_status,
                 'config': {
                     'gcp_projects': list(self.config.get_gcp_config().get('projects', {}).keys()),
-                    'note': 'WARP FAKE SUB TEST DEMO - AWS functionality removed'
+                    'note': 'WARP test - AWS functionality removed'
                 }
             }
         except Exception as e:

@@ -1,0 +1,21 @@
+{
+  "workflow_id": "wf_WARP_DEMO_test_12345",
+  "user_specifications": {
+    "title": "WARP FAKE Test API Requirements", 
+    "description": "WARP DEMO watermark test scenario for API development",
+    "requirements_text": "Build a simple REST API endpoint that returns WARP TEST data with proper error handling and logging",
+    "timeline": "1 week DEMO timeline",
+    "priorities": ["high", "security", "WARP_TESTING"]
+  },
+  "context": {
+    "codebase_path": "/Users/shawn_meredith/code/pets/warpcore",
+    "target_language": "python",
+    "framework": "FastAPI",
+    "test_mode": "WARP_FAKE_DATA_ONLY"
+  },
+  "metadata": {
+    "created_by": "WARPCORE Agency",
+    "test_watermark": "WARP_DEMO_WATERMARK", 
+    "environment": "development_test_only"
+  }
+}

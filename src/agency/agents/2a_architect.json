@@ -1,0 +1,242 @@
+{
+  "agent_id": "architect",
+  "agent_version": "2.0.0",
+  "workflow_position": 2,
+  "dependencies": [
+    "pathfinder"
+  ],
+  "outputs_to": [
+    "enforcer"
+  ],
+  "cache_pattern": "{workflow_id}_requirements_analysis.json",
+  "input_cache_pattern": "{workflow_id}_schema_coherence_analysis.json",
+  "prompt": "\n## ENVIRONMENT CONTEXT (DO NOT DISCOVER - USE THIS INFO)\n\n**CLIENT_DIRECTORY**: /Users/shawn_meredith/code/pets/warpcore\n**Platform**: MacOS (Darwin)\n**Shell**: zsh 5.9\n**Python**: 3.13.7\n**Home**: /Users/shawn_meredith\n**Timestamp**: 2025-10-07T07:50:37Z\n\n## CRITICAL UNDERSTANDING\n\n**YOU WORK ON THE CLIENT CODEBASE, NOT THE WORKFLOW SPEC**\n- **CLIENT_DIRECTORY**: `/Users/shawn_meredith/code/pets/warpcore` - The ACTUAL codebase you analyze and will modify\n- **WORKFLOW_SPEC**: JSON specification files that serve as BLUEPRINTS for what to implement\n- **PURPOSE**: Generate requirements to implement the workflow_spec features INTO the client codebase\n\n# WARPCORE Requirements Generator Agent\n\n## ROLE\nYou are the **Requirements Generator Agent** - you convert schema coherence analysis into structured implementation requirements. You analyze the CLIENT_DIRECTORY codebase reality and generate requirements to implement workflow features into that codebase.\n\n## CRITICAL MISSION\n\n### 1. Load Schema Coherence Analysis\n**MANDATORY**: Load `.data/{workflow_id}_schema_coherence_analysis.json`\n- Extract gaps between CLIENT_DIRECTORY reality and workflow specifications\n- Identify missing components, fake/demo code, and integration points\n- Understand existing CLIENT_DIRECTORY architecture and PAP patterns\n\n### 2. Analyze Client Codebase Reality\n**MANDATORY**: Run `python3 llm-collector/run.py` to understand current codebase\n- Map existing CLIENT_DIRECTORY components and architecture\n- Identify integration points for workflow spec features\n- Document existing vs required components\n- Understand PAP layer distribution (data/web/api)\n\n### 3. Generate Implementation Requirements\n**Transform schema gaps into actionable requirements**:\n- **File-Level Changes**: Specific CLIENT_DIRECTORY files to modify\n- **Component Integration**: How to integrate with existing client code\n- **Architecture Compliance**: Ensure PAP pattern compliance\n- **Testing Strategy**: Validation approach for implementations\n- **WARP-DEMO Markers**: Add test watermarks per user rules\n\n### 4. Create Identical Output to User Input Translator\n**CRITICAL**: Output must match User Input Translator schema exactly\n- Same JSON structure and field names\n- Same validation requirements\n- Same dependency graph format\n- Same implementation phases structure\n\n## EXECUTION STEPS\n\n1. **Load Schema Coherence Analysis**\n   - Read gaps and issues from schema reconciler\n   - Map workflow spec requirements to CLIENT_DIRECTORY reality\n   - Identify missing vs existing components\n\n2. **Analyze CLIENT_DIRECTORY Structure**\n   - Run llm-collector for current codebase state\n   - Map existing PAP architecture layers\n   - Identify integration points and dependencies\n\n3. **Generate CLIENT_DIRECTORY Requirements**\n   - Create requirements to implement workflow features in client code\n   - Specify exact CLIENT_DIRECTORY file paths and modifications\n   - Plan integration with existing client components\n   - Include comprehensive testing strategy\n\n4. **Structure Output for Validator**\n   - Format in identical schema to User Input Translator\n   - Include all required fields and validation metrics\n   - Provide complete dependency mapping\n   - Output ready for Requirements Validator consumption\n\n## REQUIREMENTS FOCUS AREAS\n\n### Based on Schema Analysis, Generate Requirements For:\n- **Missing Components**: Implement workflow spec features not in CLIENT_DIRECTORY\n- **Fake/Demo Cleanup**: Replace WARP-DEMO placeholders with real implementations\n- **Integration Points**: Connect workflow features with existing client code\n- **PAP Compliance**: Ensure all changes follow Provider-Abstraction-Pattern\n- **Testing Coverage**: Comprehensive validation of implementations\n\n## CRITICAL SUCCESS CRITERIA\n\n- **CLIENT_DIRECTORY Focus**: All requirements target actual client codebase files\n- **Schema Gap Coverage**: Every identified gap becomes an actionable requirement\n- **Integration Planning**: Requirements leverage existing CLIENT_DIRECTORY infrastructure\n- **Identical Schema**: Output matches User Input Translator format exactly\n- **Validator Ready**: Requirements structured for validation and implementation\n\n**Execute requirements generation focused on CLIENT_DIRECTORY implementation.**",
+  "output_schema": {
+    "workflow_id": "string (from schema reconciler)",
+    "agent_name": "requirements_analysis_agent",
+    "source_agent_type": "schema_based_requirements_generator",
+    "timestamp": "string (ISO_TIMESTAMP)",
+    "client_directory": "/Users/shawn_meredith/code/pets/warpcore",
+    "workflow_specification": "string (path to workflow spec file)",
+    "execution_metrics": {
+      "start_time": "string (ISO_TIMESTAMP)",
+      "end_time": "string (ISO_TIMESTAMP)",
+      "duration_seconds": "number",
+      "memory_usage_mb": "number",
+      "cpu_usage_percent": "number"
+    },
+    "performance_metrics": {
+      "output_quality_score": "number (0-100)",
+      "efficiency_rating": "EXCELLENT|GOOD|FAIR|POOR",
+      "requirements_generated": "number",
+      "complexity_score": "number (0-100)",
+      "dependency_accuracy": "number (0-100)"
+    },
+    "client_codebase_analysis": {
+      "llm_collector_run": "boolean",
+      "total_files_analyzed": "number",
+      "existing_components_identified": "array of components",
+      "pap_layer_mapping": "object with layer breakdown",
+      "integration_points": "array of integration opportunities"
+    },
+    "input_analysis": {
+      "source_agent": "pathfinder",
+      "cache_file": ".data/{workflow_id}_schema_coherence_analysis.json",
+      "user_requirements_received": "array of strings (from schema gaps)",
+      "workflow_spec_processed": "string",
+      "user_priorities_identified": "array of strings (from schema analysis)"
+    },
+    "requirements_summary": {
+      "total_requirements": "number (max 30)",
+      "total_subtasks": "number",
+      "critical_count": "number (max 8)",
+      "high_count": "number (max 10)",
+      "medium_count": "number (max 8)",
+      "low_count": "number (max 4)",
+      "estimated_total_effort": "string",
+      "total_effort_hours": "number",
+      "files_affected_count": "number"
+    },
+    "implementation_phases": {
+      "phase_1_critical": {
+        "description": "Critical features for CLIENT_DIRECTORY implementation",
+        "estimated_duration": "string",
+        "total_requirements": "number (max 8)",
+        "total_effort_hours": "number",
+        "requirements": [
+          {
+            "req_id": "string (REQ-LAYER-###)",
+            "title": "string (specific to CLIENT_DIRECTORY)",
+            "description": "string (implementation in client codebase)",
+            "priority": "CRITICAL",
+            "effort_estimate": "string (X hours with breakdown)",
+            "source_issue_ids": "array (from schema coherence issues)",
+            "affected_files": [
+              {
+                "path": "string (CLIENT_DIRECTORY file path)",
+                "lines_affected": "string (estimated ranges)",
+                "modification_type": "add|refactor|remove|replace",
+                "before_code_sample": "string (WARP-DEMO current client code)",
+                "after_code_sample": "string (WARP-DEMO expected implementation)"
+              }
+            ],
+            "dependencies": {
+              "requires": "array of req_ids",
+              "blocks": "array of req_ids",
+              "parallel_with": "array of req_ids"
+            },
+            "pap_layer": "data|web|api",
+            "components_affected": [
+              {
+                "component_name": "string (client component)",
+                "current_status": "MISSING|PARTIAL|FAKE|EXISTS",
+                "target_status": "REAL",
+                "modification_scope": "interface|implementation|configuration"
+              }
+            ],
+            "acceptance_criteria": "array of testable criteria",
+            "implementation_chunks": [
+              {
+                "chunk_id": "string",
+                "title": "string",
+                "description": "string",
+                "effort_hours": "number (max 12)",
+                "deliverable": "string"
+              }
+            ],
+            "testing_requirements": {
+              "unit_tests": "array of test names",
+              "integration_tests": "array of test names",
+              "validation_tests": "array of test names"
+            },
+            "configuration_changes": [
+              {
+                "file": "string (CLIENT_DIRECTORY config file)",
+                "section": "string",
+                "changes": "string"
+              }
+            ],
+            "fake_components_to_replace": [
+              {
+                "current_fake": "string (WARP-DEMO placeholder)",
+                "replacement": "string (workflow spec implementation)",
+                "location": "string (CLIENT_DIRECTORY file:lines)"
+              }
+            ]
+          }
+        ]
+      },
+      "phase_2_high": {
+        "description": "string",
+        "estimated_duration": "string",
+        "total_requirements": "number (max 10)",
+        "requirements": "array (same detailed structure as phase_1)"
+      },
+      "phase_3_medium": {
+        "description": "string",
+        "estimated_duration": "string",
+        "total_requirements": "number (max 8)",
+        "requirements": "array (same detailed structure as phase_1)"
+      },
+      "phase_4_low": {
+        "description": "string",
+        "estimated_duration": "string",
+        "total_requirements": "number (max 4)",
+        "requirements": "array (same detailed structure as phase_1)"
+      }
+    },
+    "dependency_graph": {
+      "description": "Implementation dependency mapping for CLIENT_DIRECTORY",
+      "total_dependencies": "number",
+      "critical_path_requirements": "array of req_ids",
+      "dependencies": {
+        "REQ_ID": {
+          "depends_on": "array of req_ids",
+          "blocks": "array of req_ids",
+          "parallel_with": "array of req_ids",
+          "critical_path": "boolean",
+          "estimated_delay_if_blocked": "string"
+        }
+      }
+    },
+    "implementation_timeline": {
+      "total_duration": "string",
+      "weekly_breakdown": [
+        {
+          "week": "number",
+          "focus_area": "string (CLIENT_DIRECTORY area)",
+          "requirements_to_complete": "array of req_ids",
+          "estimated_hours": "number",
+          "key_deliverables": "array of strings",
+          "risk_factors": "array of strings"
+        }
+      ],
+      "resource_allocation": {
+        "senior_developer_hours": "number",
+        "mid_developer_hours": "number",
+        "qa_testing_hours": "number",
+        "devops_hours": "number"
+      }
+    },
+    "validation_metrics": {
+      "coverage_percentage": "100%",
+      "requirements_with_file_paths": "number",
+      "requirements_with_line_numbers": "number",
+      "requirements_with_code_samples": "number",
+      "client_integration_points": "number",
+      "critical_path_duration": "string"
+    },
+    "next_agent": "enforcer",
+    "next_agent_input": {
+      "workflow_id": "string (from schema reconciler)",
+      "total_requirements": "number",
+      "critical_requirements": "array of req_ids",
+      "cache_file": ".data/{workflow_id}_requirements_analysis.json",
+      "validation_focus": [
+        "CLIENT_DIRECTORY implementation feasibility",
+        "Schema gap coverage and accuracy",
+        "Existing component integration validation",
+        "PAP compliance for WARPCORE integration",
+        "Implementation effort and timeline realism"
+      ],
+      "source_type": "schema_analysis"
+    },
+    "data_compression": {
+      "compressed_past_workflows": "boolean",
+      "compression_ratio": "number (0-1)",
+      "archived_workflow_count": "number",
+      "storage_saved_mb": "number",
+      "compression_method": "gzip|json_minify|archive"
+    },
+    "bonus_contributions": {
+      "extra_analysis_performed": "boolean",
+      "additional_requirements_discovered": "number",
+      "enhanced_validation_checks": "array of strings",
+      "proactive_improvements_suggested": "number",
+      "cross_workflow_insights": "array of insight objects",
+      "contribution_value_score": "number (0-100)"
+    }
+  },
+  "validation_rules": [
+    "CLIENT_DIRECTORY must be the target for all implementation requirements",
+    "workflow_spec must be treated as blueprint, not implementation target",
+    "all requirements must reference CLIENT_DIRECTORY file paths",
+    "existing client components must be analyzed and integrated",
+    "output must match User Input Translator schema exactly",
+    "WARP-DEMO watermarking must be applied to test components",
+    "maximum 30 primary requirements with detailed subtasks",
+    "all schema coherence issues must have corresponding requirements",
+    "workflow_id must be properly validated",
+    "data compression must be attempted for storage optimization"
+  ],
+  "success_criteria": [
+    "CLIENT_DIRECTORY codebase analyzed with llm-collector",
+    "Schema coherence gaps mapped to implementation requirements",
+    "Existing client components identified and integration planned",
+    "Requirements target CLIENT_DIRECTORY files with specific paths",
+    "Output schema matches User Input Translator format exactly",
+    "All schema issues converted to actionable requirements",
+    "Historical workflow data compressed for storage efficiency",
+    "Bonus contributions identified and tracked for system improvement"
+  ]
+}

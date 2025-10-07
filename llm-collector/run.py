@@ -39,6 +39,10 @@ def collect_git_files():
         if file_ext in skip_extensions:
             continue
             
+        # Skip directories
+        if os.path.isdir(file_path):
+            continue
+            
         try:
             with open(file_path, 'r', encoding='utf-8') as f:
                 content = f.read()
@@ -46,7 +50,7 @@ def collect_git_files():
                 lines = content.count('\n') + (1 if content and not content.endswith('\n') else 0)
                 total_lines += lines
                 
-        except (UnicodeDecodeError, PermissionError, FileNotFoundError) as e:
+        except (UnicodeDecodeError, PermissionError, FileNotFoundError, IsADirectoryError) as e:
             content = f"<Error reading file: {str(e)}>"
             lines = 1
             total_lines += 1

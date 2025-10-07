@@ -1,6 +1,6 @@
 #!/usr/bin/env python3
 """
-WARPCORE Src Layer Licensing Test - WARP FAKE SUB TEST DEMO
+WARPCORE Src Layer Licensing Test - WARP TEST FRAMEWORK
 Direct test of licensing at the src layer - generate key manually and validate through providers
 """
 
@@ -37,7 +37,7 @@ async def test_licensing_end_to_end():
             "features": ["basic", "trial"],
             "license_type": "trial",
             "generated_at": datetime.now().isoformat(),
-            "source": "WARP FAKE SUB TEST DEMO MANUAL"
+            "source": "WARP TEST MANUAL"
         }
         
         # Encrypt and encode like the provider does

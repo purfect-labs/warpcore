@@ -29,6 +29,21 @@
       "implementation_success_rate": "number (0-100)",
       "code_quality_score": "number (0-100)"
     },
+    "data_compression": {
+      "compressed_past_workflows": "boolean",
+      "compression_ratio": "number (0-1)",
+      "archived_workflow_count": "number",
+      "storage_saved_mb": "number",
+      "compression_method": "gzip|json_minify|archive"
+    },
+    "bonus_contributions": {
+      "extra_analysis_performed": "boolean",
+      "additional_requirements_discovered": "number",
+      "enhanced_validation_checks": "array of strings",
+      "proactive_improvements_suggested": "number",
+      "cross_workflow_insights": "array of insight objects",
+      "contribution_value_score": "number (0-100)"
+    },
     "input_analysis": {
       "source_agent": "requirements_validator_agent",
       "cache_file": ".data/wf_eca7e4b3c6dd_requirements_validation.json",
@@ -244,25 +259,30 @@
     }
   },
   "validation_rules": [
-    "workflow_id must be wf_0f432a3ac836 from requirements validator agent",
-    "all approved requirements must be attempted for implementation",
-    "every file modification must be tracked with before/after content",
     "all required tests must be executed and results recorded",
     "all acceptance criteria must be validated",
-    "LLM collector must be run before and after implementation",
     "git working directory must be prepared for commit staging",
-    "implementation results must include detailed failure analysis"
+    "bonus contributions must be identified and quantified",
+    "workflow_id must be properly validated",
+    "workflow_id must be wf_0f432a3ac836 from requirements validator agent",
+    "implementation results must include detailed failure analysis",
+    "every file modification must be tracked with before/after content",
+    "data compression must be attempted for storage optimization",
+    "LLM collector must be run before and after implementation",
+    "all approved requirements must be attempted for implementation"
   ],
   "success_criteria": [
-    "All approved requirements successfully implemented",
-    "Complete file-level change tracking with before/after states",
-    "All acceptance criteria validation completed",
-    "Comprehensive test execution with detailed results",
-    "LLM collector comparison shows expected changes",
     "Git changes properly prepared for staging and commit",
+    "All approved requirements successfully implemented",
+    "All acceptance criteria validation completed",
+    "Complete file-level change tracking with before/after states",
     "Detailed implementation report ready for gate promotion validation",
-    "All FAKE/DEMO code replaced with production implementations",
+    "Historical workflow data compressed for storage efficiency",
     "Complete AWS contamination removal verified",
-    "PAP compliance improvements validated and tested"
+    "Bonus contributions identified and tracked for system improvement",
+    "Comprehensive test execution with detailed results",
+    "PAP compliance improvements validated and tested",
+    "LLM collector comparison shows expected changes",
+    "All FAKE/DEMO code replaced with production implementations"
   ]
 }

@@ -56,25 +56,61 @@
       "handoff_data": "object with orchestrator input",
       "cache_file_created": "string",
       "bootstrap_complete": "boolean"
+    },
+    "workflow_id": "string (from context)",
+    "agent_name": "bootstrap_agent",
+    "execution_metrics": {
+      "start_time": "string (ISO_TIMESTAMP)",
+      "end_time": "string (ISO_TIMESTAMP)",
+      "duration_seconds": "number",
+      "memory_usage_mb": "number",
+      "cpu_usage_percent": "number"
+    },
+    "performance_metrics": {
+      "output_quality_score": "number (0-100)",
+      "efficiency_rating": "EXCELLENT|GOOD|FAIR|POOR",
+      "bootstrap_success_rate": "number (0-100)",
+      "agent_discovery_accuracy": "number (0-100)",
+      "system_readiness_score": "number (0-100)"
+    },
+    "data_compression": {
+      "compressed_past_workflows": "boolean",
+      "compression_ratio": "number (0-1)",
+      "archived_workflow_count": "number",
+      "storage_saved_mb": "number",
+      "compression_method": "gzip|json_minify|archive"
+    },
+    "bonus_contributions": {
+      "extra_analysis_performed": "boolean",
+      "additional_requirements_discovered": "number",
+      "enhanced_validation_checks": "array of strings",
+      "proactive_improvements_suggested": "number",
+      "cross_workflow_insights": "array of insight objects",
+      "contribution_value_score": "number (0-100)"
     }
   },
   "validation_rules": [
-    "system health check must pass before launching Agent 0",
+    "bonus contributions must be identified and quantified",
     "all 7 agents (0x, 0, 1-5) must be discovered and validated",
-    "current directory must allow access to .workflows/warp/dev",
-    "bootstrap input must match expected schema for selected mode",
+    "workflow_id must be properly validated",
     "Agent 0 orchestrator must be successfully launched",
     "workflow ID must be properly generated or validated",
-    "full steam mode must activate maximum performance settings"
+    "current directory must allow access to .workflows/warp/dev",
+    "full steam mode must activate maximum performance settings",
+    "data compression must be attempted for storage optimization",
+    "system health check must pass before launching Agent 0",
+    "bootstrap input must match expected schema for selected mode"
   ],
   "success_criteria": [
-    "Complete system health validation with current directory detection",
-    "Successful discovery and validation of all 7 agent files",
-    "Agent 0 orchestrator loading with correct file path",
     "Bootstrap input preparation for selected execution mode",
-    "Agent 0 launched successfully with bootstrap parameters",
     "Workflow state properly initialized or continued",
+    "Agent 0 orchestrator loading with correct file path",
+    "Complete system health validation with current directory detection",
+    "Complete bootstrap-to-orchestrator handoff with proper cache management",
+    "Historical workflow data compressed for storage efficiency",
+    "Successful discovery and validation of all 7 agent files",
+    "Bonus contributions identified and tracked for system improvement",
     "Full steam restart capability verified and available",
-    "Complete bootstrap-to-orchestrator handoff with proper cache management"
+    "Agent 0 launched successfully with bootstrap parameters"
   ]
 }

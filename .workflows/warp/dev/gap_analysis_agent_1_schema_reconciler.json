@@ -26,6 +26,21 @@
       "files_analyzed": "number",
       "compliance_score": "number (0-100)"
     },
+    "data_compression": {
+      "compressed_past_workflows": "boolean",
+      "compression_ratio": "number (0-1)",
+      "archived_workflow_count": "number",
+      "storage_saved_mb": "number",
+      "compression_method": "gzip|json_minify|archive"
+    },
+    "bonus_contributions": {
+      "extra_analysis_performed": "boolean",
+      "additional_requirements_discovered": "number",
+      "enhanced_validation_checks": "array of strings",
+      "proactive_improvements_suggested": "number",
+      "cross_workflow_insights": "array of insight objects",
+      "contribution_value_score": "number (0-100)"
+    },
     "analysis_summary": {
       "total_files_analyzed": "number",
       "total_lines": "number",
@@ -134,32 +149,39 @@
       "priority_gaps": "array of strings (ordered by severity and impact)",
       "cache_file": "string",
       "focus_areas": "array of strings (areas requiring immediate attention)"
-    }
+    },
+    "detailed_findings": "array of issue objects",
+    "pap_layer_compliance": "object with layer breakdown"
   },
   "validation_rules": [
-    "workflow_id must be unique and follow wf_{12_char_hex} format",
-    "all 179+ files must be individually analyzed and categorized",
-    "each coherence issue must include file_path, line_numbers, and severity",
-    "each coherence issue must have specific fix_recommendation and estimated_effort",
-    "all fake/demo markers must be counted accurately with line numbers",
-    "all PAP compliance scores must be justified with evidence",
-    "cross_reference_validation must pass consistency checks",
+    "fake_demo_markers_total must match sum of individual marker counts",
+    "bonus contributions must be identified and quantified",
+    "workflow_id must be properly validated",
     "priority_gaps must be ordered by severity and impact",
-    "cache_file path must be valid and accessible",
-    "NO AWS references allowed in analysis (GCP + Kubernetes + License only)",
+    "workflow_id must be unique and follow wf_{12_char_hex} format",
     "architectural_violations_total must match sum of individual violations",
-    "fake_demo_markers_total must match sum of individual marker counts"
+    "each coherence issue must have specific fix_recommendation and estimated_effort",
+    "all PAP compliance scores must be justified with evidence",
+    "all fake/demo markers must be counted accurately with line numbers",
+    "cache_file path must be valid and accessible",
+    "cross_reference_validation must pass consistency checks",
+    "all 179+ files must be individually analyzed and categorized",
+    "NO AWS references allowed in analysis (GCP + Kubernetes + License only)",
+    "each coherence issue must include file_path, line_numbers, and severity",
+    "data compression must be attempted for storage optimization"
   ],
   "success_criteria": [
-    "Complete detailed PAP layer analysis with file-level granularity",
+    "Cross-validated findings ensure internal consistency",
+    "Detailed handoff data for requirements generator agent",
     "All 179+ files individually categorized with evidence",
+    "Results cached with complete analysis for downstream agents",
+    "Clear priority ordering based on severity and impact",
+    "Complete detailed PAP layer analysis with file-level granularity",
+    "Comprehensive fix recommendations with effort estimates",
     "Every schema coherence issue documented with specific location and fix",
     "All fake/demo contamination precisely located and counted",
     "All architectural rule violations identified with PAP rule references",
-    "Cross-validated findings ensure internal consistency",
-    "Comprehensive fix recommendations with effort estimates",
-    "Clear priority ordering based on severity and impact",
-    "Detailed handoff data for requirements generator agent",
-    "Results cached with complete analysis for downstream agents"
+    "Historical workflow data compressed for storage efficiency",
+    "Bonus contributions identified and tracked for system improvement"
   ]
 }

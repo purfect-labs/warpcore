@@ -1,6 +1,6 @@
 #!/usr/bin/env python3
 """
-Simple WARPCORE License Provider Test - WARP FAKE SUB TEST DEMO
+Simple WARPCORE License Provider Test - WARP TEST FRAMEWORK
 Direct test of license provider without complex imports
 """
 

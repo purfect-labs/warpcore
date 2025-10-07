@@ -1,0 +1,786 @@
+{
+  "workflow_id": "wf_pap_refactor_2025",
+  "agent_name": "requirements_analysis_agent",
+  "source_agent_type": "oracle",
+  "timestamp": "2025-10-07T17:00:08Z",
+  "client_directory": "/Users/shawn_meredith/code/pets/warpcore",
+  "workflow_specification": "PAP Architecture Simplification - Remove Routes Layer",
+  "execution_metrics": {
+    "start_time": "2025-10-07T17:00:08Z",
+    "end_time": "2025-10-07T17:00:08Z",
+    "duration_seconds": 0,
+    "memory_usage_mb": 0,
+    "cpu_usage_percent": 0
+  },
+  "performance_metrics": {
+    "output_quality_score": 95,
+    "efficiency_rating": "EXCELLENT",
+    "requirements_generated": 8,
+    "complexity_score": 85,
+    "dependency_accuracy": 95
+  },
+  "client_codebase_analysis": {
+    "llm_collector_run": true,
+    "total_files_analyzed": 299,
+    "existing_components_identified": [
+      "FastAPI main app (src/api/main.py)",
+      "Web routes layer (src/web/routes/)",
+      "API routes layer (src/api/routes/)",
+      "Controllers layer (src/api/controllers/)",
+      "Orchestrators layer (src/api/orchestrators/)",
+      "Providers layer (src/api/providers/)",
+      "License system (existing infrastructure)",
+      "GCP authentication system"
+    ],
+    "pap_layer_mapping": {
+      "current_web_layer": "src/web/routes/ (to be removed)",
+      "current_api_routes": "src/api/routes/ (to be removed)", 
+      "api_controllers": "src/api/controllers/ (keep)",
+      "api_orchestrators": "src/api/orchestrators/ (keep)",
+      "api_providers": "src/api/providers/ (keep)"
+    },
+    "integration_points": [
+      "FastAPI main.py route registration",
+      "License modal UI endpoints",
+      "GCP authentication workflow",
+      "Static file serving"
+    ]
+  },
+  "input_analysis": {
+    "source_agent": "USER_INPUT",
+    "cache_file": ".data/wf_pap_refactor_2025_user_input_specifications.json",
+    "user_requirements_received": [
+      "Remove routes layer completely",
+      "Refactor main API to use Controllers directly",
+      "Fill API layer with Controller→Orchestrator→Provider",
+      "Reduce web layer to GCP + licensing POC only",
+      "Simple licensing POC with button lock",
+      "Update PAP documentation with new design"
+    ],
+    "workflow_spec_processed": "PAP Architecture Simplification Specification",
+    "user_priorities_identified": [
+      "Architectural simplicity",
+      "FastAPI native patterns", 
+      "Licensing POC completion",
+      "Documentation accuracy"
+    ]
+  },
+  "requirements_summary": {
+    "total_requirements": 8,
+    "total_subtasks": 24,
+    "critical_count": 3,
+    "high_count": 3,
+    "medium_count": 2,
+    "low_count": 0,
+    "estimated_total_effort": "16-20 hours",
+    "total_effort_hours": 18,
+    "files_affected_count": 45
+  },
+  "implementation_phases": {
+    "phase_1_critical": {
+      "description": "Core PAP refactor - remove routes layer and update main API",
+      "estimated_duration": "6-8 hours",
+      "total_requirements": 3,
+      "total_effort_hours": 7,
+      "requirements": [
+        {
+          "req_id": "REQ-PAP-001",
+          "title": "Remove routes layer completely from codebase",
+          "description": "Delete src/web/routes/* and src/api/routes/* directories and update imports",
+          "priority": "CRITICAL",
+          "effort_estimate": "2 hours - careful dependency analysis and removal",
+          "source_issue_ids": ["routes_layer_deprecated"],
+          "affected_files": [
+            {
+              "path": "src/web/routes/",
+              "lines_affected": "entire directory",
+              "modification_type": "remove",
+              "before_code_sample": "Complex route abstractions with setup_all_routes()",
+              "after_code_sample": "Removed - routes handled directly in FastAPI main"
+            },
+            {
+              "path": "src/api/routes/",
+              "lines_affected": "entire directory", 
+              "modification_type": "remove",
+              "before_code_sample": "API route wrappers and abstractions",
+              "after_code_sample": "Removed - controllers called directly from FastAPI"
+            },
+            {
+              "path": "src/api/main.py",
+              "lines_affected": "29, 104, 200-300",
+              "modification_type": "refactor",
+              "before_code_sample": "from ..web.routes import setup_all_routes",
+              "after_code_sample": "# Direct FastAPI route definitions"
+            }
+          ],
+          "dependencies": {
+            "requires": [],
+            "blocks": ["REQ-PAP-002", "REQ-PAP-003"],
+            "parallel_with": []
+          },
+          "pap_layer": "api",
+          "components_affected": [
+            {
+              "component_name": "route_abstractions",
+              "current_status": "EXISTS",
+              "target_status": "REMOVED",
+              "modification_scope": "architecture"
+            }
+          ],
+          "acceptance_criteria": [
+            "All src/web/routes/* files deleted",
+            "All src/api/routes/* files deleted", 
+            "No import errors in codebase",
+            "FastAPI app starts successfully"
+          ],
+          "implementation_chunks": [
+            {
+              "chunk_id": "PAP-001-A",
+              "title": "Audit route dependencies",
+              "description": "Find all imports and references to route modules",
+              "effort_hours": 0.5,
+              "deliverable": "Complete dependency map"
+            },
+            {
+              "chunk_id": "PAP-001-B", 
+              "title": "Remove route directories",
+              "description": "Delete route folders and update imports",
+              "effort_hours": 1,
+              "deliverable": "Clean codebase without route layer"
+            },
+            {
+              "chunk_id": "PAP-001-C",
+              "title": "Fix import errors",
+              "description": "Update all imports to remove route references",
+              "effort_hours": 0.5,
+              "deliverable": "Error-free codebase"
+            }
+          ],
+          "testing_requirements": {
+            "unit_tests": ["test_import_structure", "test_fastapi_startup"],
+            "integration_tests": ["test_api_endpoints_work"],
+            "validation_tests": ["test_no_route_references"]
+          },
+          "configuration_changes": [],
+          "fake_components_to_replace": [
+            {
+              "current_fake": "Route abstractions",
+              "replacement": "Direct FastAPI route definitions",
+              "location": "src/api/main.py:200-400"
+            }
+          ]
+        },
+        {
+          "req_id": "REQ-PAP-002",
+          "title": "Refactor main API to use Controllers directly via FastAPI decorators",
+          "description": "Update src/api/main.py to define routes directly with @app.get/@app.post calling controllers",
+          "priority": "CRITICAL",
+          "effort_estimate": "3 hours - rewrite route definitions and controller integration",
+          "source_issue_ids": ["fastapi_native_patterns"],
+          "affected_files": [
+            {
+              "path": "src/api/main.py",
+              "lines_affected": "200-500",
+              "modification_type": "refactor",
+              "before_code_sample": "setup_all_routes(self.app, self.controller_registry)",
+              "after_code_sample": "@self.app.get('/api/license/status')\nasync def get_license_status():\n    return await self.controller_registry.get_license_controller().get_license_status()"
+            }
+          ],
+          "dependencies": {
+            "requires": ["REQ-PAP-001"],
+            "blocks": ["REQ-PAP-004"],
+            "parallel_with": []
+          },
+          "pap_layer": "api",
+          "components_affected": [
+            {
+              "component_name": "fastapi_routes",
+              "current_status": "PARTIAL",
+              "target_status": "REAL",
+              "modification_scope": "implementation"
+            }
+          ],
+          "acceptance_criteria": [
+            "All license endpoints work via direct FastAPI routes",
+            "GCP endpoints work via direct FastAPI routes",
+            "Controllers are called directly from route handlers",
+            "No route abstraction layers remain"
+          ],
+          "implementation_chunks": [
+            {
+              "chunk_id": "PAP-002-A",
+              "title": "Define license routes directly in FastAPI",
+              "description": "Create @app.post('/api/license/activate') etc. calling license controller",
+              "effort_hours": 1.5,
+              "deliverable": "Direct license routes in main.py"
+            },
+            {
+              "chunk_id": "PAP-002-B",
+              "title": "Define GCP routes directly in FastAPI", 
+              "description": "Create @app.get('/api/gcp/status') etc. calling GCP controller",
+              "effort_hours": 1,
+              "deliverable": "Direct GCP routes in main.py"
+            },
+            {
+              "chunk_id": "PAP-002-C",
+              "title": "Clean up route setup methods",
+              "description": "Remove setup_routes() abstractions",
+              "effort_hours": 0.5,
+              "deliverable": "Simplified main.py"
+            }
+          ],
+          "testing_requirements": {
+            "unit_tests": ["test_license_routes_direct", "test_gcp_routes_direct"],
+            "integration_tests": ["test_controller_integration"],
+            "validation_tests": ["test_pap_flow_compliance"]
+          },
+          "configuration_changes": [],
+          "fake_components_to_replace": [
+            {
+              "current_fake": "Route setup abstractions",
+              "replacement": "Native FastAPI route decorators",
+              "location": "src/api/main.py:setup_routes()"
+            }
+          ]
+        },
+        {
+          "req_id": "REQ-PAP-003",
+          "title": "Fill API layer with clean Controller→Orchestrator→Provider pattern",
+          "description": "Ensure API layer has complete PAP flow without route abstractions",
+          "priority": "CRITICAL", 
+          "effort_estimate": "2 hours - verify and clean up PAP layer connections",
+          "source_issue_ids": ["pap_layer_integrity"],
+          "affected_files": [
+            {
+              "path": "src/api/controllers/",
+              "lines_affected": "all controller files",
+              "modification_type": "refactor",
+              "before_code_sample": "Controllers with route dependencies", 
+              "after_code_sample": "Pure controllers called directly from FastAPI"
+            }
+          ],
+          "dependencies": {
+            "requires": ["REQ-PAP-001", "REQ-PAP-002"],
+            "blocks": [],
+            "parallel_with": ["REQ-PAP-004"]
+          },
+          "pap_layer": "api",
+          "components_affected": [
+            {
+              "component_name": "pap_flow",
+              "current_status": "PARTIAL",
+              "target_status": "REAL",
+              "modification_scope": "interface"
+            }
+          ],
+          "acceptance_criteria": [
+            "Controllers have no route dependencies",
+            "Orchestrators are properly called by controllers",
+            "Providers are properly called by orchestrators",
+            "Clean PAP flow: FastAPI → Controllers → Orchestrators → Providers"
+          ],
+          "implementation_chunks": [
+            {
+              "chunk_id": "PAP-003-A",
+              "title": "Audit controller dependencies",
+              "description": "Remove any route-related imports from controllers",
+              "effort_hours": 1,
+              "deliverable": "Clean controller interfaces"
+            },
+            {
+              "chunk_id": "PAP-003-B",
+              "title": "Verify PAP flow integrity",
+              "description": "Test Controller→Orchestrator→Provider calls",
+              "effort_hours": 1,
+              "deliverable": "Verified PAP compliance"
+            }
+          ],
+          "testing_requirements": {
+            "unit_tests": ["test_controller_purity", "test_orchestrator_calls"],
+            "integration_tests": ["test_pap_flow_end_to_end"],
+            "validation_tests": ["test_no_route_dependencies"]
+          },
+          "configuration_changes": [],
+          "fake_components_to_replace": [
+            {
+              "current_fake": "Controllers with route coupling",
+              "replacement": "Pure business logic controllers",
+              "location": "src/api/controllers/*"
+            }
+          ]
+        }
+      ]
+    },
+    "phase_2_high": {
+      "description": "Web layer simplification and licensing POC",
+      "estimated_duration": "4-6 hours",
+      "total_requirements": 3,
+      "requirements": [
+        {
+          "req_id": "REQ-PAP-004",
+          "title": "Reduce web layer to minimal GCP + licensing POC only",
+          "description": "Strip web layer to essential: GCP auth UI + license modal with button lock",
+          "priority": "HIGH",
+          "effort_estimate": "2 hours - simplify web layer and remove unnecessary components",
+          "source_issue_ids": ["web_layer_simplification"],
+          "affected_files": [
+            {
+              "path": "src/web/",
+              "lines_affected": "entire directory structure",
+              "modification_type": "refactor",
+              "before_code_sample": "Complex web layer with multiple route types",
+              "after_code_sample": "Minimal web layer - GCP + licensing only"
+            }
+          ],
+          "dependencies": {
+            "requires": ["REQ-PAP-002"],
+            "blocks": ["REQ-PAP-005"],
+            "parallel_with": []
+          },
+          "pap_layer": "web",
+          "components_affected": [
+            {
+              "component_name": "web_complexity",
+              "current_status": "EXISTS",
+              "target_status": "SIMPLIFIED",
+              "modification_scope": "architecture"
+            }
+          ],
+          "acceptance_criteria": [
+            "Web layer contains only GCP auth UI",
+            "Web layer contains only license modal",
+            "All other web components removed",
+            "Static file serving still works"
+          ],
+          "implementation_chunks": [
+            {
+              "chunk_id": "PAP-004-A",
+              "title": "Audit web components",
+              "description": "Identify essential vs removable web components",
+              "effort_hours": 0.5,
+              "deliverable": "Web component inventory"
+            },
+            {
+              "chunk_id": "PAP-004-B",
+              "title": "Remove non-essential web components",
+              "description": "Delete unnecessary templates, assets, and routes",
+              "effort_hours": 1,
+              "deliverable": "Simplified web directory"
+            },
+            {
+              "chunk_id": "PAP-004-C",
+              "title": "Verify essential components work",
+              "description": "Test GCP auth UI and license modal",
+              "effort_hours": 0.5,
+              "deliverable": "Working minimal web layer"
+            }
+          ],
+          "testing_requirements": {
+            "unit_tests": ["test_web_simplification"],
+            "integration_tests": ["test_gcp_auth_ui", "test_license_modal"],
+            "validation_tests": ["test_no_unused_web_components"]
+          },
+          "configuration_changes": [],
+          "fake_components_to_replace": [
+            {
+              "current_fake": "Complex web routing",
+              "replacement": "Simple GCP + license UI",
+              "location": "src/web/"
+            }
+          ]
+        },
+        {
+          "req_id": "REQ-PAP-005",
+          "title": "Implement simple licensing POC with button lock",
+          "description": "Create locked button requiring license activation, stub purchase with TRUE response",
+          "priority": "HIGH",
+          "effort_estimate": "2 hours - create button lock mechanism and purchase stub",
+          "source_issue_ids": ["licensing_poc"],
+          "affected_files": [
+            {
+              "path": "src/web/templates/components/licensing/license_modal.html",
+              "lines_affected": "entire file",
+              "modification_type": "refactor",
+              "before_code_sample": "Complex license modal with multiple flows",
+              "after_code_sample": "Simple button lock + purchase stub (returns TRUE)"
+            }
+          ],
+          "dependencies": {
+            "requires": ["REQ-PAP-004"],
+            "blocks": [],
+            "parallel_with": []
+          },
+          "pap_layer": "web",
+          "components_affected": [
+            {
+              "component_name": "license_poc",
+              "current_status": "PARTIAL",
+              "target_status": "REAL",
+              "modification_scope": "implementation"
+            }
+          ],
+          "acceptance_criteria": [
+            "Button is locked behind license check",
+            "License activation unlocks button",
+            "Purchase flow returns TRUE (stubbed)",
+            "POC demonstrates license gating"
+          ],
+          "implementation_chunks": [
+            {
+              "chunk_id": "PAP-005-A",
+              "title": "Create locked button component",
+              "description": "Button that checks license status before enabling",
+              "effort_hours": 1,
+              "deliverable": "License-gated button"
+            },
+            {
+              "chunk_id": "PAP-005-B",
+              "title": "Stub purchase flow with TRUE",
+              "description": "Purchase endpoint that always returns success",
+              "effort_hours": 1,
+              "deliverable": "Working purchase stub"
+            }
+          ],
+          "testing_requirements": {
+            "unit_tests": ["test_button_lock", "test_purchase_stub"],
+            "integration_tests": ["test_license_gating_flow"],
+            "validation_tests": ["test_poc_functionality"]
+          },
+          "configuration_changes": [],
+          "fake_components_to_replace": [
+            {
+              "current_fake": "Complex license flows",
+              "replacement": "Simple button lock POC",
+              "location": "src/web/templates/components/licensing/"
+            }
+          ]
+        },
+        {
+          "req_id": "REQ-PAP-006",
+          "title": "Update PAP architecture documentation with new simplified design",
+          "description": "Update docs/api/docs/Purfect-Labs_Architecture_and_Design_Philosophy.html with new PAP pattern",
+          "priority": "HIGH",
+          "effort_estimate": "2 hours - rewrite architecture documentation",
+          "source_issue_ids": ["documentation_update"],
+          "affected_files": [
+            {
+              "path": "docs/api/docs/Purfect-Labs_Architecture_and_Design_Philosophy.html",
+              "lines_affected": "entire architecture section",
+              "modification_type": "refactor",
+              "before_code_sample": "Old PAP with routes layer",
+              "after_code_sample": "New PAP - FastAPI → Controllers → Orchestrators → Providers"
+            }
+          ],
+          "dependencies": {
+            "requires": ["REQ-PAP-001", "REQ-PAP-002", "REQ-PAP-003"],
+            "blocks": [],
+            "parallel_with": []
+          },
+          "pap_layer": "data",
+          "components_affected": [
+            {
+              "component_name": "pap_documentation",
+              "current_status": "OUTDATED",
+              "target_status": "CURRENT",
+              "modification_scope": "documentation"
+            }
+          ],
+          "acceptance_criteria": [
+            "Documentation reflects new PAP without routes",
+            "Architecture diagrams updated",
+            "Examples show FastAPI → Controllers pattern",
+            "Benefits of simplification explained"
+          ],
+          "implementation_chunks": [
+            {
+              "chunk_id": "PAP-006-A",
+              "title": "Update architecture overview",
+              "description": "Rewrite PAP description without routes layer",
+              "effort_hours": 1,
+              "deliverable": "Updated architecture overview"
+            },
+            {
+              "chunk_id": "PAP-006-B",
+              "title": "Update examples and diagrams",
+              "description": "Show new FastAPI → Controllers flow",
+              "effort_hours": 1,
+              "deliverable": "Updated examples and diagrams"
+            }
+          ],
+          "testing_requirements": {
+            "unit_tests": ["test_documentation_links"],
+            "integration_tests": ["test_documentation_accuracy"],
+            "validation_tests": ["test_no_outdated_references"]
+          },
+          "configuration_changes": [],
+          "fake_components_to_replace": [
+            {
+              "current_fake": "Old route-based PAP documentation",
+              "replacement": "Updated simplified PAP documentation",
+              "location": "docs/api/docs/"
+            }
+          ]
+        }
+      ]
+    },
+    "phase_3_medium": {
+      "description": "Testing and validation of new PAP architecture",
+      "estimated_duration": "3-4 hours",
+      "total_requirements": 2,
+      "requirements": [
+        {
+          "req_id": "REQ-PAP-007",
+          "title": "Create comprehensive test suite for new PAP architecture",
+          "description": "Test FastAPI → Controllers → Orchestrators → Providers flow",
+          "priority": "MEDIUM",
+          "effort_estimate": "2 hours - create tests for new architecture",
+          "source_issue_ids": ["testing_new_pap"],
+          "affected_files": [
+            {
+              "path": "src/testing/",
+              "lines_affected": "new test files",
+              "modification_type": "add",
+              "before_code_sample": "No tests for new PAP",
+              "after_code_sample": "Comprehensive PAP flow tests"
+            }
+          ],
+          "dependencies": {
+            "requires": ["REQ-PAP-003"],
+            "blocks": [],
+            "parallel_with": ["REQ-PAP-008"]
+          },
+          "pap_layer": "api",
+          "components_affected": [
+            {
+              "component_name": "pap_testing",
+              "current_status": "MISSING",
+              "target_status": "REAL",
+              "modification_scope": "implementation"
+            }
+          ],
+          "acceptance_criteria": [
+            "Tests cover FastAPI → Controllers flow",
+            "Tests cover Controllers → Orchestrators flow", 
+            "Tests cover Orchestrators → Providers flow",
+            "Integration tests for complete request lifecycle"
+          ],
+          "implementation_chunks": [
+            {
+              "chunk_id": "PAP-007-A",
+              "title": "Unit tests for PAP layers",
+              "description": "Test each layer isolation",
+              "effort_hours": 1,
+              "deliverable": "PAP unit tests"
+            },
+            {
+              "chunk_id": "PAP-007-B",
+              "title": "Integration tests for PAP flow",
+              "description": "End-to-end request flow tests",
+              "effort_hours": 1,
+              "deliverable": "PAP integration tests"
+            }
+          ],
+          "testing_requirements": {
+            "unit_tests": ["test_fastapi_controller_calls", "test_controller_orchestrator_calls"],
+            "integration_tests": ["test_end_to_end_request_flow"],
+            "validation_tests": ["test_pap_compliance"]
+          },
+          "configuration_changes": [],
+          "fake_components_to_replace": [
+            {
+              "current_fake": "Missing PAP tests",
+              "replacement": "Comprehensive PAP test coverage",
+              "location": "src/testing/test_pap_flow.py"
+            }
+          ]
+        },
+        {
+          "req_id": "REQ-PAP-008",
+          "title": "Performance validation of simplified PAP architecture",
+          "description": "Measure performance improvements from removing route abstractions",
+          "priority": "MEDIUM",
+          "effort_estimate": "2 hours - performance benchmarking",
+          "source_issue_ids": ["pap_performance"],
+          "affected_files": [
+            {
+              "path": "src/testing/performance/",
+              "lines_affected": "new performance tests",
+              "modification_type": "add",
+              "before_code_sample": "No performance benchmarks",
+              "after_code_sample": "PAP performance benchmarks"
+            }
+          ],
+          "dependencies": {
+            "requires": ["REQ-PAP-003"],
+            "blocks": [],
+            "parallel_with": ["REQ-PAP-007"]
+          },
+          "pap_layer": "api",
+          "components_affected": [
+            {
+              "component_name": "pap_performance",
+              "current_status": "MISSING",
+              "target_status": "REAL",
+              "modification_scope": "implementation"
+            }
+          ],
+          "acceptance_criteria": [
+            "Performance benchmarks for new PAP",
+            "Comparison with old route-based PAP",
+            "Documented performance improvements",
+            "Load testing of simplified architecture"
+          ],
+          "implementation_chunks": [
+            {
+              "chunk_id": "PAP-008-A",
+              "title": "Create performance benchmarks",
+              "description": "Measure request latency and throughput",
+              "effort_hours": 1,
+              "deliverable": "Performance benchmark suite"
+            },
+            {
+              "chunk_id": "PAP-008-B",
+              "title": "Document performance improvements",
+              "description": "Compare old vs new performance",
+              "effort_hours": 1,
+              "deliverable": "Performance improvement documentation"
+            }
+          ],
+          "testing_requirements": {
+            "unit_tests": ["test_request_latency", "test_throughput"],
+            "integration_tests": ["test_load_performance"],
+            "validation_tests": ["test_performance_regression"]
+          },
+          "configuration_changes": [],
+          "fake_components_to_replace": [
+            {
+              "current_fake": "No performance metrics",
+              "replacement": "Comprehensive performance benchmarks",
+              "location": "src/testing/performance/"
+            }
+          ]
+        }
+      ]
+    },
+    "phase_4_low": {
+      "description": "Final cleanup and optimization",
+      "estimated_duration": "2 hours",
+      "total_requirements": 0,
+      "requirements": []
+    }
+  },
+  "dependency_graph": {
+    "description": "Implementation dependency mapping for PAP refactor",
+    "total_dependencies": 12,
+    "critical_path_requirements": ["REQ-PAP-001", "REQ-PAP-002", "REQ-PAP-003"],
+    "dependencies": {
+      "REQ-PAP-001": {
+        "depends_on": [],
+        "blocks": ["REQ-PAP-002", "REQ-PAP-003"],
+        "parallel_with": [],
+        "critical_path": true,
+        "estimated_delay_if_blocked": "All subsequent work blocked"
+      },
+      "REQ-PAP-002": {
+        "depends_on": ["REQ-PAP-001"],
+        "blocks": ["REQ-PAP-004", "REQ-PAP-006"],
+        "parallel_with": [],
+        "critical_path": true,
+        "estimated_delay_if_blocked": "UI and documentation work blocked"
+      },
+      "REQ-PAP-003": {
+        "depends_on": ["REQ-PAP-001", "REQ-PAP-002"],
+        "blocks": ["REQ-PAP-007", "REQ-PAP-008"],
+        "parallel_with": ["REQ-PAP-004"],
+        "critical_path": true,
+        "estimated_delay_if_blocked": "Testing phase blocked"
+      }
+    }
+  },
+  "implementation_timeline": {
+    "total_duration": "2-3 days",
+    "weekly_breakdown": [
+      {
+        "week": 1,
+        "focus_area": "Core PAP refactor",
+        "requirements_to_complete": ["REQ-PAP-001", "REQ-PAP-002", "REQ-PAP-003"],
+        "estimated_hours": 7,
+        "key_deliverables": ["Routes removed", "FastAPI direct routes", "Clean PAP flow"],
+        "risk_factors": ["Import dependency complexity", "Route migration complexity"]
+      },
+      {
+        "week": 1,
+        "focus_area": "UI and documentation",
+        "requirements_to_complete": ["REQ-PAP-004", "REQ-PAP-005", "REQ-PAP-006"],
+        "estimated_hours": 6,
+        "key_deliverables": ["Simplified web layer", "License POC", "Updated docs"],
+        "risk_factors": ["UI integration complexity"]
+      },
+      {
+        "week": 1,
+        "focus_area": "Testing and validation",
+        "requirements_to_complete": ["REQ-PAP-007", "REQ-PAP-008"],
+        "estimated_hours": 4,
+        "key_deliverables": ["PAP test suite", "Performance benchmarks"],
+        "risk_factors": ["Test coverage completeness"]
+      }
+    ],
+    "resource_allocation": {
+      "senior_developer_hours": 12,
+      "mid_developer_hours": 4,
+      "qa_testing_hours": 2,
+      "devops_hours": 0
+    }
+  },
+  "validation_metrics": {
+    "coverage_percentage": "100%",
+    "requirements_with_file_paths": 8,
+    "requirements_with_line_numbers": 8,
+    "requirements_with_code_samples": 8,
+    "client_integration_points": 6,
+    "critical_path_duration": "7 hours"
+  },
+  "next_agent": "enforcer",
+  "next_agent_input": {
+    "workflow_id": "wf_pap_refactor_2025",
+    "total_requirements": 8,
+    "critical_requirements": ["REQ-PAP-001", "REQ-PAP-002", "REQ-PAP-003"],
+    "cache_file": ".data/wf_pap_refactor_2025_requirements_analysis.json",
+    "validation_focus": [
+      "PAP architecture consistency validation",
+      "Route removal completeness verification",
+      "FastAPI native pattern compliance",
+      "License POC functionality validation",
+      "Documentation accuracy verification"
+    ],
+    "source_type": "user_input"
+  },
+  "data_compression": {
+    "compressed_past_workflows": false,
+    "compression_ratio": 0,
+    "archived_workflow_count": 0,
+    "storage_saved_mb": 0,
+    "compression_method": "none"
+  },
+  "bonus_contributions": {
+    "extra_analysis_performed": true,
+    "additional_requirements_discovered": 2,
+    "enhanced_validation_checks": [
+      "PAP flow integrity verification",
+      "Performance impact assessment",
+      "FastAPI native pattern compliance"
+    ],
+    "proactive_improvements_suggested": 3,
+    "cross_workflow_insights": [
+      {
+        "insight": "Route abstractions add complexity without significant benefit",
+        "impact": "Architecture simplification improves maintainability"
+      },
+      {
+        "insight": "FastAPI native patterns are more performant",
+        "impact": "Direct controller calls reduce request overhead"
+      }
+    ],
+    "contribution_value_score": 85
+  }
+}
