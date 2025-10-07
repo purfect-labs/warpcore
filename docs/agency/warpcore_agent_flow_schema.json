@@ -1,0 +1,296 @@
+{
+  "$schema": "http://json-schema.org/draft-07/schema#",
+  "title": "WARPCORE Agent System Data Flow Schema",
+  "description": "Complete schema defining the data flow, relationships, and operations of the WARPCORE agent system",
+  "type": "object",
+  "properties": {
+    "system_metadata": {
+      "type": "object",
+      "properties": {
+        "name": {"type": "string", "const": "WARPCORE Agent System"},
+        "version": {"type": "string", "pattern": "^\\d+\\.\\d+\\.\\d+$"},
+        "description": {"type": "string"},
+        "client_directory": {"type": "string"},
+        "cache_directory": {"type": "string", "const": ".data"},
+        "workflow_id_pattern": {"type": "string", "const": "wf_{12_char_hex}"}
+      },
+      "required": ["name", "version", "client_directory", "cache_directory"]
+    },
+    "agents": {
+      "type": "array",
+      "items": {
+        "type": "object",
+        "properties": {
+          "id": {"type": "string"},
+          "name": {"type": "string"},
+          "position": {"type": "integer", "minimum": -1, "maximum": 6},
+          "role": {"type": "string"},
+          "description": {"type": "string"},
+          "file_path": {"type": "string"},
+          "dependencies": {
+            "type": "array",
+            "items": {"type": "string"}
+          },
+          "outputs_to": {
+            "type": "array",
+            "items": {"type": "string"}
+          },
+          "cache_pattern": {"type": "string"},
+          "input_cache_pattern": {"type": "string"},
+          "polymorphic_schema": {
+            "type": "object",
+            "properties": {
+              "produces_identical_output": {"type": "boolean"},
+              "shared_schema_type": {"type": "string"},
+              "consumers": {
+                "type": "array",
+                "items": {"type": "string"}
+              }
+            }
+          },
+          "loop_capabilities": {
+            "type": "object",
+            "properties": {
+              "can_loop_back_to": {
+                "type": "array",
+                "items": {"type": "string"}
+              },
+              "preserves_changes": {"type": "boolean"},
+              "generates_specs": {
+                "type": "array",
+                "items": {"type": "string"}
+              }
+            }
+          },
+          "key_functions": {
+            "type": "array",
+            "items": {"type": "string"}
+          },
+          "data_produced": {
+            "type": "object",
+            "additionalProperties": {"type": "string"}
+          },
+          "performance_metrics": {
+            "type": "object",
+            "properties": {
+              "execution_time": {"type": "string"},
+              "memory_usage": {"type": "string"},
+              "quality_score": {"type": "string"},
+              "efficiency_rating": {"type": "string", "enum": ["EXCELLENT", "GOOD", "FAIR", "POOR"]}
+            }
+          },
+          "validation_rules": {
+            "type": "array",
+            "items": {"type": "string"}
+          },
+          "success_criteria": {
+            "type": "array",
+            "items": {"type": "string"}
+          }
+        },
+        "required": ["id", "name", "position", "role", "file_path"]
+      }
+    },
+    "data_flow": {
+      "type": "object",
+      "properties": {
+        "primary_flow": {
+          "type": "array",
+          "items": {
+            "type": "object",
+            "properties": {
+              "from_agent": {"type": "string"},
+              "to_agent": {"type": "string"},
+              "data_type": {"type": "string"},
+              "cache_file": {"type": "string"},
+              "description": {"type": "string"}
+            },
+            "required": ["from_agent", "to_agent", "data_type", "cache_file"]
+          }
+        },
+        "polymorphic_flows": {
+          "type": "object",
+          "properties": {
+            "identical_schema_producers": {
+              "type": "array",
+              "items": {
+                "type": "object",
+                "properties": {
+                  "schema_type": {"type": "string"},
+                  "producers": {
+                    "type": "array",
+                    "items": {"type": "string"}
+                  },
+                  "shared_consumers": {
+                    "type": "array",
+                    "items": {"type": "string"}
+                  },
+                  "cache_pattern": {"type": "string"}
+                }
+              }
+            }
+          }
+        },
+        "loop_management": {
+          "type": "object",
+          "properties": {
+            "loop_patterns": {
+              "type": "array",
+              "items": {
+                "type": "object",
+                "properties": {
+                  "loop_id": {"type": "string"},
+                  "from_agent": {"type": "string"},
+                  "to_agent": {"type": "string"},
+                  "preserves_changes": {"type": "boolean"},
+                  "condition": {"type": "string"},
+                  "spec_generation": {
+                    "type": "array",
+                    "items": {"type": "string"}
+                  }
+                }
+              }
+            },
+            "change_preservation": {
+              "type": "object",
+              "properties": {
+                "enabled": {"type": "boolean", "const": true},
+                "mechanism": {"type": "string"},
+                "agents_supporting": {
+                  "type": "array",
+                  "items": {"type": "string"}
+                }
+              }
+            }
+          }
+        },
+        "alternative_paths": {
+          "type": "array",
+          "items": {
+            "type": "object",
+            "properties": {
+              "path_id": {"type": "string"},
+              "condition": {"type": "string"},
+              "agents": {
+                "type": "array",
+                "items": {"type": "string"}
+              },
+              "description": {"type": "string"}
+            }
+          }
+        },
+        "restart_capabilities": {
+          "type": "object",
+          "properties": {
+            "supported": {"type": "boolean", "const": true},
+            "restart_from_any_agent": {"type": "boolean", "const": true},
+            "cache_based": {"type": "boolean", "const": true},
+            "description": {"type": "string"}
+          }
+        }
+      }
+    },
+    "cache_management": {
+      "type": "object",
+      "properties": {
+        "patterns": {
+          "type": "object",
+          "patternProperties": {
+            "^[a-z_]+$": {"type": "string"}
+          }
+        },
+        "compression": {
+          "type": "object",
+          "properties": {
+            "enabled": {"type": "boolean", "const": true},
+            "trigger_age_days": {"type": "integer", "const": 7},
+            "archive_age_days": {"type": "integer", "const": 30},
+            "compression_ratio": {"type": "number", "minimum": 0, "maximum": 1},
+            "methods": {
+              "type": "array",
+              "items": {"type": "string", "enum": ["gzip", "json_minify", "archive"]}
+            }
+          }
+        },
+        "cleanup": {
+          "type": "object",
+          "properties": {
+            "automatic": {"type": "boolean"},
+            "schedule": {"type": "string"},
+            "retention_policy": {"type": "string"}
+          }
+        }
+      }
+    },
+    "workflow_phases": {
+      "type": "array",
+      "items": {
+        "type": "object",
+        "properties": {
+          "phase": {"type": "string"},
+          "agents": {
+            "type": "array",
+            "items": {"type": "string"}
+          },
+          "description": {"type": "string"},
+          "parallel_execution": {"type": "boolean"},
+          "critical_path": {"type": "boolean"}
+        }
+      }
+    },
+    "quality_assurance": {
+      "type": "object",
+      "properties": {
+        "cross_validation": {
+          "type": "object",
+          "properties": {
+            "enabled": {"type": "boolean", "const": true},
+            "validator_agent": {"type": "string", "const": "gatekeeper"},
+            "validation_scope": {"type": "string"}
+          }
+        },
+        "bonus_contributions": {
+          "type": "object",
+          "properties": {
+            "tracking_enabled": {"type": "boolean", "const": true},
+            "value_scoring": {"type": "boolean", "const": true},
+            "contribution_types": {
+              "type": "array",
+              "items": {"type": "string"}
+            }
+          }
+        },
+        "watermarking": {
+          "type": "object",
+          "properties": {
+            "required": {"type": "boolean", "const": true},
+            "patterns": {
+              "type": "array",
+              "items": {"type": "string"}
+            },
+            "locations": {"type": "string"}
+          }
+        }
+      }
+    }
+  },
+  "required": ["system_metadata", "agents", "data_flow", "cache_management"],
+  "definitions": {
+    "workflow_id": {
+      "type": "string",
+      "pattern": "^wf_[a-f0-9]{12}$"
+    },
+    "agent_id": {
+      "type": "string",
+      "enum": ["origin", "boss", "pathfinder", "architect", "oracle", "enforcer", "craftsman", "craftbuddy", "gatekeeper", "mama_bear"]
+    },
+    "priority_level": {
+      "type": "string",
+      "enum": ["CRITICAL", "HIGH", "MEDIUM", "LOW"]
+    },
+    "execution_status": {
+      "type": "string",
+      "enum": ["PENDING", "IN_PROGRESS", "COMPLETED", "FAILED", "SKIPPED"]
+    }
+  }
+}

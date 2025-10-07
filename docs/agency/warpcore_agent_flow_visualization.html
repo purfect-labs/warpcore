@@ -1,0 +1,887 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>WARPCORE Agent System - Data Flow Visualization</title>
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        body {
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+            background: linear-gradient(135deg, #0f0f23 0%, #1a1a3e 100%);
+            color: #e6e6e6;
+            min-height: 100vh;
+            padding: 20px;
+        }
+
+        .container {
+            max-width: 1400px;
+            margin: 0 auto;
+        }
+
+        .header {
+            text-align: center;
+            margin-bottom: 40px;
+            padding: 20px;
+            background: rgba(255, 255, 255, 0.1);
+            border-radius: 15px;
+            backdrop-filter: blur(10px);
+        }
+
+        .header h1 {
+            color: #00ff88;
+            font-size: 2.5rem;
+            margin-bottom: 10px;
+            text-shadow: 0 0 20px rgba(0, 255, 136, 0.5);
+        }
+
+        .header p {
+            font-size: 1.2rem;
+            color: #b0b0b0;
+        }
+
+        .flow-container {
+            display: grid;
+            gap: 30px;
+            grid-template-columns: 1fr;
+        }
+
+        .agent-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(300px, 1fr));
+            gap: 20px;
+            margin-bottom: 40px;
+        }
+
+        .agent-card {
+            background: rgba(255, 255, 255, 0.1);
+            border-radius: 15px;
+            padding: 20px;
+            backdrop-filter: blur(10px);
+            border: 1px solid rgba(255, 255, 255, 0.2);
+            transition: all 0.3s ease;
+            position: relative;
+            overflow: hidden;
+        }
+
+        .agent-card:hover {
+            transform: translateY(-5px);
+            box-shadow: 0 10px 30px rgba(0, 255, 136, 0.3);
+            border-color: #00ff88;
+        }
+
+        .agent-card::before {
+            content: '';
+            position: absolute;
+            top: 0;
+            left: 0;
+            right: 0;
+            height: 4px;
+            background: linear-gradient(90deg, #00ff88, #00ccff);
+        }
+
+        .agent-header {
+            display: flex;
+            align-items: center;
+            gap: 15px;
+            margin-bottom: 15px;
+        }
+
+        .agent-position {
+            background: #00ff88;
+            color: #000;
+            width: 40px;
+            height: 40px;
+            border-radius: 50%;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-weight: bold;
+            font-size: 1.1rem;
+        }
+
+        .agent-info h3 {
+            color: #00ff88;
+            font-size: 1.3rem;
+            margin-bottom: 5px;
+        }
+
+        .agent-info .role {
+            color: #b0b0b0;
+            font-size: 0.9rem;
+        }
+
+        .agent-description {
+            margin: 15px 0;
+            line-height: 1.6;
+            color: #d0d0d0;
+        }
+
+        .agent-functions {
+            margin: 15px 0;
+        }
+
+        .agent-functions h4 {
+            color: #00ccff;
+            margin-bottom: 10px;
+            font-size: 1rem;
+        }
+
+        .function-list {
+            list-style: none;
+        }
+
+        .function-list li {
+            padding: 5px 0;
+            color: #c0c0c0;
+            font-size: 0.9rem;
+            position: relative;
+            padding-left: 20px;
+        }
+
+        .function-list li::before {
+            content: '→';
+            position: absolute;
+            left: 0;
+            color: #00ff88;
+            font-weight: bold;
+        }
+
+        .data-flow {
+            background: rgba(255, 255, 255, 0.1);
+            border-radius: 15px;
+            padding: 30px;
+            backdrop-filter: blur(10px);
+            border: 1px solid rgba(255, 255, 255, 0.2);
+            margin-bottom: 30px;
+        }
+
+        .data-flow h2 {
+            color: #00ff88;
+            margin-bottom: 20px;
+            font-size: 1.8rem;
+            text-align: center;
+        }
+
+        .flow-diagram {
+            display: flex;
+            flex-wrap: wrap;
+            justify-content: center;
+            align-items: center;
+            gap: 20px;
+            margin: 30px 0;
+        }
+
+        .flow-node {
+            background: linear-gradient(135deg, #1a1a3e 0%, #2d2d5f 100%);
+            border: 2px solid #00ff88;
+            border-radius: 10px;
+            padding: 15px 20px;
+            min-width: 120px;
+            text-align: center;
+            position: relative;
+        }
+
+        .flow-node.origin { border-color: #ff6b6b; }
+        .flow-node.boss { border-color: #4ecdc4; }
+        .flow-node.pathfinder { border-color: #45b7d1; }
+        .flow-node.architect { border-color: #96ceb4; }
+        .flow-node.oracle { border-color: #ffeaa7; }
+        .flow-node.enforcer { border-color: #fab1a0; }
+        .flow-node.craftsman { border-color: #fd79a8; }
+        .flow-node.gatekeeper { border-color: #00b894; }
+
+        .flow-arrow {
+            color: #00ff88;
+            font-size: 2rem;
+            align-self: center;
+        }
+
+        .cache-info {
+            background: rgba(0, 204, 255, 0.1);
+            border-radius: 10px;
+            padding: 20px;
+            margin: 20px 0;
+        }
+
+        .cache-info h3 {
+            color: #00ccff;
+            margin-bottom: 15px;
+        }
+
+        .cache-files {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(300px, 1fr));
+            gap: 15px;
+        }
+
+        .cache-file {
+            background: rgba(255, 255, 255, 0.1);
+            padding: 10px 15px;
+            border-radius: 8px;
+            font-family: 'Courier New', monospace;
+            font-size: 0.9rem;
+            border-left: 4px solid #00ccff;
+        }
+
+        .stats-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+            gap: 20px;
+            margin: 30px 0;
+        }
+
+        .stat-card {
+            background: rgba(255, 255, 255, 0.1);
+            border-radius: 10px;
+            padding: 20px;
+            text-align: center;
+            backdrop-filter: blur(10px);
+        }
+
+        .stat-value {
+            font-size: 2rem;
+            font-weight: bold;
+            color: #00ff88;
+            display: block;
+            margin-bottom: 10px;
+        }
+
+        .stat-label {
+            color: #b0b0b0;
+            font-size: 0.9rem;
+        }
+
+        .legend {
+            display: flex;
+            flex-wrap: wrap;
+            gap: 20px;
+            justify-content: center;
+            margin: 30px 0;
+        }
+
+        .legend-item {
+            display: flex;
+            align-items: center;
+            gap: 10px;
+            background: rgba(255, 255, 255, 0.1);
+            padding: 10px 15px;
+            border-radius: 8px;
+        }
+
+        .legend-color {
+            width: 20px;
+            height: 20px;
+            border-radius: 4px;
+        }
+
+        .alternative-paths {
+            background: rgba(255, 204, 0, 0.1);
+            border-radius: 10px;
+            padding: 20px;
+            margin: 20px 0;
+        }
+
+        .alternative-paths h3 {
+            color: #ffcc00;
+            margin-bottom: 15px;
+        }
+
+        .path-option {
+            background: rgba(255, 255, 255, 0.1);
+            padding: 15px;
+            border-radius: 8px;
+            margin: 10px 0;
+            border-left: 4px solid #ffcc00;
+        }
+
+        @media (max-width: 768px) {
+            .agent-grid {
+                grid-template-columns: 1fr;
+            }
+            
+            .flow-diagram {
+                flex-direction: column;
+            }
+            
+            .stats-grid {
+                grid-template-columns: repeat(2, 1fr);
+            }
+        }
+
+        .json-schema {
+            background: rgba(0, 0, 0, 0.3);
+            border-radius: 10px;
+            padding: 20px;
+            margin: 30px 0;
+            font-family: 'Courier New', monospace;
+            font-size: 0.8rem;
+            max-height: 400px;
+            overflow-y: auto;
+            border: 1px solid #333;
+        }
+
+        .json-schema pre {
+            color: #e6e6e6;
+            line-height: 1.4;
+        }
+
+        .watermark {
+            position: fixed;
+            bottom: 20px;
+            right: 20px;
+            background: rgba(255, 0, 0, 0.1);
+            color: #ff6b6b;
+            padding: 10px 15px;
+            border-radius: 8px;
+            font-size: 0.9rem;
+            border: 1px solid #ff6b6b;
+            z-index: 1000;
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <div class="header">
+            <h1>🤖 WARPCORE Agent System</h1>
+            <p>Complete Data Flow Architecture & Visualization</p>
+            <p style="font-size: 0.9rem; margin-top: 10px; color: #888;">
+                Generated: <span id="timestamp"></span> | Client Directory: /Users/shawn_meredith/code/pets/warpcore
+            </p>
+        </div>
+
+        <div class="stats-grid">
+            <div class="stat-card">
+                <span class="stat-value">10</span>
+                <span class="stat-label">Total Agents</span>
+            </div>
+            <div class="stat-card">
+                <span class="stat-value">3</span>
+                <span class="stat-label">Polymorphic Producers</span>
+            </div>
+            <div class="stat-card">
+                <span class="stat-value">2</span>
+                <span class="stat-label">Loop Patterns</span>
+            </div>
+            <div class="stat-card">
+                <span class="stat-value">100%</span>
+                <span class="stat-label">Change Preservation</span>
+            </div>
+        </div>
+
+        <div class="data-flow">
+            <h2>🔄 Polymorphic Data Flow</h2>
+            <div class="flow-diagram">
+                <div class="flow-node origin">
+                    <strong>-1</strong><br>
+                    ORIGIN<br>
+                    <small>Bootstrap</small>
+                </div>
+                <div class="flow-arrow">→</div>
+                <div class="flow-node boss">
+                    <strong>0</strong><br>
+                    BOSS<br>
+                    <small>Orchestrator</small>
+                </div>
+                <div class="flow-arrow">→</div>
+                <div style="display: flex; flex-direction: column; align-items: center; gap: 10px; border: 2px dashed #00ff88; padding: 15px; border-radius: 10px;">
+                    <div style="color: #00ff88; font-weight: bold; margin-bottom: 10px;">POLYMORPHIC PRODUCERS</div>
+                    <div style="color: #b0b0b0; font-size: 0.8rem; margin-bottom: 10px;">All produce identical schema</div>
+                    <div class="flow-node pathfinder">
+                        <strong>1</strong><br>
+                        PATHFINDER<br>
+                        <small>Schema Analysis</small>
+                    </div>
+                    <div class="flow-node architect">
+                        <strong>2a</strong><br>
+                        ARCHITECT<br>
+                        <small>Requirements Gen</small>
+                    </div>
+                    <div class="flow-node oracle">
+                        <strong>2b</strong><br>
+                        ORACLE<br>
+                        <small>User Input</small>
+                    </div>
+                </div>
+                <div class="flow-arrow">→</div>
+                <div class="flow-node enforcer">
+                    <strong>3</strong><br>
+                    ENFORCER<br>
+                    <small>Validator</small>
+                </div>
+                <div class="flow-arrow">→</div>
+                <div class="flow-node craftsman">
+                    <strong>4</strong><br>
+                    CRAFTSMAN<br>
+                    <small>Implementation</small>
+                </div>
+                <div class="flow-arrow">→</div>
+                <div class="flow-node craftbuddy" style="border-color: #e17055;">
+                    <strong>4b</strong><br>
+                    CRAFTBUDDY<br>
+                    <small>Spec Generator</small>
+                </div>
+                <div style="display: flex; flex-direction: column; align-items: center; gap: 10px; margin: 0 10px;">
+                    <div class="flow-arrow">↓</div>
+                    <div style="color: #ffcc00; font-weight: bold; font-size: 0.9rem;">GENERATES</div>
+                    <div class="flow-arrow">↓</div>
+                </div>
+                <div style="display: flex; flex-direction: column; align-items: center; gap: 10px;">
+                    <div class="flow-node" style="background: linear-gradient(135deg, #2d5016 0%, #3d6b1e 100%); border-color: #4caf50;">
+                        <strong>CRAFT</strong><br>
+                        SPEC<br>
+                        <small>Implementation</small>
+                    </div>
+                    <div style="color: #ffcc00; font-weight: bold;">OR</div>
+                    <div class="flow-node gatekeeper">
+                        <strong>5</strong><br>
+                        GATEKEEPER<br>
+                        <small>Gate Promotion</small>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <div class="alternative-paths">
+            <h3>🔀 Polymorphic Flow Patterns</h3>
+            <div class="path-option">
+                <strong>Identical Schema Output:</strong> pathfinder, architect, oracle → enforcer
+                <br><small>All three agents produce identical polymorphic schema that feeds into enforcer</small>
+            </div>
+            <div class="path-option">
+                <strong>Change Preservation Loop:</strong> craftsman → craftbuddy → [craft_spec OR gatekeeper]
+                <br><small>Craftbuddy preserves all changes from craftsman while generating specs or promoting</small>
+            </div>
+            <div class="path-option">
+                <strong>Loop Back Capability:</strong> Any agent can loop back without losing changes
+                <br><small>Full change preservation across all loop iterations</small>
+            </div>
+        </div>
+
+        <div class="cache-info">
+            <h3>💾 Cache File Patterns & Polymorphic Schema</h3>
+            <div class="cache-files">
+                <div class="cache-file">{workflow_id}_bootstrap_state.json</div>
+                <div class="cache-file">{workflow_id}_orchestration_state.json</div>
+                <div class="cache-file" style="border-left-color: #00ff88;">{workflow_id}_polymorphic_schema.json</div>
+                <div class="cache-file">{workflow_id}_requirements_validation.json</div>
+                <div class="cache-file">{workflow_id}_implementation_results.json</div>
+                <div class="cache-file">{workflow_id}_craftbuddy_specs.json</div>
+                <div class="cache-file">{workflow_id}_gate_promotion_results.json</div>
+            </div>
+            <p style="margin-top: 15px; color: #b0b0b0; font-size: 0.9rem;">
+                <strong>Polymorphic:</strong> pathfinder, architect, oracle all write to same schema file
+                <br><strong>Change Preservation:</strong> craftbuddy maintains full history without loss
+                <br><strong>Loop Support:</strong> Any workflow can loop back using preserved state
+            </p>
+        </div>
+
+        <div class="agent-grid">
+            <!-- Agent Cards -->
+            <div class="agent-card">
+                <div class="agent-header">
+                    <div class="agent-position" style="background: #ff6b6b;">-1</div>
+                    <div class="agent-info">
+                        <h3>ORIGIN (Bootstrap)</h3>
+                        <div class="role">System Initialization & Health Checks</div>
+                    </div>
+                </div>
+                <div class="agent-description">
+                    Initializes the entire WARPCORE workflow system, performs health checks, discovers all agents, and launches the orchestrator with full steam restart capabilities.
+                </div>
+                <div class="agent-functions">
+                    <h4>Key Functions:</h4>
+                    <ul class="function-list">
+                        <li>Discover all 7 agents (0x, 0, 1-5)</li>
+                        <li>Validate WARPCORE directory structure</li>
+                        <li>Health check: Git, LLM collector, .data directory</li>
+                        <li>Launch Agent 0 with bootstrap parameters</li>
+                        <li>Full steam restart capability</li>
+                    </ul>
+                </div>
+            </div>
+
+            <div class="agent-card">
+                <div class="agent-header">
+                    <div class="agent-position" style="background: #4ecdc4;">0</div>
+                    <div class="agent-info">
+                        <h3>BOSS (Orchestrator)</h3>
+                        <div class="role">Workflow Management & Agent Sequencing</div>
+                    </div>
+                </div>
+                <div class="agent-description">
+                    Manages the entire workflow, sequences through agents 1→2→3→4→5, handles restarts, and coordinates between all agents with proper cache management.
+                </div>
+                <div class="agent-functions">
+                    <h4>Key Functions:</h4>
+                    <ul class="function-list">
+                        <li>Generate unique workflow IDs (wf_{12_char_hex})</li>
+                        <li>Validate all 5 agent files exist</li>
+                        <li>Sequence agents in proper order</li>
+                        <li>Handle restart from any agent</li>
+                        <li>Manage cache files between agents</li>
+                    </ul>
+                </div>
+            </div>
+
+            <div class="agent-card">
+                <div class="agent-header">
+                    <div class="agent-position" style="background: #45b7d1;">1</div>
+                    <div class="agent-info">
+                        <h3>PATHFINDER (Schema Reconciler)</h3>
+                        <div class="role">Codebase Analysis & Coherence Validation</div>
+                    </div>
+                </div>
+                <div class="agent-description">
+                    Conducts comprehensive codebase analysis using LLM collector, identifies schema coherence issues, and locates FAKE/DEMO contamination with precise line numbers.
+                </div>
+                <div class="agent-functions">
+                    <h4>Key Functions:</h4>
+                    <ul class="function-list">
+                        <li>Run llm-collector for codebase analysis (179+ files)</li>
+                        <li>Identify FAKE/DEMO contamination with exact locations</li>
+                        <li>Validate PAP architecture compliance</li>
+                        <li>Generate detailed fix recommendations</li>
+                        <li>Cross-reference findings for consistency</li>
+                    </ul>
+                </div>
+            </div>
+
+            <div class="agent-card">
+                <div class="agent-header">
+                    <div class="agent-position" style="background: #96ceb4;">2a</div>
+                    <div class="agent-info">
+                        <h3>ARCHITECT (Requirements Generator)</h3>
+                        <div class="role">Schema Gap to Requirements Conversion</div>
+                    </div>
+                </div>
+                <div class="agent-description">
+                    Converts schema coherence issues into structured implementation requirements targeting CLIENT_DIRECTORY files with detailed before/after code samples.
+                </div>
+                <div class="agent-functions">
+                    <h4>Key Functions:</h4>
+                    <ul class="function-list">
+                        <li>Convert schema coherence issues to requirements</li>
+                        <li>Target CLIENT_DIRECTORY file modifications</li>
+                        <li>Generate before/after code samples</li>
+                        <li>Create implementation chunks (max 12 hours each)</li>
+                        <li>Plan integration with existing infrastructure</li>
+                    </ul>
+                </div>
+            </div>
+
+            <div class="agent-card">
+                <div class="agent-header">
+                    <div class="agent-position" style="background: #ffeaa7;">2b</div>
+                    <div class="agent-info">
+                        <h3>ORACLE (Requirements Translator)</h3>
+                        <div class="role">User Input to Requirements Conversion</div>
+                    </div>
+                </div>
+                <div class="agent-description">
+                    Processes workflow specifications and user input, converts them into actionable implementation requirements with detailed tickets and testing strategies.
+                </div>
+                <div class="agent-functions">
+                    <h4>Key Functions:</h4>
+                    <ul class="function-list">
+                        <li>Process workflow specifications and user input</li>
+                        <li>Analyze CLIENT_DIRECTORY with llm-collector</li>
+                        <li>Generate implementation requirements</li>
+                        <li>Create actionable tickets with testing requirements</li>
+                        <li>Map workflow features to existing components</li>
+                    </ul>
+                </div>
+            </div>
+
+            <div class="agent-card">
+                <div class="agent-header">
+                    <div class="agent-position" style="background: #fab1a0;">3</div>
+                    <div class="agent-info">
+                        <h3>ENFORCER (Requirements Validator)</h3>
+                        <div class="role">Requirements Validation & Data Compression</div>
+                    </div>
+                </div>
+                <div class="agent-description">
+                    Validates requirements for PAP compliance, checks feasibility, resolves dependencies, and manages historical data compression for storage efficiency.
+                </div>
+                <div class="agent-functions">
+                    <h4>Key Functions:</h4>
+                    <ul class="function-list">
+                        <li>Validate PAP compliance of requirements</li>
+                        <li>Check feasibility and effort estimates</li>
+                        <li>Resolve dependency conflicts</li>
+                        <li>Compress old workflows (>7 days)</li>
+                        <li>Identify bonus contributions</li>
+                    </ul>
+                </div>
+            </div>
+
+            <div class="agent-card">
+                <div class="agent-header">
+                    <div class="agent-position" style="background: #fd79a8;">4</div>
+                    <div class="agent-info">
+                        <h3>CRAFTSMAN (Implementation Agent)</h3>
+                        <div class="role">Requirements Execution & Code Changes</div>
+                    </div>
+                </div>
+                <div class="agent-description">
+                    Executes approved requirements by making actual code changes to CLIENT_DIRECTORY files, runs comprehensive testing, and validates implementations.
+                </div>
+                <div class="agent-functions">
+                    <h4>Key Functions:</h4>
+                    <ul class="function-list">
+                        <li>Execute approved requirements in priority order</li>
+                        <li>Make actual code changes to CLIENT_DIRECTORY</li>
+                        <li>Run comprehensive testing (unit, integration, E2E)</li>
+                        <li>Apply WARP-DEMO watermarks to test components</li>
+                        <li>Validate against acceptance criteria</li>
+                    </ul>
+                </div>
+            </div>
+
+            <div class="agent-card">
+                <div class="agent-header">
+                    <div class="agent-position" style="background: #e17055;">4b</div>
+                    <div class="agent-info">
+                        <h3>CRAFTBUDDY (Spec Generator)</h3>
+                        <div class="role">Change Preservation & Spec Generation</div>
+                    </div>
+                </div>
+                <div class="agent-description">
+                    Receives all changes from CRAFTSMAN and preserves them completely while generating either craftsman specs or gatekeeper specs without any loss of modifications.
+                </div>
+                <div class="agent-functions">
+                    <h4>Key Functions:</h4>
+                    <ul class="function-list">
+                        <li>Preserve all CRAFTSMAN changes without loss</li>
+                        <li>Generate craftsman implementation specs</li>
+                        <li>Generate gatekeeper promotion specs</li>
+                        <li>Support loop back to any previous agent</li>
+                        <li>Maintain complete change history</li>
+                    </ul>
+                </div>
+            </div>
+
+            <div class="agent-card">
+                <div class="agent-header">
+                    <div class="agent-position" style="background: #00b894;">5</div>
+                    <div class="agent-info">
+                        <h3>GATEKEEPER (Gate Promotion)</h3>
+                        <div class="role">Validation & Git Operations</div>
+                    </div>
+                </div>
+                <div class="agent-description">
+                    Cross-validates all agent outputs, performs final testing, handles git operations, and makes promotion decisions for workflow completion.
+                </div>
+                <div class="agent-functions">
+                    <h4>Key Functions:</h4>
+                    <ul class="function-list">
+                        <li>Cross-validate all previous agent outputs</li>
+                        <li>Run final integration and regression tests</li>
+                        <li>Git staging, committing, and branch management</li>
+                        <li>Decide on workflow completion vs. next cycle</li>
+                        <li>Handle workflow promotion to production</li>
+                    </ul>
+                </div>
+            </div>
+
+            <div class="agent-card" style="border-color: #e74c3c;">
+                <div class="agent-header">
+                    <div class="agent-position" style="background: #e74c3c;">👩</div>
+                    <div class="agent-info">
+                        <h3>MAMA_BEAR (Oversight)</h3>
+                        <div class="role">Cross-Agent Monitoring & Support</div>
+                    </div>
+                </div>
+                <div class="agent-description">
+                    Provides oversight and support across all agents, monitors system health, and assists with complex inter-agent coordination when needed.
+                </div>
+                <div class="agent-functions">
+                    <h4>Key Functions:</h4>
+                    <ul class="function-list">
+                        <li>Cross-agent monitoring and health checks</li>
+                        <li>Complex problem resolution assistance</li>
+                        <li>System-wide coordination support</li>
+                        <li>Performance optimization recommendations</li>
+                        <li>Emergency intervention capabilities</li>
+                    </ul>
+                </div>
+            </div>
+        </div>
+
+        <div class="legend">
+            <div class="legend-item">
+                <div class="legend-color" style="background: #ff6b6b;"></div>
+                <span>Bootstrap & Initialization</span>
+            </div>
+            <div class="legend-item">
+                <div class="legend-color" style="background: #4ecdc4;"></div>
+                <span>Orchestration & Management</span>
+            </div>
+            <div class="legend-item">
+                <div class="legend-color" style="background: #45b7d1;"></div>
+                <span>Analysis & Discovery</span>
+            </div>
+            <div class="legend-item">
+                <div class="legend-color" style="background: #96ceb4;"></div>
+                <span>Requirements Generation</span>
+            </div>
+            <div class="legend-item">
+                <div class="legend-color" style="background: #fab1a0;"></div>
+                <span>Validation & Quality</span>
+            </div>
+            <div class="legend-item">
+                <div class="legend-color" style="background: #fd79a8;"></div>
+                <span>Implementation & Testing</span>
+            </div>
+            <div class="legend-item">
+                <div class="legend-color" style="background: #00b894;"></div>
+                <span>Promotion & Git Operations</span>
+            </div>
+        </div>
+
+        <div class="json-schema">
+            <h3 style="color: #00ff88; margin-bottom: 15px;">📋 Polymorphic JSON Schema Definition</h3>
+            <pre>{
+  "$schema": "http://json-schema.org/draft-07/schema#",
+  "title": "WARPCORE Agent System - Polymorphic Data Flow Schema",
+  "description": "Complete schema with polymorphic flows, loops, and change preservation",
+  "type": "object",
+  "properties": {
+    "system_metadata": {
+      "name": "WARPCORE Agent System",
+      "client_directory": "/Users/shawn_meredith/code/pets/warpcore",
+      "polymorphic_support": true,
+      "change_preservation": true
+    },
+    "polymorphic_flows": {
+      "identical_schema_producers": [
+        {
+          "schema_type": "requirements_analysis",
+          "producers": ["pathfinder", "architect", "oracle"],
+          "shared_consumers": ["enforcer"],
+          "cache_pattern": "{workflow_id}_polymorphic_schema.json"
+        }
+      ]
+    },
+    "agents": [
+      {
+        "id": "pathfinder", "position": 1,
+        "polymorphic_schema": { "produces_identical_output": true },
+        "outputs_to": ["enforcer"]
+      },
+      {
+        "id": "architect", "position": 2,
+        "polymorphic_schema": { "produces_identical_output": true },
+        "outputs_to": ["enforcer"]
+      },
+      {
+        "id": "oracle", "position": 2,
+        "polymorphic_schema": { "produces_identical_output": true },
+        "outputs_to": ["enforcer"]
+      },
+      {
+        "id": "enforcer", "position": 3,
+        "dependencies": ["pathfinder|architect|oracle"],
+        "outputs_to": ["craftsman"]
+      },
+      {
+        "id": "craftsman", "position": 4,
+        "outputs_to": ["craftbuddy"]
+      },
+      {
+        "id": "craftbuddy", "position": 4.5,
+        "loop_capabilities": {
+          "preserves_changes": true,
+          "generates_specs": ["craftsman_spec", "gatekeeper_spec"]
+        },
+        "outputs_to": ["gatekeeper", "ANY_AGENT_LOOP"]
+      }
+    ],
+    "loop_management": {
+      "change_preservation": {
+        "enabled": true,
+        "mechanism": "full_state_preservation",
+        "agents_supporting": ["craftbuddy"]
+      }
+    }
+  }
+}</pre>
+        </div>
+    </div>
+
+    <div class="watermark">
+        🚀 WARP-DEMO VISUALIZATION SYSTEM
+    </div>
+
+    <script>
+        // Set current timestamp
+        document.getElementById('timestamp').textContent = new Date().toISOString();
+
+        // Add interactive hover effects
+        document.querySelectorAll('.agent-card').forEach(card => {
+            card.addEventListener('mouseenter', function() {
+                this.style.transform = 'translateY(-5px) scale(1.02)';
+            });
+            
+            card.addEventListener('mouseleave', function() {
+                this.style.transform = 'translateY(0) scale(1)';
+            });
+        });
+
+        // Add click interaction for agent cards
+        document.querySelectorAll('.agent-card').forEach(card => {
+            card.addEventListener('click', function() {
+                const agentName = this.querySelector('h3').textContent;
+                alert(`Agent Details: ${agentName}\n\nClick OK to view detailed specifications for this agent in the WARPCORE system.`);
+            });
+        });
+
+        // Add flow animation
+        let flowNodes = document.querySelectorAll('.flow-node');
+        let currentIndex = 0;
+
+        function highlightFlow() {
+            // Remove previous highlight
+            flowNodes.forEach(node => node.style.boxShadow = '');
+            
+            // Add highlight to current node
+            if (flowNodes[currentIndex]) {
+                flowNodes[currentIndex].style.boxShadow = '0 0 20px rgba(0, 255, 136, 0.8)';
+            }
+            
+            currentIndex = (currentIndex + 1) % flowNodes.length;
+        }
+
+        // Start flow animation
+        setInterval(highlightFlow, 2000);
+
+        // Add scroll-based animations
+        const observerOptions = {
+            threshold: 0.1,
+            rootMargin: '0px 0px -50px 0px'
+        };
+
+        const observer = new IntersectionObserver((entries) => {
+            entries.forEach(entry => {
+                if (entry.isIntersecting) {
+                    entry.target.style.opacity = '1';
+                    entry.target.style.transform = 'translateY(0)';
+                }
+            });
+        }, observerOptions);
+
+        document.querySelectorAll('.agent-card, .data-flow, .cache-info').forEach(el => {
+            el.style.opacity = '0';
+            el.style.transform = 'translateY(30px)';
+            el.style.transition = 'all 0.6s ease';
+            observer.observe(el);
+        });
+    </script>
+</body>
+</html>

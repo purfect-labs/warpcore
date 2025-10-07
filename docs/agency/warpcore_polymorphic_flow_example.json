@@ -1,0 +1,296 @@
+{
+  "system_metadata": {
+    "name": "WARPCORE Agent System",
+    "version": "2.0.0",
+    "description": "Polymorphic agent system with change preservation and loop capabilities",
+    "client_directory": "/Users/shawn_meredith/code/pets/warpcore",
+    "cache_directory": ".data",
+    "workflow_id_pattern": "wf_{12_char_hex}",
+    "polymorphic_support": true,
+    "change_preservation": true
+  },
+  "agents": [
+    {
+      "id": "origin",
+      "name": "Bootstrap Agent",
+      "position": -1,
+      "role": "System Initialization & Health Checks",
+      "description": "Initializes workflow system and launches orchestrator",
+      "file_path": "src/agency/agents/-1_origin.json",
+      "dependencies": [],
+      "outputs_to": ["boss"],
+      "cache_pattern": "{workflow_id}_bootstrap_state.json"
+    },
+    {
+      "id": "boss", 
+      "name": "Orchestrator Agent",
+      "position": 0,
+      "role": "Workflow Management & Agent Sequencing",
+      "description": "Manages workflow execution and agent coordination",
+      "file_path": "src/agency/agents/0_boss.json",
+      "dependencies": [],
+      "outputs_to": ["pathfinder", "architect", "oracle", "enforcer", "craftsman", "craftbuddy", "gatekeeper"],
+      "cache_pattern": "{workflow_id}_orchestration_state.json"
+    },
+    {
+      "id": "pathfinder",
+      "name": "Schema Reconciler Agent", 
+      "position": 1,
+      "role": "Codebase Analysis & Schema Reconciliation",
+      "description": "Analyzes codebase and produces polymorphic requirements schema",
+      "file_path": "src/agency/agents/1_pathfinder.json",
+      "dependencies": [],
+      "outputs_to": ["enforcer"],
+      "cache_pattern": "{workflow_id}_polymorphic_schema.json",
+      "polymorphic_schema": {
+        "produces_identical_output": true,
+        "shared_schema_type": "requirements_analysis",
+        "consumers": ["enforcer"]
+      }
+    },
+    {
+      "id": "architect",
+      "name": "Requirements Generator Agent",
+      "position": 2,
+      "role": "Schema-based Requirements Generation", 
+      "description": "Converts schema gaps into polymorphic requirements schema",
+      "file_path": "src/agency/agents/2a_architect.json",
+      "dependencies": ["pathfinder"],
+      "outputs_to": ["enforcer"],
+      "cache_pattern": "{workflow_id}_polymorphic_schema.json",
+      "polymorphic_schema": {
+        "produces_identical_output": true,
+        "shared_schema_type": "requirements_analysis",
+        "consumers": ["enforcer"]
+      }
+    },
+    {
+      "id": "oracle",
+      "name": "Requirements Translator Agent",
+      "position": 2,
+      "role": "User Input Requirements Translation",
+      "description": "Converts user specifications into polymorphic requirements schema", 
+      "file_path": "src/agency/agents/2b_oracle.json",
+      "dependencies": ["USER_INPUT"],
+      "outputs_to": ["enforcer"],
+      "cache_pattern": "{workflow_id}_polymorphic_schema.json",
+      "polymorphic_schema": {
+        "produces_identical_output": true,
+        "shared_schema_type": "requirements_analysis", 
+        "consumers": ["enforcer"]
+      }
+    },
+    {
+      "id": "enforcer",
+      "name": "Requirements Validator Agent",
+      "position": 3,
+      "role": "Requirements Validation & Data Compression",
+      "description": "Validates polymorphic requirements from any producer agent",
+      "file_path": "src/agency/agents/3_enforcer.json", 
+      "dependencies": ["pathfinder|architect|oracle"],
+      "outputs_to": ["craftsman"],
+      "cache_pattern": "{workflow_id}_requirements_validation.json",
+      "input_cache_pattern": "{workflow_id}_polymorphic_schema.json"
+    },
+    {
+      "id": "craftsman",
+      "name": "Implementation Agent", 
+      "position": 4,
+      "role": "Requirements Execution & Code Changes",
+      "description": "Executes validated requirements and implements code changes",
+      "file_path": "src/agency/agents/4_craftsman.json",
+      "dependencies": ["enforcer"],
+      "outputs_to": ["craftbuddy"],
+      "cache_pattern": "{workflow_id}_implementation_results.json"
+    },
+    {
+      "id": "craftbuddy",
+      "name": "Spec Generator Agent",
+      "position": 4.5,
+      "role": "Change Preservation & Spec Generation",
+      "description": "Preserves all craftsman changes and generates specs for next steps",
+      "file_path": "src/agency/agents/4b_craftbuddy.json",
+      "dependencies": ["craftsman"], 
+      "outputs_to": ["gatekeeper", "ANY_AGENT_LOOP"],
+      "cache_pattern": "{workflow_id}_craftbuddy_specs.json",
+      "loop_capabilities": {
+        "can_loop_back_to": ["pathfinder", "architect", "oracle", "enforcer", "craftsman"],
+        "preserves_changes": true,
+        "generates_specs": ["craftsman_spec", "gatekeeper_spec"]
+      }
+    },
+    {
+      "id": "gatekeeper",
+      "name": "Gate Promotion Agent",
+      "position": 5,
+      "role": "Validation & Git Operations",
+      "description": "Final validation, git operations, and promotion decisions",
+      "file_path": "src/agency/agents/5_gatekeeper.json",
+      "dependencies": ["craftbuddy"],
+      "outputs_to": ["boss", "COMPLETE"],
+      "cache_pattern": "{workflow_id}_gate_promotion_results.json"
+    },
+    {
+      "id": "mama_bear",
+      "name": "Oversight & Support Agent", 
+      "position": null,
+      "role": "Cross-Agent Monitoring & Support",
+      "description": "Provides system-wide oversight and intervention capabilities",
+      "file_path": "src/agency/agents/mama_bear.json",
+      "dependencies": [],
+      "outputs_to": ["*"],
+      "cache_pattern": "dynamic"
+    }
+  ],
+  "data_flow": {
+    "polymorphic_flows": {
+      "identical_schema_producers": [
+        {
+          "schema_type": "requirements_analysis",
+          "producers": ["pathfinder", "architect", "oracle"],
+          "shared_consumers": ["enforcer"],
+          "cache_pattern": "{workflow_id}_polymorphic_schema.json",
+          "description": "All three producers write identical schema structure to same cache file"
+        }
+      ]
+    },
+    "primary_flow": [
+      {
+        "from_agent": "origin",
+        "to_agent": "boss", 
+        "data_type": "bootstrap_state",
+        "cache_file": "{workflow_id}_bootstrap_state.json",
+        "description": "System initialization and health checks"
+      },
+      {
+        "from_agent": "pathfinder|architect|oracle",
+        "to_agent": "enforcer",
+        "data_type": "polymorphic_requirements_schema", 
+        "cache_file": "{workflow_id}_polymorphic_schema.json",
+        "description": "Identical requirements schema from any producer"
+      },
+      {
+        "from_agent": "enforcer",
+        "to_agent": "craftsman",
+        "data_type": "validated_requirements",
+        "cache_file": "{workflow_id}_requirements_validation.json",
+        "description": "Validated and prioritized requirements"
+      },
+      {
+        "from_agent": "craftsman", 
+        "to_agent": "craftbuddy",
+        "data_type": "implementation_results",
+        "cache_file": "{workflow_id}_implementation_results.json",
+        "description": "Complete implementation results with all changes"
+      },
+      {
+        "from_agent": "craftbuddy",
+        "to_agent": "gatekeeper|ANY_AGENT",
+        "data_type": "preserved_changes_with_specs",
+        "cache_file": "{workflow_id}_craftbuddy_specs.json",
+        "description": "Preserved changes with generated specs or loop capability"
+      }
+    ],
+    "loop_management": {
+      "loop_patterns": [
+        {
+          "loop_id": "craftbuddy_to_any", 
+          "from_agent": "craftbuddy",
+          "to_agent": "ANY_PREVIOUS_AGENT",
+          "preserves_changes": true,
+          "condition": "spec_generation_complete",
+          "spec_generation": ["craftsman_spec", "gatekeeper_spec"]
+        },
+        {
+          "loop_id": "gatekeeper_to_boss",
+          "from_agent": "gatekeeper", 
+          "to_agent": "boss",
+          "preserves_changes": true,
+          "condition": "cycle_again_decision",
+          "spec_generation": []
+        }
+      ],
+      "change_preservation": {
+        "enabled": true,
+        "mechanism": "full_state_preservation_with_specs",
+        "agents_supporting": ["craftbuddy", "gatekeeper"]
+      }
+    },
+    "restart_capabilities": {
+      "supported": true,
+      "restart_from_any_agent": true,
+      "cache_based": true,
+      "description": "Any workflow can restart from any agent without losing changes"
+    }
+  },
+  "cache_management": {
+    "patterns": {
+      "bootstrap": "{workflow_id}_bootstrap_state.json",
+      "orchestration": "{workflow_id}_orchestration_state.json", 
+      "polymorphic_schema": "{workflow_id}_polymorphic_schema.json",
+      "validation": "{workflow_id}_requirements_validation.json",
+      "implementation": "{workflow_id}_implementation_results.json",
+      "craftbuddy_specs": "{workflow_id}_craftbuddy_specs.json",
+      "gate_promotion": "{workflow_id}_gate_promotion_results.json"
+    },
+    "compression": {
+      "enabled": true,
+      "trigger_age_days": 7,
+      "archive_age_days": 30,
+      "compression_ratio": 0.2,
+      "methods": ["gzip", "json_minify", "archive"]
+    },
+    "cleanup": {
+      "automatic": true,
+      "schedule": "daily",
+      "retention_policy": "compress_after_7_days_archive_after_30_days"
+    }
+  },
+  "workflow_phases": [
+    {
+      "phase": "Initialization",
+      "agents": ["origin", "boss"], 
+      "description": "System startup and workflow orchestration",
+      "parallel_execution": false,
+      "critical_path": true
+    },
+    {
+      "phase": "Polymorphic Requirements Generation",
+      "agents": ["pathfinder", "architect", "oracle"],
+      "description": "Multiple agents producing identical requirements schema",
+      "parallel_execution": true, 
+      "critical_path": true
+    },
+    {
+      "phase": "Validation and Implementation",
+      "agents": ["enforcer", "craftsman"],
+      "description": "Requirements validation and code implementation",
+      "parallel_execution": false,
+      "critical_path": true
+    },
+    {
+      "phase": "Change Preservation and Promotion", 
+      "agents": ["craftbuddy", "gatekeeper"],
+      "description": "Change preservation with spec generation and promotion",
+      "parallel_execution": false,
+      "critical_path": true
+    }
+  ],
+  "quality_assurance": {
+    "cross_validation": {
+      "enabled": true,
+      "validator_agent": "gatekeeper",
+      "validation_scope": "all_agent_outputs_with_change_preservation"
+    },
+    "bonus_contributions": {
+      "tracking_enabled": true,
+      "value_scoring": true,
+      "contribution_types": ["extra_analysis", "proactive_improvements", "cross_workflow_insights"]
+    },
+    "watermarking": {
+      "required": true,
+      "patterns": ["WARP-DEMO", "WARP-TEST", "WARP-FAKE"],
+      "locations": "test_components_and_demo_data"
+    }
+  }
+}
