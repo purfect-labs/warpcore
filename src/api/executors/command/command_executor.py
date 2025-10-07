@@ -9,7 +9,7 @@ import shlex
 import tempfile
 from datetime import datetime
 from typing import Dict, Any, List, Optional, Set
-from .base_executor import BaseExecutor
+from ..core.base_executor import BaseExecutor
 
 
 class CommandExecutor(BaseExecutor):

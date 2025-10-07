@@ -4,7 +4,7 @@ Policy enforcement, audit logging, and security validation
 """
 
 from typing import Dict, Any, Optional
-from .base_middleware import BaseMiddleware
+from .core.base_middleware import BaseMiddleware
 from .security.security_middleware import SecurityMiddleware
 
 

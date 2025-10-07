@@ -202,10 +202,17 @@ async def startup_event():
         discovery_system._discovered_contexts = discovered_contexts
         discovery_system._discovered_components = discovered_components
     
-    # Update docs generator with discovery system
+    # Update docs generator with discovery system and register endpoints
     if docs_generator:
         docs_generator.discovery = discovery_system
         log_result(True, "Documentation system updated with live discovery data")
+        
+        # Now register all discovered endpoints
+        try:
+            await docs_generator.register_discovered_endpoints_now()
+            log_result(True, "Discovered endpoints registered and functional")
+        except Exception as e:
+            log_result(False, f"Failed to register endpoints: {e}")
     
     # Test auto-discovery
     discovery_result = await test_auto_discovery()

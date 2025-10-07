@@ -15,6 +15,11 @@ class BaseMiddleware(ABC):
     def __init__(self, name: str):
         self.name = name
         self.enabled = True
+        self.websocket_manager = None
+    
+    def set_websocket_manager(self, websocket_manager):
+        """Set the WebSocket manager for real-time logging"""
+        self.websocket_manager = websocket_manager
     
     @abstractmethod
     async def process(self, operation: str, context: Dict[str, Any]) -> Dict[str, Any]:

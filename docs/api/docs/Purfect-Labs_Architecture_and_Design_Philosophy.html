@@ -36,14 +36,15 @@
   <div class="wrap">
     <header>
       <div class="kicker">Purfect‑Labs — Internal Engineering Directive</div>
-      <h1>Purfect‑Labs_Architecture_and_Design_Philosophy</h1>
-      <div class="subtitle">A unified pattern for self‑governing, zero‑configuration systems — 2025 Edition</div>
+      <h1>Provider‑Abstraction‑Pattern (P.A.P.)</h1>
+      <div class="subtitle">A unified architecture for self‑governing, zero‑configuration cloud systems — 2025 Edition</div>
       <hr class="rule">
     </header>
 
     <section id="purpose">
       <h2>1. Purpose</h2>
-      <p>This document defines the architectural principles, design patterns, and implementation standards that unify all Purfect‑Labs products. It is a practical doctrine: every application should be reasoned about and implemented using the same conceptual stack, yielding predictable behavior, strong observability, and zero‑configuration operation.</p>
+      <p>This document defines the architectural principles, design patterns, and implementation standards that govern WARPCORE and future Purfect‑Labs products. It is a practical doctrine: every application should be reasoned about and implemented using the same conceptual stack, yielding predictable behavior, strong observability, and zero‑configuration operation.</p>
+      <p><strong>Current Status:</strong> WARPCORE demonstrates advanced PAP compliance with a sophisticated System Orchestrator coordinating three distinct layers (179 files, 46,721 lines of code).</p>
     </section>
 
     <section id="principle">
@@ -103,17 +104,37 @@
 
     <section id="topology">
       <h2>6. Application Topology</h2>
-      <pre><code>/app
-  ├── routes/           # Entry points (API, CLI, UI)
-  ├── controllers/      # Input validation, normalization
-  ├── orchestrators/    # Workflow and logic composition
-  ├── providers/        # External integrations (aws, gcp, github, local)
-  │     ├── shared/     # Common abstractions and utilities
-  │     └── specific/   # Provider-specific modules (e.g., gke, clouddns, ecs, route53)
-  ├── middleware/       # Policy, logging, and instrumentation
-  ├── executors/        # Shell/API/system interaction layer
-  └── tests/            # Unit and integration coverage</code></pre>
-      <p><em>Provider parity:</em> Each provider exposes parallel method names and argument shapes where feasible, enabling cross-cloud orchestration and predictable tests.</p>
+      <pre><code>/src
+  ├── system_orchestrator.py  # Global system coordinator (outside PAP layers)
+  ├── api/                    # API layer - REST endpoints and business logic
+  │   ├── routes/             # HTTP endpoint definitions
+  │   ├── controllers/        # Request validation and business coordination
+  │   ├── orchestrators/      # Complex workflow orchestration
+  │   ├── providers/          # External service integrations
+  │   │   ├── gcp/            # Google Cloud Platform provider
+  │   │   ├── filesystem/     # File system operations provider
+  │   │   └── license/        # License management provider
+  │   ├── middleware/         # Cross-cutting concerns and policy
+  │   ├── executors/          # System command execution layer
+  │   └── auto_registration.py # Component auto-discovery system
+  ├── data/                   # Data layer - configuration and discovery
+  │   ├── config_loader.py    # Configuration management
+  │   ├── feature_gates.py    # Tier-based feature control
+  │   ├── config/discovery/   # Auto-discovery systems
+  │   │   ├── context_discovery.py    # Provider context detection
+  │   │   ├── github_discovery.py     # GitHub integration discovery
+  │   │   └── provider_discovery.py   # Provider capability discovery
+  │   └── utils/              # Data layer utilities
+  ├── web/                    # Web layer - UI templates and assets
+  │   ├── routes/             # Web route definitions
+  │   ├── templates/          # HTML template rendering
+  │   ├── static/             # CSS, JS, and asset files
+  │   └── testing/shadow/     # Shadow testing framework
+  └── docs/                   # Documentation generation
+      ├── compliant_docs.py   # Auto-discovery documentation system
+      └── unified_docs.py     # Unified documentation generator</code></pre>
+      <p><em>Provider parity:</em> Each provider exposes parallel method names and argument shapes where feasible, enabling cross-cloud orchestration and predictable tests. Auto-discovery scans this structure to generate live documentation.</p>
+      <p><em>System Orchestrator:</em> The <code>system_orchestrator.py</code> exists outside the PAP layers as an external coordinator, managing layer initialization (Data → Web → API), shared configuration, and cross-layer dependencies. It ensures proper startup sequencing and graceful error handling across all three tiers.</p>
     </section>
 
     <section id="standalone">
@@ -143,6 +164,8 @@
         <li>Middleware emits structured events for every side-effect.</li>
         <li>CLI/API execution must flow through a single executor with allow-lists and timeouts.</li>
         <li>Tests cover controllers, orchestrators, and provider contracts; integration tests simulate end-to-end flows.</li>
+        <li>Auto-discovery systems must scan and register PAP components dynamically without hardcoded references.</li>
+        <li>System Orchestrator coordinates layer initialization with elaborate startup logging and graceful error handling.</li>
       </ul>
     </section>
 
@@ -153,20 +176,20 @@
       <h3>10.2 Topics, Ownership, and Context Injection</h3>
       <p>GitHub topics, CODEOWNERS, and labels form a self-describing contract across CI, APIs, and UIs. Any one can drive discovery; together they enable precise filtering and aggregation of provider data and policies.</p>
       <h3>10.3 Provider Coherency &amp; Directory Parity</h3>
-      <pre><code>/providers
+      <pre><code>/src/api/providers
+  ├── core/
+  │     └── base_provider.py      # Base provider interface
   ├── gcp/
-  │     ├── shared/
-  │     │     └── context-info.js
-  │     └── specific/
-  │           ├── gke.js
-  │           └── clouddns.js
-  ├── aws/
-  │     ├── shared/
-  │     │     └── session-utils.py
-  │     └── specific/
-  │           ├── ecs.py
-  │           └── route53.py</code></pre>
-      <p>Method names and argument shapes remain coherent across providers wherever practical.</p>
+  │     ├── gcp_auth.py           # GCP authentication and project management
+  │     ├── gcp_provider.py       # Core GCP operations
+  │     └── gcp_k8s.py           # GCP Kubernetes integration
+  ├── filesystem/
+  │     ├── base_filesystem.py    # Filesystem operations base
+  │     ├── gcs_filesystem.py     # Google Cloud Storage filesystem
+  │     └── s3_filesystem.py      # S3-compatible storage filesystem
+  └── license/
+        └── license_provider.py   # License validation and management</code></pre>
+      <p>Method names and argument shapes remain coherent across providers wherever practical. Auto-discovery systems scan these directories to register components dynamically.</p>
       <h3>10.4 Environment Abstraction</h3>
       <p>Environment data (DEV/STAGE/PROD) is normalized via shared provider interfaces; middleware abstracts credentials and endpoints for portability.</p>
       <h3>10.5 Convention over Configuration</h3>

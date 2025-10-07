@@ -15,15 +15,126 @@ import argparse
 import sys
 import os
 import subprocess
+import time
 from pathlib import Path
 
+def start_docs_server():
+    """Start standalone API documentation server with Scalar UI on port 8001"""
+    try:
+        print("📚 Starting standalone WARPCORE API Documentation Server...")
+        print("🌐 Documentation will be available at: http://localhost:8001")
+        print("📊 Provider-Abstraction-Pattern discovery included")
+        print("🔄 Starting server...")
+        
+        # Import required modules
+        from fastapi import FastAPI
+        from src.docs.compliant_docs import setup_compliant_docs
+        import uvicorn
+        import asyncio
+        
+        # Create standalone docs app
+        docs_app = FastAPI(
+            title="WARPCORE API Documentation",
+            version="3.0.0",
+            docs_url=None,  # Disable default swagger
+            redoc_url=None  # Disable default redoc  
+        )
+        
+        # Add basic status endpoint
+        @docs_app.get("/")
+        async def root():
+            return {
+                "message": "WARPCORE Standalone API Documentation", 
+                "status": "running",
+                "docs_url": "/docs",
+                "architecture_url": "/api/architecture"
+            }
+        
+        # Setup discovery system and register endpoints on startup using orchestrator
+        @docs_app.on_event("startup")
+        async def startup_discovery():
+            try:
+                # Use system orchestrator for elaborate logging and initialization
+                from src.system_orchestrator import initialize_docs_only
+                await initialize_docs_only()
+                
+                # Initialize discovery system to update docs generator
+                from src.data.config.discovery.context_discovery import ContextDiscoverySystem
+                from src.api.auto_registration import ComponentAutoDiscovery
+                
+                discovery_system = ContextDiscoverySystem()
+                auto_discovery = ComponentAutoDiscovery()
+                
+                # Get discovery results for docs
+                discovered_contexts = await discovery_system.discover_all_contexts()
+                discovered_components = await auto_discovery.auto_discover_components(list(discovered_contexts.get('providers', {}).keys()))
+                
+                # Store discovery results
+                discovery_system._discovered_contexts = discovered_contexts
+                discovery_system._discovered_components = discovered_components
+                
+                # Update docs generator with discovery results
+                docs_generator.discovery = discovery_system
+                
+                # Register discovered endpoints
+                await docs_generator.register_discovered_endpoints_now()
+                
+            except Exception as e:
+                print(f"❌ Docs startup failed: {e}")
+                print("🛡️ Falling back to basic docs structure\n")
+        
+        # Setup docs system (will be updated with discovery on startup)
+        docs_generator = setup_compliant_docs(docs_app, None)
+        
+        print("✅ Architectural layer system configured")
+        print("📖 Documentation: http://localhost:8001/docs")
+        print("🏗️ Architecture: http://localhost:8001/api/architecture")
+        print("📋 OpenAPI Schema: http://localhost:8001/openapi.json")
+        print("\n" + "─" * 60)
+        print("🌊 WARPCORE Architectural Documentation Server")
+        print("📊 Data • 🌐 Web • ⚡ API Layers")
+        print("🎯 Routes → 🏛️ Controllers → 🔧 Orchestrators → 🔗 Providers → 🛡️ Middleware → ⚙️ Executors")
+        print("─" * 60 + "\n")
+        
+        # Start the standalone docs server
+        uvicorn.run(
+            docs_app,
+            host="127.0.0.1",
+            port=8001,
+            log_level="info"
+        )
+        
+        return True
+        
+    except Exception as e:
+        print(f"❌ Failed to start standalone docs server: {e}")
+        return False
+
 def main():
+    # Handle agency commands first
+    if len(sys.argv) > 1 and sys.argv[1] == 'agency':
+        # Delegate to agency.py with all remaining parameters
+        agency_script = Path(__file__).parent / ".workflows/warp/agency.py"
+        if agency_script.exists():
+            try:
+                subprocess.run([sys.executable, str(agency_script)] + sys.argv[2:])
+                return
+            except Exception as e:
+                print(f"❌ Agency error: {e}")
+                return
+        else:
+            print("❌ Agency script not found at .workflows/warp/agency.py")
+            return
+    
     parser = argparse.ArgumentParser(
         description='WARPCORE - Kubernetes Command Center',
         formatter_class=argparse.RawDescriptionHelpFormatter,
         epilog="""
 Examples:
   python warpcore.py                   # Show this help
+  python warpcore.py agency gap-analysis      # Run gap analysis workflow
+  python warpcore.py agency implement         # Run implementation workflow
+  python warpcore.py agency validate          # Run validation workflow
   
   # Complete development cycles:
   python warpcore.py iterate           # Build + test + run locally
@@ -79,8 +190,21 @@ Examples:
         help='Start in native app mode'
     )
     
+    parser.add_argument(
+        '--docs',
+        action='store_true',
+        help='Start API documentation server with Scalar UI'
+    )
+    
     args = parser.parse_args()
     
+    # Handle --docs flag - start API documentation server
+    if args.docs:
+        print("📚 Starting WARPCORE API Documentation Server...")
+        print("🌊 Scalar UI with Provider-Abstraction-Pattern auto-discovery")
+        start_docs_server()
+        return
+        
     # Handle --web flag by calling start-warpcore.sh
     if args.web and not (args.mac_native or args.docker_native):
         print("🚀 Starting WARPCORE with start-warpcore.sh...")

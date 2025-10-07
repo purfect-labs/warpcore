@@ -7,7 +7,7 @@ import asyncio
 import subprocess
 import json
 from typing import Dict, Any, List
-from ..base_provider import BaseProvider
+from ..core.base_provider import BaseProvider
 
 class GCPProvider(BaseProvider):
     """Self-describing GCP provider with system discovery"""

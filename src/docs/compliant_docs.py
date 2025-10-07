@@ -38,7 +38,7 @@ class CompliantDocsGenerator:
             }
         }
         
-        # Calculate totals
+        # Calculate totals for metadata
         total_components = 0
         total_endpoints = 0
         
@@ -51,8 +51,34 @@ class CompliantDocsGenerator:
         discovered["discovery_metadata"]["total_components"] = total_components
         discovered["discovery_metadata"]["total_endpoints"] = total_endpoints
         
-        self.discovered_layers = discovered
         return discovered
+    
+    async def register_discovered_endpoints_now(self):
+        """Register discovered endpoints after discovery system is ready"""
+        if not hasattr(self, '_endpoints_registered') or not self._endpoints_registered:
+            await self._register_discovered_endpoints()
+            self._endpoints_registered = True
+            
+            # Get complete architecture after registration
+            discovered = await self.discover_complete_architecture()
+            
+            # Calculate totals
+            total_components = 0
+            total_endpoints = 0
+            
+            for layer_name, layer_data in discovered.items():
+                if isinstance(layer_data, dict) and "components" in layer_data:
+                    total_components += len(layer_data["components"])
+                if isinstance(layer_data, dict) and "endpoints" in layer_data:
+                    total_endpoints += len(layer_data["endpoints"])
+            
+            discovered["discovery_metadata"]["total_components"] = total_components
+            discovered["discovery_metadata"]["total_endpoints"] = total_endpoints
+            
+            self.discovered_layers = discovered
+            return discovered
+        
+        return self.discovered_layers if hasattr(self, 'discovered_layers') else {}
     
     async def _discover_data_layer(self) -> Dict[str, Any]:
         """Discover complete data layer components using filesystem scanning"""
@@ -69,27 +95,31 @@ class CompliantDocsGenerator:
                 
                 # Find all classes and functions that look like data components
                 for name, obj in inspect.getmembers(module):
-                    if not name.startswith('_'):
+                    if not name.startswith('_') and not self._is_internal_class(name):
                         if inspect.isclass(obj):
                             # Data layer classes (config loaders, feature gates, etc.)
                             if any(keyword in name.lower() for keyword in ['config', 'loader', 'discovery', 'feature', 'gate']):
-                                data_components[name] = {
-                                    "type": self._infer_component_type(name),
-                                    "description": f"Auto-discovered data component: {name}",
-                                    "methods": self._extract_methods(obj),
-                                    "capabilities": self._infer_capabilities(name),
-                                    "module": module_path
-                                }
+                                # Skip internal/infrastructure classes
+                                if not self._is_infrastructure_class(name, obj):
+                                    data_components[name] = {
+                                        "type": self._infer_component_type(name),
+                                        "description": f"Auto-discovered data component: {name}",
+                                        "methods": self._extract_methods(obj),
+                                        "capabilities": self._infer_capabilities(name),
+                                        "module": module_path
+                                    }
                         elif inspect.isfunction(obj):
                             # Data layer functions (get_config, etc.)
                             if any(keyword in name.lower() for keyword in ['get_', 'load_', 'fetch_', 'discover_']):
-                                data_components[name] = {
-                                    "type": "data_function",
-                                    "description": f"Auto-discovered data function: {name}",
-                                    "methods": [name],
-                                    "capabilities": self._infer_capabilities(name),
-                                    "module": module_path
-                                }
+                                # Only include business-relevant functions
+                                if self._is_business_function(name):
+                                    data_components[name] = {
+                                        "type": "data_function",
+                                        "description": f"Auto-discovered data function: {name}",
+                                        "methods": [name],
+                                        "capabilities": self._infer_capabilities(name),
+                                        "module": module_path
+                                    }
                                 
             except (ImportError, AttributeError, ModuleNotFoundError):
                 pass
@@ -226,20 +256,22 @@ class CompliantDocsGenerator:
         # Generate API layer endpoints dynamically
         api_endpoints = await self._generate_api_endpoints(api_components)
         
-        # Add discovered provider endpoints
+        # Add discovered provider endpoints (exclude orchestrators)
         if self.discovery:
             contexts = getattr(self.discovery, '_discovered_contexts', {})
             providers = contexts.get('providers', {})
             
             for provider_name in providers.keys():
-                api_endpoints[f"/api/{provider_name}/auth"] = {
-                    "method": "POST",
-                    "summary": f"{provider_name.upper()} Authentication",
-                    "description": f"Authenticate with {provider_name} provider (auto-discovered)",
-                    "layer": "api", 
-                    "component": f"{provider_name}_controller",
-                    "auto_discovered": True
-                }
+                # Skip if this is actually an orchestrator disguised as a provider
+                if 'orchestrator' not in provider_name.lower():
+                    api_endpoints[f"/api/{provider_name}/auth"] = {
+                        "method": "POST",
+                        "summary": f"{provider_name.upper()} Authentication",
+                        "description": f"Authenticate with {provider_name} provider (auto-discovered)",
+                        "layer": "api", 
+                        "component": f"{provider_name}_controller",
+                        "auto_discovered": True
+                    }
         
         return {
             "name": "API Layer",
@@ -276,39 +308,17 @@ class CompliantDocsGenerator:
         # Also discover route files in the codebase
         await self._discover_route_files(architecture_layers)
         
-        # Controllers discovery
-        try:
-            from src.api.controllers import get_controller_registry
-            controller_registry = get_controller_registry()
-            controllers = controller_registry.list_controllers()
-            
-            for name, class_name in controllers.items():
-                controller = controller_registry.get_controller(name)
-                if controller:
-                    architecture_layers["controllers"][name] = {
-                        "class_name": class_name,
-                        "methods": self._extract_methods(controller),
-                        "layer": "controller"
-                    }
-        except ImportError:
-            pass
+        # Controllers discovery - direct filesystem scan
+        await self._discover_pap_components("controllers", architecture_layers)
         
-        # Providers discovery  
-        try:
-            from src.api.providers import get_provider_registry
-            provider_registry = get_provider_registry()
-            providers = provider_registry.list_providers()
-            
-            for name, class_name in providers.items():
-                provider = provider_registry.get_provider(name)
-                if provider:
-                    architecture_layers["providers"][name] = {
-                        "class_name": class_name,
-                        "methods": self._extract_methods(provider),
-                        "layer": "provider"
-                    }
-        except ImportError:
-            pass
+        # Providers discovery - direct filesystem scan
+        await self._discover_pap_components("providers", architecture_layers)
+        
+        # Middleware discovery - direct filesystem scan
+        await self._discover_pap_components("middleware", architecture_layers)
+        
+        # Executors discovery - direct filesystem scan
+        await self._discover_pap_components("executors", architecture_layers)
         
         # Orchestrators discovery
         try:
@@ -334,6 +344,56 @@ class CompliantDocsGenerator:
             pass
         
         return architecture_layers
+    
+    async def _discover_pap_components(self, component_type: str, architecture_layers: Dict[str, Any]):
+        """Discover Provider-Abstraction-Pattern components by type"""
+        component_path = Path(f"src/api/{component_type}")
+        
+        if not component_path.exists():
+            return
+            
+        # Keywords to identify each component type
+        type_keywords = {
+            "controllers": ["controller"],
+            "providers": ["provider", "auth"],
+            "orchestrators": ["orchestrator"],
+            "middleware": ["middleware"],
+            "executors": ["executor"]
+        }
+        
+        keywords = type_keywords.get(component_type, [component_type.rstrip('s')])
+        
+        # Scan all Python files in the component directory
+        for py_file in component_path.rglob("*.py"):
+            if py_file.name == "__init__.py":
+                continue
+                
+            # Convert file path to module path
+            try:
+                relative_path = py_file.relative_to(Path("src"))
+                module_path = f"src.{str(relative_path.with_suffix('')).replace('/', '.')}"
+                
+                module = importlib.import_module(module_path)
+                
+                # Find all classes matching the component type
+                for name, obj in inspect.getmembers(module, inspect.isclass):
+                    if not name.startswith('_') and any(keyword in name.lower() for keyword in keywords):
+                        # Extract methods and capabilities
+                        methods = self._extract_methods(obj)
+                        
+                        architecture_layers[component_type][name] = {
+                            "class_name": name,
+                            "module": module_path,
+                            "methods": methods,
+                            "method_count": len(methods),
+                            "layer": component_type.rstrip('s'),  # Remove plural
+                            "file_path": str(py_file),
+                            "capabilities": self._infer_capabilities(name)
+                        }
+                        
+            except (ImportError, AttributeError, ModuleNotFoundError, ValueError) as e:
+                # Skip files that can't be imported
+                continue
     
     async def _discover_route_files(self, architecture_layers: Dict[str, Any]):
         """Discover route files by scanning the routes directory"""
@@ -388,18 +448,38 @@ class CompliantDocsGenerator:
             return []
     
     async def _scan_for_modules_in_path(self, path: str) -> List[str]:
-        """Scan filesystem for Python modules in any directory path"""
+        """Scan filesystem for Python modules in any directory path, excluding problematic directories"""
         modules = []
+        
+        # Directories to exclude from scanning (avoid problematic imports)
+        exclude_patterns = [
+            'node_modules', 'venv', '__pycache__', '.git', '.pytest_cache',
+            'build', 'dist', 'native/build', 'native/desktop', 'electron',
+            'deps', 'vendor', 'site-packages'
+        ]
+        
         try:
             base_path = Path(path)
             if base_path.exists():
-                # Scan all Python files recursively
+                # Scan all Python files recursively, excluding problematic directories
                 for py_file in base_path.rglob("*.py"):
-                    if py_file.name != "__init__.py":
-                        # Convert file path to module path
+                    # Skip __init__.py files
+                    if py_file.name == "__init__.py":
+                        continue
+                        
+                    # Check if the file is in any excluded directory
+                    path_parts = py_file.parts
+                    if any(exclude_pattern in str(py_file) for exclude_pattern in exclude_patterns):
+                        continue
+                    
+                    # Convert file path to module path
+                    try:
                         relative_path = py_file.relative_to(Path("."))
                         module_path = str(relative_path.with_suffix("")).replace("/", ".")
                         modules.append(module_path)
+                    except ValueError:
+                        # Skip files outside current directory
+                        continue
         except Exception:
             pass
         return modules
@@ -457,6 +537,127 @@ class CompliantDocsGenerator:
         
         return capabilities if capabilities else ["general_capability"]
     
+    def _is_internal_class(self, name: str) -> bool:
+        """Check if a class name represents an internal/infrastructure class"""
+        internal_patterns = [
+            'apex',  # APEXConfigLoader and similar
+            'base',  # Base classes (unless they're actual business components)
+            'helper', 'util', 'manager', 'loader'
+        ]
+        
+        name_lower = name.lower()
+        
+        # Skip APEX-prefixed classes (internal infrastructure)
+        if name_lower.startswith('apex'):
+            return True
+            
+        # Skip other internal patterns for config/infrastructure classes
+        for pattern in internal_patterns:
+            if pattern in name_lower and 'config' in name_lower:
+                return True
+                
+        return False
+    
+    def _is_infrastructure_class(self, name: str, obj) -> bool:
+        """Check if a class is pure infrastructure vs business component"""
+        name_lower = name.lower()
+        
+        # Infrastructure class patterns
+        infrastructure_indicators = [
+            ('loader' in name_lower and 'config' in name_lower),  # Config loaders
+            ('manager' in name_lower and not any(biz in name_lower for biz in ['license', 'auth', 'provider'])),
+            name_lower.startswith('apex'),  # APEX infrastructure
+            name_lower.endswith('helper'),
+            name_lower.endswith('util'),
+        ]
+        
+        return any(infrastructure_indicators)
+    
+    def _is_business_function(self, name: str) -> bool:
+        """Check if a function represents a business capability vs internal utility"""
+        name_lower = name.lower()
+        
+        # Business function indicators
+        business_indicators = [
+            'get_config',  # Main config access
+            'get_feature_status',  # Feature gates
+            'get_database_config_for_env',  # Environment-specific DB config
+        ]
+        
+        # Skip internal utility functions
+        internal_functions = [
+            'get_logger', 'get_instance', 'get_class', 'get_module',
+            'load_config', 'load_file', 'load_module',  # Low-level loaders
+        ]
+        
+        if name in business_indicators:
+            return True
+            
+        if name in internal_functions:
+            return False
+            
+        # General business function patterns
+        return any(pattern in name_lower for pattern in ['config', 'feature', 'database']) and \
+               not any(util in name_lower for util in ['helper', 'util', 'internal'])
+    
+    def _generate_hierarchical_tags(self, path: str, component: str, layer: str) -> List[str]:
+        """Generate hierarchical tags using hardcoded PAP structure with discovered sub-categories"""
+        
+        # HARDCODED TOP-LEVEL LAYERS
+        if layer == "data":
+            # Data layer sub-organization
+            if "config" in path.lower():
+                return ["📊 Data / Configuration"]
+            elif "discovery" in path.lower():
+                return ["📊 Data / Discovery"]
+            elif "feature" in path.lower():
+                return ["📊 Data / Feature Gates"]
+            else:
+                return ["📊 Data Layer"]
+                
+        elif layer == "web":
+            # Web layer sub-organization
+            if "static" in path.lower():
+                return ["🌐 Web / Assets"]
+            else:
+                return ["🌐 Web / Interface"]
+                
+        elif layer == "api":
+            # API layer with dynamic sub-categories but keeping structure
+            path_parts = path.strip('/').split('/')
+            if len(path_parts) >= 2 and path_parts[0] == 'api':
+                provider_or_component = path_parts[1]
+                readable_name = provider_or_component.replace('_', ' ').title()
+                return [f"⚡ API / {readable_name}"]
+            else:
+                return ["⚡ API Layer"]
+                
+        # HARDCODED PAP ARCHITECTURAL LAYERS
+        elif layer == "route":
+            return ["🎯 Routes"]
+        elif layer == "controller":
+            return ["🏛️ Controllers"]
+        elif layer == "orchestrator":
+            return ["🔧 Orchestrators"]
+        elif layer == "provider":
+            # Auto-discover provider sub-categories
+            if "gcp" in component.lower():
+                return ["🔗 Providers / GCP"]
+            elif "aws" in component.lower():
+                return ["🔗 Providers / AWS"]
+            elif "auth" in component.lower():
+                return ["🔗 Providers / Auth"]
+            else:
+                return ["🔗 Providers"]
+        elif layer == "middleware":
+            return ["🛡️ Middleware"]
+        elif layer == "executor":
+            return ["⚙️ Executors"]
+        else:
+            # Fallback
+            layer_name = layer.title().replace('_', ' ')
+            return [f"{layer_name}"]
+    
     def _infer_layer_from_name(self, name: str) -> str:
         """Infer Provider-Abstraction-Pattern layer from component name"""
         name_lower = name.lower()
@@ -476,47 +677,6 @@ class CompliantDocsGenerator:
         else:
             return "component"
     
-    async def _scan_for_modules_in_path(self, path: str) -> List[str]:
-        """Scan filesystem for Python modules in any directory path"""
-        modules = []
-        try:
-            base_path = Path(path)
-            if base_path.exists():
-                # Scan all Python files recursively
-                for py_file in base_path.rglob("*.py"):
-                    if py_file.name != "__init__.py":
-                        # Convert file path to module path
-                        relative_path = py_file.relative_to(Path("."))
-                        module_path = str(relative_path.with_suffix("")).replace("/", ".")
-                        modules.append(module_path)
-        except Exception:
-            pass
-        return modules
-    
-    def _infer_component_type(self, name: str) -> str:
-        """Infer component type from class/function name"""
-        name_lower = name.lower()
-        
-        if "controller" in name_lower:
-            return "controller"
-        elif "orchestrator" in name_lower:
-            return "orchestrator"
-        elif "provider" in name_lower or "auth" in name_lower:
-            return "provider"
-        elif "middleware" in name_lower:
-            return "middleware"
-        elif "executor" in name_lower:
-            return "executor"
-        elif "config" in name_lower or "loader" in name_lower:
-            return "configuration_provider"
-        elif "template" in name_lower or "render" in name_lower:
-            return "template_provider"
-        elif "discovery" in name_lower:
-            return "discovery_provider"
-        elif "feature" in name_lower or "gate" in name_lower:
-            return "feature_provider"
-        else:
-            return "component"
     
     def _infer_capabilities(self, name: str) -> List[str]:
         """Infer capabilities from class/function name"""
@@ -566,9 +726,9 @@ class CompliantDocsGenerator:
             return "component"
     
     def _filter_business_methods(self, methods: List[str], component_name: str) -> List[str]:
-        """Filter methods to show only business capabilities, not shared infrastructure"""
+        """Filter methods to show all relevant capabilities including infrastructure"""
         
-        # Shared infrastructure methods across all layers that shouldn't be shown
+        # Important infrastructure methods that SHOULD be shown in documentation
         infrastructure_methods = {
             # Base class registry/wiring infrastructure
             'set_provider_registry', 'set_middleware_registry', 'set_executor_registry', 
@@ -597,14 +757,24 @@ class CompliantDocsGenerator:
             'load_config', 'save_config', 'get_config', 'set_config', 'initialize',
         }
         
-        business_methods = []
+        # Only exclude truly internal/private methods
+        excluded_methods = {
+            '__init__', '__del__', '__str__', '__repr__', '__dict__', '__class__',
+            '__module__', '__doc__', '__annotations__'
+        }
+        
+        filtered_methods = []
         
         for method in methods:
-            if (method not in infrastructure_methods and 
-                self._is_business_method(method, component_name)):
-                business_methods.append(method)
+            # Include ALL methods except truly private/internal ones
+            if method not in excluded_methods and not method.startswith('__'):
+                # Show both infrastructure methods AND business methods
+                if (method in infrastructure_methods or 
+                    self._is_business_method(method, component_name) or
+                    self._is_infrastructure_method(method)):
+                    filtered_methods.append(method)
         
-        return business_methods
+        return filtered_methods
     
     def _is_business_method(self, method: str, component_name: str) -> bool:
         """Determine if a method represents actual business functionality vs infrastructure"""
@@ -612,48 +782,82 @@ class CompliantDocsGenerator:
         method_lower = method.lower()
         component_lower = component_name.lower()
         
-        # Core business capability patterns that users actually care about
+        # Abstract business capability patterns (not provider-specific)
         business_patterns = [
-            # Authentication & Authorization
+            # Authentication & Authorization patterns
             'authenticate', 'login', 'logout', 'auth', 'sso', 'token',
             
-            # Resource Management (the actual business value)
+            # Resource Management patterns (abstract CRUD)
             'create', 'delete', 'update', 'get', 'list', 'describe', 'show',
             'deploy', 'start', 'stop', 'restart', 'scale', 'resize',
             
-            # Connection & Context Management
+            # Connection & Context Management patterns
             'connect', 'disconnect', 'switch', 'activate', 'deactivate',
             
-            # License & Feature Management
-            'generate_license', 'validate_license', 'get_license_status', 'deactivate_license',
+            # Capability Management patterns (abstract)
+            'generate_', 'validate_', 'get_status', 'deactivate_',
             
-            # Provider-Specific Business Operations
-            'orchestrate_authentication', 'orchestrate_project_discovery', 'orchestrate_status_check',
+            # Orchestration patterns (abstract)
+            'orchestrate_',
             
-            # Cluster/Environment Operations
-            'get_cluster', 'switch_project', 'get_projects', 'get_contexts'
+            # Context/Environment patterns (abstract)
+            'get_cluster', 'switch_', 'get_projects', 'get_contexts'
         ]
         
-        # Check if method matches core business patterns
+        # Check if method matches abstract business patterns
         for pattern in business_patterns:
-            if pattern in method_lower:
+            if pattern in method_lower or (pattern.endswith('_') and method_lower.startswith(pattern)):
                 return True
         
-        # Provider-specific business capabilities (not generic infrastructure)
+        # Abstract component capability patterns (not provider-specific)
         if 'auth' in component_lower:
-            return any(word in method_lower for word in ['login', 'profile', 'account', 'credential'])
-        elif 'gcp' in component_lower:
-            return any(word in method_lower for word in ['project', 'instance', 'resource', 'service'])
-        elif 'k8s' in component_lower or 'kubernetes' in component_lower:
-            return any(word in method_lower for word in ['cluster', 'pod', 'service', 'context', 'namespace'])
+            return any(word in method_lower for word in ['login', 'profile', 'account', 'credential', 'session'])
         elif 'controller' in component_lower:
-            return any(word in method_lower for word in ['handle', 'process', 'manage', 'control'])
+            return any(word in method_lower for word in ['handle', 'process', 'manage', 'control', 'execute'])
         elif 'orchestrator' in component_lower:
-            return method_lower.startswith('orchestrate_')  # Only actual orchestration methods
-        elif 'license' in component_lower:
-            return any(word in method_lower for word in ['license', 'activate', 'validate', 'generate'])
+            return method_lower.startswith('orchestrate_') or 'workflow' in method_lower
+        elif 'provider' in component_lower:
+            return any(word in method_lower for word in ['connect', 'resource', 'service', 'operation', 'request'])
+        elif 'executor' in component_lower:
+            return any(word in method_lower for word in ['execute', 'run', 'command', 'operation'])
         
         return False
+    
+    def _is_infrastructure_method(self, method: str) -> bool:
+        """Identify infrastructure methods by abstract patterns"""
+        method_lower = method.lower()
+        
+        # Abstract infrastructure method patterns
+        infrastructure_patterns = [
+            # Registry/wiring patterns
+            'set_', 'register_', 'wire_', 'bind_',
+            
+            # Logging/monitoring patterns
+            'broadcast_', 'log_', 'emit_', 'track_',
+            
+            # Workflow/orchestration patterns
+            'apply_', 'compose_', 'execute_with_', 'orchestrate',
+            
+            # Filesystem/storage patterns
+            'normalize_', 'filter_', 'stream_', 'get_filename', 'get_file_size', 'exists', 'get_metadata',
+            
+            # Validation/safety patterns
+            'validate_', 'sanitize_', 'check_', 'handle_', 'parse_',
+            
+            # Command execution patterns
+            'run_', 'execute_', 'timeout',
+            
+            # Configuration patterns
+            'load_', 'save_', 'initialize'
+        ]
+        
+        # Check if method matches any infrastructure pattern
+        for pattern in infrastructure_patterns:
+            if pattern in method_lower or (pattern.endswith('_') and method_lower.startswith(pattern)):
+                return True
+        
+        return False
+    
     async def _generate_data_endpoints(self, data_components: Dict[str, Any]) -> Dict[str, Any]:
         """Generate data layer endpoints from discovered components"""
         endpoints = {}
@@ -775,7 +979,7 @@ class CompliantDocsGenerator:
                         "method": "GET",
                         "summary": f"{component_name} Status",
                         "description": f"Get status from {component_name}",
-                        "layer": "api",
+                        "layer": "controller",  # FIXED: Use controller layer
                         "component": component_name
                     }
                     
@@ -783,7 +987,7 @@ class CompliantDocsGenerator:
                         "method": "POST",
                         "summary": f"{component_name} Execute",
                         "description": f"Execute operations via {component_name}",
-                        "layer": "api",
+                        "layer": "controller",  # FIXED: Use controller layer
                         "component": component_name
                     }
                     
@@ -795,19 +999,34 @@ class CompliantDocsGenerator:
                         "method": "POST",
                         "summary": f"{component_name} Authentication",
                         "description": f"Authenticate using {component_name}",
-                        "layer": "api",
+                        "layer": "provider",  # FIXED: Use provider layer
                         "component": component_name
                     }
                     
             elif 'orchestrator' in component_name.lower():
-                # Orchestrator endpoints
-                base_name = component_name.lower().replace('orchestrator', '').replace('auth', '')
-                if base_name:
-                    endpoints[f"/api/{base_name}/orchestrate"] = {
+                # Orchestrator endpoints - properly separate provider and orchestrator
+                component_lower = component_name.lower()
+                
+                # Extract provider name and add underscore
+                if component_lower.endswith('orchestrator'):
+                    provider_name = component_lower[:-len('orchestrator')]
+                elif component_lower.endswith('authorchestragor'):
+                    # Handle edge case where 'auth' might be mixed in
+                    provider_name = component_lower.replace('auth', '').replace('orchestrator', '')
+                else:
+                    provider_name = component_lower.replace('orchestrator', '')
+                
+                # Clean up any remaining 'auth' parts
+                provider_name = provider_name.replace('auth', '').strip('_')
+                
+                if provider_name:
+                    # Use underscore to separate provider and orchestrator
+                    endpoint_path = f"/api/{provider_name}_orchestrator/orchestrate"
+                    endpoints[endpoint_path] = {
                         "method": "POST",
                         "summary": f"{component_name} Orchestration",
                         "description": f"Orchestrate workflows via {component_name}",
-                        "layer": "api",
+                        "layer": "orchestrator",  # FIXED: Use orchestrator layer
                         "component": component_name
                     }
                     
@@ -851,15 +1070,17 @@ class CompliantDocsGenerator:
             async def endpoint_handler():
                 return await self._handle_discovered_endpoint(path, method, component, layer)
             
-            # Register with FastAPI based on method
+            # Register with FastAPI based on method - include in schema with hierarchical tags
+            tags = self._generate_hierarchical_tags(path, component, layer)
+            
             if method == "get":
-                self.app.get(path, summary=summary, description=description, include_in_schema=False)(endpoint_handler)
+                self.app.get(path, summary=summary, description=description, tags=tags)(endpoint_handler)
             elif method == "post":
-                self.app.post(path, summary=summary, description=description, include_in_schema=False)(endpoint_handler)
+                self.app.post(path, summary=summary, description=description, tags=tags)(endpoint_handler)
             elif method == "put":
-                self.app.put(path, summary=summary, description=description, include_in_schema=False)(endpoint_handler)
+                self.app.put(path, summary=summary, description=description, tags=tags)(endpoint_handler)
             elif method == "delete":
-                self.app.delete(path, summary=summary, description=description, include_in_schema=False)(endpoint_handler)
+                self.app.delete(path, summary=summary, description=description, tags=tags)(endpoint_handler)
                 
         except Exception as e:
             # Skip endpoints that can't be registered (conflicts, etc.)
@@ -1121,6 +1342,15 @@ class CompliantDocsGenerator:
             },
             "status": "success"
         }
+    
+    def _serve_html_file(self, file_path: str) -> str:
+        """Serve HTML file from docs directory"""
+        try:
+            with open(file_path, 'r', encoding='utf-8') as f:
+                return f.read()
+        except FileNotFoundError:
+            return "<html><body><h1>Documentation not found</h1></body></html>"
+    
     async def generate_compliant_spec(self) -> Dict[str, Any]:
         """Generate complete Provider-Abstraction-Pattern compliant OpenAPI spec"""
         
@@ -1171,25 +1401,139 @@ REST APIs, cloud provider integrations, and business logic
             "tags": []
         }
         
-        # Add comprehensive tags for organization
+        # Add comprehensive tags for organization - 3 high-level primitives first, then auto-discovered structure
         tags = [
-            {"name": "📊 Data Layer", "description": "Configuration, discovery, and data management"},
-            {"name": "🌐 Web Layer", "description": "Templates, static assets, and presentation"},
-            {"name": "⚡ API Layer", "description": "REST APIs and business logic"},
-            {"name": "🎯 Routes", "description": "HTTP routing and endpoint definitions"},
-            {"name": "🏛️ Controllers", "description": "Business logic and orchestration"},
-            {"name": "🔧 Orchestrators", "description": "Complex workflow coordination"},
-            {"name": "🔗 Providers", "description": "Service integrations and external APIs"},
-            {"name": "🛡️ Middleware", "description": "Cross-cutting concerns and safety"},
-            {"name": "⚙️ Executors", "description": "Command execution and validation"},
-            {"name": "🔍 Auto-Discovery", "description": "Autonomous component discovery"}
+            # High-level architectural layers (top-level) - MUST BE FIRST
+            {"name": "📊 Data Layer", "description": "Configuration, discovery, and data management services"},
+            {"name": "🌐 Web Layer", "description": "Templates, static assets, and presentation interfaces"},
+            {"name": "⚡ API Layer", "description": "REST APIs, business logic, and system operations"}
         ]
+        
+        # Auto-discover additional tags from the discovered architecture
+        discovered_tags = self._generate_discovered_tags(architecture)
+        tags.extend(discovered_tags)
         spec["tags"] = tags
         
         # Generate endpoints for each layer
         await self._add_compliant_endpoints(spec, architecture)
         
         return spec
+    
+    def _generate_discovered_tags(self, architecture: Dict[str, Any]) -> List[Dict[str, str]]:
+        """Generate hardcoded PAP layer structure with discovered content within each layer"""
+        discovered_tags = []
+        
+        # Get discovered architecture components
+        architecture_components = architecture.get("architecture_components", {})
+        
+        # HARDCODED PAP ARCHITECTURAL LAYERS UNDER API LAYER
+        # All PAP components belong under API layer with context-based sub-directories
+        
+        # Controllers (organized by context: core, gcp, license, filesystem)
+        controllers_count = len(architecture_components.get("controllers", {}))
+        discovered_tags.append({
+            "name": "🏛️ Controllers", 
+            "description": f"Business logic coordination ({controllers_count} discovered) - Core, GCP, License, Filesystem"
+        })
+        
+        # Orchestrators (organized by context: core, gcp, license, filesystem) 
+        orchestrators_count = len(architecture_components.get("orchestrators", {}))
+        discovered_tags.append({
+            "name": "🔧 Orchestrators",
+            "description": f"Workflow orchestration ({orchestrators_count} discovered) - Core, GCP, License, Filesystem"
+        })
+        
+        # Providers (organized by context: core, gcp, license, filesystem)
+        providers_count = len(architecture_components.get("providers", {}))
+        discovered_tags.append({
+            "name": "🔗 Providers",
+            "description": f"Service integrations ({providers_count} discovered) - Core, GCP, License, Filesystem"
+        })
+        
+        # Middleware (organized by context: core, security, validation)
+        middleware_count = len(architecture_components.get("middleware", {}))
+        discovered_tags.append({
+            "name": "🛡️ Middleware",
+            "description": f"Cross-cutting concerns ({middleware_count} discovered) - Core, Security, Validation"
+        })
+        
+        # Executors (organized by context: core, command, operation)
+        executors_count = len(architecture_components.get("executors", {}))
+        discovered_tags.append({
+            "name": "⚙️ Executors",
+            "description": f"Command execution ({executors_count} discovered) - Core, Command, Operation"
+        })
+        
+        # Data layer auto-discovery (more comprehensive)
+        data_layer = architecture.get("data_layer", {})
+        data_components = data_layer.get("components", {})
+        data_subcategories = set()
+        
+        for component_name in data_components.keys():
+            if "config" in component_name.lower():
+                data_subcategories.add("Configuration")
+            elif "discovery" in component_name.lower():
+                data_subcategories.add("Discovery")
+            elif "feature" in component_name.lower():
+                data_subcategories.add("Feature Gates")
+            elif "environment" in component_name.lower() or "env" in component_name.lower():
+                data_subcategories.add("Environment")
+                
+        for subcategory in sorted(data_subcategories):
+            discovered_tags.append({
+                "name": f"📊 Data / {subcategory}",
+                "description": f"Data layer {subcategory.lower()} management"
+            })
+        
+        # Web layer auto-discovery with Routes
+        web_layer = architecture.get("web_layer", {})
+        web_components = web_layer.get("components", {})
+        web_subcategories = set(["Routes"])  # Always include Routes in Web layer
+        
+        for component_name in web_components.keys():
+            if "template" in component_name.lower():
+                web_subcategories.add("Templates")
+            elif "static" in component_name.lower() or "asset" in component_name.lower():
+                web_subcategories.add("Assets")
+            elif "render" in component_name.lower():
+                web_subcategories.add("Rendering")
+            else:
+                web_subcategories.add("Interface")
+                
+        for subcategory in sorted(web_subcategories):
+            if subcategory == "Routes":
+                discovered_tags.append({
+                    "name": f"🌐 Web / Routes",
+                    "description": f"HTTP routing logic mapping to API controllers - Core, GCP, License, Filesystem"
+                })
+            else:
+                discovered_tags.append({
+                    "name": f"🌐 Web / {subcategory}",
+                    "description": f"Web layer {subcategory.lower()} services"
+                })
+        
+        # API layer auto-discovery (by actual discovered providers)
+        api_layer = architecture.get("api_layer", {})
+        api_components = api_layer.get("components", {})
+        api_subcategories = set()
+        
+        for component_name in api_components.keys():
+            if "_live_provider" in component_name:
+                # Extract provider name dynamically
+                provider_name = component_name.replace("_live_provider", "").replace("_", " ").title()
+                api_subcategories.add(provider_name)
+            elif "controller" in component_name.lower():
+                api_subcategories.add("System")
+            elif "discovery" in component_name.lower():
+                api_subcategories.add("Discovery")
+                
+        for subcategory in sorted(api_subcategories):
+            discovered_tags.append({
+                "name": f"⚡ API / {subcategory}",
+                "description": f"API layer {subcategory.lower()} operations"
+            })
+        
+        return discovered_tags
     
     async def _add_compliant_endpoints(self, spec: Dict[str, Any], architecture: Dict[str, Any]):
         """Add Provider-Abstraction-Pattern compliant endpoints organized by layer and component"""
@@ -1289,7 +1633,7 @@ REST APIs, cloud provider integrations, and business logic
             spec["paths"]["/api/controllers"] = {
                 "get": {
                     "summary": "Controllers Discovery", 
-                    "description": "Complete discovery of all controllers in the architecture",
+                    "description": "Complete discovery of all business logic controllers",
                     "responses": {
                         "200": {
                             "description": "All discovered controllers",
@@ -1304,6 +1648,75 @@ REST APIs, cloud provider integrations, and business logic
                         }
                     },
                     "tags": ["🏛️ Controllers"]
+                }
+            }
+            
+        # Orchestrators overview
+        if architecture_components.get("orchestrators"):
+            spec["paths"]["/api/orchestrators"] = {
+                "get": {
+                    "summary": "Orchestrators Discovery", 
+                    "description": "Complete discovery of all workflow orchestrators",
+                    "responses": {
+                        "200": {
+                            "description": "All discovered orchestrators",
+                            "content": {
+                                "application/json": {
+                                    "example": {
+                                        "total_orchestrators": len(architecture_components["orchestrators"]),
+                                        "orchestrators": "Live orchestrator discovery results"
+                                    }
+                                }
+                            }
+                        }
+                    },
+                    "tags": ["🔧 Orchestrators"]
+                }
+            }
+            
+        # Middleware overview
+        if architecture_components.get("middleware"):
+            spec["paths"]["/api/middleware"] = {
+                "get": {
+                    "summary": "Middleware Discovery", 
+                    "description": "Complete discovery of all middleware components",
+                    "responses": {
+                        "200": {
+                            "description": "All discovered middleware",
+                            "content": {
+                                "application/json": {
+                                    "example": {
+                                        "total_middleware": len(architecture_components["middleware"]),
+                                        "middleware": "Live middleware discovery results"
+                                    }
+                                }
+                            }
+                        }
+                    },
+                    "tags": ["🛡️ Middleware"]
+                }
+            }
+            
+        # Executors overview
+        if architecture_components.get("executors"):
+            spec["paths"]["/api/executors"] = {
+                "get": {
+                    "summary": "Executors Discovery", 
+                    "description": "Complete discovery of all command executors",
+                    "responses": {
+                        "200": {
+                            "description": "All discovered executors",
+                            "content": {
+                                "application/json": {
+                                    "example": {
+                                        "total_executors": len(architecture_components["executors"]),
+                                        "executors": "Live executor discovery results"
+                                    }
+                                }
+                            }
+                        }
+                    },
+                    "tags": ["⚙️ Executors"]
                 }
             }
         
@@ -1331,96 +1744,371 @@ REST APIs, cloud provider integrations, and business logic
             }
     
     def get_working_scalar_html(self) -> str:
-        """Generate reliable Scalar UI that actually works"""
+        """Generate Purfect Labs styled Scalar UI - dark theme with purple accents"""
         return """<!DOCTYPE html>
-<html lang="en">
+<html lang="en" class="scroll-smooth" data-theme="dark">
 <head>
-    <title>WARPCORE PAP-Compliant API Documentation</title>
-    <meta charset="utf-8" />
-    <meta name="viewport" content="width=device-width, initial-scale=1" />
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>🌊 WarpCop API Documentation - Provider-Abstraction-Pattern by PurfectLabs</title>
+    <meta name="description" content="WarpCop by PurfectLabs - Enhanced Provider-Abstraction-Pattern API documentation with auto-discovery and hierarchical organization.">
+    <meta name="theme-color" content="#8b5cf6">
+    
+    <!-- Fonts -->
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    <link href="https://fonts.googleapis.com/css2?family=Space+Grotesk:wght@300;400;500;600;700&family=Inter:wght@300;400;500;600;700;800;900&family=JetBrains+Mono:wght@400;500;600&display=swap" rel="stylesheet">
+    
     <style>
-        body { 
-            margin: 0; 
-            padding: 0; 
-            font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
-            background: #0f172a;
-            color: #e2e8f0;
+        :root {
+            /* Purfect Labs Dark Theme */
+            --bg: #1e1f22;
+            --bg-soft: #2b2d31;
+            --text: #f2f3f5;
+            --text-muted: #b5bac1;
+            --surface: #313338;
+            --surface-2: #383a40;
+            --border: #3f4147;
+            --accent: #8b5cf6;
+            --accent-hover: #7c3aed;
+            --success: #22c55e;
+            --warning: #fbbf24;
+            --danger: #ef4444;
+            --info: #38bdf8;
+            
+            /* Typography */
+            --font-primary: 'Inter', -apple-system, BlinkMacSystemFont, sans-serif;
+            --font-display: 'Space Grotesk', -apple-system, BlinkMacSystemFont, sans-serif;
+            --font-mono: 'JetBrains Mono', 'Fira Code', Consolas, monospace;
+            
+            /* Glow effects */
+            --glow-primary: 0 0 30px rgba(139, 92, 246, 0.5);
+            --glow-soft: 0 0 15px rgba(139, 92, 246, 0.25);
         }
-        .loading {
+        
+        body {
+            margin: 0;
+            padding: 0;
+            background: linear-gradient(135deg, var(--bg) 0%, var(--bg-soft) 100%);
+            font-family: var(--font-primary);
+            color: var(--text);
+            min-height: 100vh;
+        }
+        
+        /* Header styling */
+        .warpcore-header {
+            background: rgba(49, 51, 56, 0.95);
+            backdrop-filter: blur(12px);
+            border-bottom: 1px solid var(--border);
+            padding: 1rem 2rem;
+            position: sticky;
+            top: 0;
+            z-index: 100;
+            box-shadow: 0 4px 6px -1px rgba(0, 0, 0, 0.3);
+        }
+        
+        .warpcore-title {
+            font-family: var(--font-display);
+            font-size: 1.5rem;
+            font-weight: 600;
+            background: linear-gradient(135deg, var(--accent) 0%, #a78bfa 50%, #c084fc 100%);
+            -webkit-background-clip: text;
+            -webkit-text-fill-color: transparent;
+            background-clip: text;
             display: flex;
-            justify-content: center;
             align-items: center;
-            height: 100vh;
-            font-size: 18px;
+            gap: 0.75rem;
         }
-        .error {
-            padding: 20px;
-            color: #ef4444;
+        
+        .warpcore-badge {
+            font-size: 0.75rem;
+            padding: 0.25rem 0.75rem;
+            background: rgba(139, 92, 246, 0.1);
+            color: var(--accent);
+            border: 1px solid rgba(139, 92, 246, 0.3);
+            border-radius: 12px;
+            font-weight: 500;
+            text-transform: uppercase;
+            letter-spacing: 0.05em;
+        }
+        
+        .stats-bar {
+            display: flex;
+            gap: 2rem;
+            margin-top: 1rem;
+            font-size: 0.875rem;
+            color: var(--text-muted);
+        }
+        
+        .nav-links {
+            display: flex;
+            gap: 1.5rem;
+            margin-top: 1rem;
+            padding-top: 1rem;
+            border-top: 1px solid var(--border);
+            font-size: 0.875rem;
+        }
+        
+        .nav-link {
+            color: var(--text-muted);
+            text-decoration: none;
+            padding: 0.5rem 1rem;
+            border-radius: 6px;
+            border: 1px solid transparent;
+            transition: all 0.2s ease;
+            display: flex;
+            align-items: center;
+            gap: 0.5rem;
+        }
+        
+        .nav-link:hover {
+            color: var(--accent);
+            border-color: rgba(139, 92, 246, 0.3);
+            background: rgba(139, 92, 246, 0.05);
+        }
+        
+        .nav-link.active {
+            color: var(--accent);
+            border-color: rgba(139, 92, 246, 0.5);
+            background: rgba(139, 92, 246, 0.1);
+        }
+        
+        .purfect-gradient-btn {
+            background: linear-gradient(
+                45deg,
+                #00C8C8,  /* Purfect Labs teal */
+                #FFD700,  /* Yellow addition */
+                #FFB84D,  /* Purfect Labs amber */
+                #A25AFF   /* Purfect Labs purple */
+            ) !important;
+            background-size: 200% 200%;
+            animation: purfect-shift 3s ease infinite;
+            color: white !important;
+            border: none !important;
+            font-weight: 600;
+            text-shadow: 0 1px 2px rgba(0,0,0,0.5);
+        }
+        
+        .purfect-gradient-btn:hover {
+            transform: translateY(-1px);
+            box-shadow: 0 4px 15px rgba(0, 200, 200, 0.4);
+            animation-duration: 1.5s;
+        }
+        
+        @keyframes purfect-shift {
+            0% { background-position: 0% 50%; }
+            50% { background-position: 100% 50%; }
+            100% { background-position: 0% 50%; }
+        }
+        
+        /* Fix Scalar sidebar scrolling */
+        [data-testid="sidebar"] {
+            position: fixed !important;
+            top: 0 !important;
+            left: 0 !important;
+            height: 100vh !important;
+            overflow-y: auto !important;
+            z-index: 1000 !important;
+        }
+        
+        [data-testid="main-content"] {
+            margin-left: 300px !important;
+            height: 100vh !important;
+            overflow-y: auto !important;
+        }
+        
+        /* Alternative selectors for Scalar UI structure */
+        .scalar-sidebar {
+            position: fixed !important;
+            top: 0 !important;
+            left: 0 !important;
+            height: 100vh !important;
+            overflow-y: auto !important;
+            z-index: 1000 !important;
+        }
+        
+        .scalar-content {
+            margin-left: 300px !important;
+            height: 100vh !important;
+            overflow-y: auto !important;
+        }
+        
+        .stat-item {
+            display: flex;
+            align-items: center;
+            gap: 0.5rem;
+        }
+        
+        .stat-number {
+            color: var(--accent);
+            font-weight: 600;
+        }
+        
+        /* Scalar customization */
+        #api-reference {
+            --scalar-font: var(--font-primary);
+            --scalar-font-code: var(--font-mono);
+            
+            /* Dark theme colors */
+            --scalar-background-1: var(--bg);
+            --scalar-background-2: var(--surface);
+            --scalar-background-3: var(--surface-2);
+            --scalar-background-accent: var(--accent);
+            
+            --scalar-color-1: var(--text);
+            --scalar-color-2: var(--text-muted);
+            --scalar-color-3: #6b7280;
+            --scalar-color-accent: var(--accent);
+            
+            --scalar-border-color: var(--border);
+            
+            /* Buttons */
+            --scalar-button-1: var(--accent);
+            --scalar-button-1-hover: var(--accent-hover);
+            
+            /* Success/Error colors */
+            --scalar-error-1: var(--danger);
+            --scalar-success-1: var(--success);
+        }
+        
+        /* Custom scrollbar */
+        ::-webkit-scrollbar {
+            width: 8px;
+        }
+        
+        ::-webkit-scrollbar-track {
+            background: var(--surface);
+        }
+        
+        ::-webkit-scrollbar-thumb {
+            background: var(--accent);
+            border-radius: 4px;
+        }
+        
+        ::-webkit-scrollbar-thumb:hover {
+            background: var(--accent-hover);
+        }
+        
+        /* Glow effects for PAP layers */
+        [data-testid*="tag-Data Layer"] {
+            background: linear-gradient(135deg, #3b82f6 0%, #60a5fa 100%) !important;
+            box-shadow: var(--glow-soft) !important;
+            border: none !important;
+        }
+        
+        [data-testid*="tag-Api Layer"] {
+            background: linear-gradient(135deg, var(--accent) 0%, #a78bfa 100%) !important;
+            box-shadow: var(--glow-soft) !important;
+            border: none !important;
+        }
+        
+        [data-testid*="tag-Web Layer"] {
+            background: linear-gradient(135deg, #10b981 0%, #34d399 100%) !important;
+            box-shadow: var(--glow-soft) !important;
+            border: none !important;
+        }
+        
+        /* Loading animation */
+        .loading-container {
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            justify-content: center;
+            min-height: 60vh;
             text-align: center;
         }
+        
+        .loading-spinner {
+            width: 40px;
+            height: 40px;
+            border: 3px solid rgba(139, 92, 246, 0.1);
+            border-top: 3px solid var(--accent);
+            border-radius: 50%;
+            animation: spin 1s linear infinite;
+            margin-bottom: 1rem;
+        }
+        
+        @keyframes spin {
+            0% { transform: rotate(0deg); }
+            100% { transform: rotate(360deg); }
+        }
+        
+        .loading-text {
+            font-family: var(--font-display);
+            font-size: 1.25rem;
+            color: var(--text-muted);
+        }
     </style>
+    
 </head>
 <body>
-    <div id="api-reference" class="loading">
-        🌊 Loading WARPCORE PAP Documentation...
+    <!-- Purfect Labs styled header -->
+    <div class="warpcore-header">
+        <div class="warpcore-title">
+            🌊 WarpCop API Documentation
+            <span class="warpcore-badge">PAP Compliant</span>
+            <span class="warpcore-badge" style="background: rgba(56, 189, 248, 0.1); color: #38bdf8; border-color: rgba(56, 189, 248, 0.3);">by PurfectLabs</span>
+        </div>
+        <div class="stats-bar">
+            <div class="stat-item">
+                <i class="fas fa-cube" style="color: var(--accent);"></i>
+                <span>Components: <span class="stat-number" id="component-count">19</span></span>
+            </div>
+            <div class="stat-item">
+                <i class="fas fa-network-wired" style="color: var(--info);"></i>
+                <span>Endpoints: <span class="stat-number" id="endpoint-count">13</span></span>
+            </div>
+            <div class="stat-item">
+                <i class="fas fa-layer-group" style="color: var(--success);"></i>
+                <span>Layers: <span class="stat-number">3</span></span>
+            </div>
+            <div class="stat-item">
+                <i class="fas fa-check-circle" style="color: var(--success);"></i>
+                <span>Auto-Discovery: <span class="stat-number" style="color: var(--success);">Active</span></span>
+            </div>
+        </div>
+        
+        <div class="nav-links">
+            <a href="/docs/api/what-is-pap" class="nav-link purfect-gradient-btn" target="_blank">
+                <i class="fas fa-layer-group"></i>
+                What is PAP?
+            </a>
+            <a href="/docs/api/purfectlabs-philosophy" class="nav-link" target="_blank" style="color: #38bdf8; border-color: rgba(56, 189, 248, 0.3);">
+                <i class="fas fa-heart"></i>
+                UR Philosophy
+            </a>
+        </div>
     </div>
     
-    <script type="module">
-        try {
-            // Use the latest Scalar version with proper initialization
-            const { ApiReference } = await import('https://cdn.jsdelivr.net/npm/@scalar/api-reference@latest/dist/browser/standalone.js');
-            
-            const configuration = {
-                theme: 'purple',
-                layout: 'modern',
-                darkMode: true,
-                showSidebar: true,
-                searchHotKey: 'k',
-                metaData: {
-                    title: '🌊 WARPCORE PAP-Compliant API',
-                    description: 'Provider-Abstraction-Pattern Architecture Documentation'
-                },
-                customCss: `
-                    .scalar-api-reference {
-                        --scalar-background-1: #0f172a;
-                        --scalar-background-2: #1e293b;
-                        --scalar-background-3: #334155;
-                        --scalar-color-1: #f8fafc;
-                        --scalar-color-2: #e2e8f0;
-                        --scalar-color-3: #cbd5e1;
-                        --scalar-accent: #8b5cf6;
-                    }
-                    
-                    /* PAP Layer specific styling */
-                    [data-testid*="tag-Data Layer"] { background: #3b82f6 !important; }
-                    [data-testid*="tag-Web Layer"] { background: #10b981 !important; }
-                    [data-testid*="tag-API Layer"] { background: #f59e0b !important; }
-                    [data-testid*="tag-PAP"] { background: #8b5cf6 !important; }
-                    [data-testid*="tag-Auto-Discovery"] { background: #ef4444 !important; }
-                `
-            };
-
-            // Initialize Scalar with our OpenAPI spec
-            const apiRef = document.getElementById('api-reference');
-            apiRef.innerHTML = '';
-            
-            ApiReference(apiRef, {
-                spec: {
-                    url: '/openapi.json'
-                },
-                ...configuration
-            });
-
-        } catch (error) {
-            console.error('Failed to load Scalar:', error);
-            document.getElementById('api-reference').innerHTML = `
-                <div class="error">
-                    <h2>🌊 WARPCORE PAP Documentation</h2>
-                    <p>Loading Scalar UI... If this persists, check console for errors.</p>
-                    <p><a href="/openapi.json" style="color: #8b5cf6;">View Raw OpenAPI Spec</a></p>
-                </div>
-            `;
-        }
+    <!-- Loading state -->
+    <div id="loading" class="loading-container">
+        <div class="loading-spinner"></div>
+        <div class="loading-text">🌊 Initializing WarpCop PAP Documentation by PurfectLabs...</div>
+    </div>
+    
+    <!-- Scalar API Reference - using the data attribute method -->
+    <script id="api-reference" data-url="/openapi.json" data-theme="purple"></script>
+    <script src="https://cdn.jsdelivr.net/npm/@scalar/api-reference@1.24.11"></script>
+    
+    <script>
+        console.log('🌊 WarpCop by PurfectLabs: Loading enhanced PAP API documentation...');
+        
+        // Load live stats
+        fetch('/api/architecture')
+            .then(response => response.json())
+            .then(data => {
+                document.getElementById('component-count').textContent = data.discovery_metadata?.total_components || '19';
+                document.getElementById('endpoint-count').textContent = data.discovery_metadata?.total_endpoints || '13';
+            })
+            .catch(() => console.log('Using default stats'));
+        
+        // Hide loading after Scalar loads
+        setTimeout(() => {
+            const loading = document.getElementById('loading');
+            if (loading) {
+                loading.style.display = 'none';
+            }
+            console.log('✨ WarpCop by PurfectLabs: PAP Documentation loaded successfully!');
+        }, 3000);
     </script>
 </body>
 </html>"""
@@ -1449,7 +2137,30 @@ REST APIs, cloud provider integrations, and business logic
             """Complete Provider-Abstraction-Pattern architecture discovery"""
             return await self.discover_complete_architecture()
         
-        # Note: Dynamic endpoint registration happens via startup event
+        # Documentation routes
+        @self.app.get("/docs/api/what-is-pap", response_class=HTMLResponse, include_in_schema=False)
+        async def what_is_pap():
+            """What is Provider-Abstraction-Pattern?"""
+            return self._serve_html_file("docs/api/docs/Purfect-Labs_Architecture_and_Design_Philosophy.html")
+        
+        @self.app.get("/docs/api/purfectlabs-philosophy", response_class=HTMLResponse, include_in_schema=False)
+        async def purfectlabs_philosophy():
+            """PurfectLabs UR Philosophy"""
+            return self._serve_html_file("docs/api/docs/Stuck_in_the_Middle_Again_State_of_the_Union_2025.html")
+        
+        # Store app reference for dynamic endpoint registration during startup
+        self._endpoints_registered = False
+        async def get_pap_docs():
+            """Enhanced PAP Architecture Documentation"""
+            return await self._serve_markdown_as_html("docs/dev/enhanced-pap-architecture.md", "Enhanced PAP Architecture")
+        
+        @self.app.get("/docs/dev/documentation-coherence-generation.md", response_class=HTMLResponse, include_in_schema=False)
+        async def get_methodology_docs():
+            """WarpCop Development Methodology Documentation"""
+            return await self._serve_markdown_as_html("docs/dev/documentation-coherence-generation.md", "WarpCop Methodology")
+        
+        # Store app reference for dynamic endpoint registration during startup
+        self._endpoints_registered = False
 
 
 def setup_compliant_docs(app: FastAPI, discovery_system=None) -> CompliantDocsGenerator:

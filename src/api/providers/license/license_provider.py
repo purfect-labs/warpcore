@@ -12,7 +12,7 @@ import asyncio
 from datetime import datetime, timedelta
 from typing import Dict, Any, Optional
 from cryptography.fernet import Fernet
-from .base_provider import BaseProvider
+from ..core.base_provider import BaseProvider
 
 
 class LicenseProvider(BaseProvider):

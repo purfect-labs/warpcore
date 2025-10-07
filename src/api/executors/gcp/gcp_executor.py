@@ -3,7 +3,7 @@ WARPCORE GCP Executor - PAP Layer 6
 Safety gates for GCP command execution
 """
 
-from ..base_executor import BaseExecutor
+from ..core.base_executor import BaseExecutor
 from typing import Dict, Any, List
 
 class GCPExecutor(BaseExecutor):

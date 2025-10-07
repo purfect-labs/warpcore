@@ -3,7 +3,7 @@ WARPCORE Security Middleware
 Access control, policy enforcement, dangerous operation blocking
 """
 
-from ..base_middleware import BaseMiddleware
+from ..core.base_middleware import BaseMiddleware
 from typing import Dict, Any
 import os
 

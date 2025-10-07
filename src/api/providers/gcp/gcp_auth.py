@@ -6,7 +6,7 @@ Handles GCP authentication and project management
 import json
 import os
 from typing import Dict, Any, Optional, List
-from ..base_provider import BaseProvider
+from ..core.base_provider import BaseProvider
 from ....data.config_loader import get_config
 
 

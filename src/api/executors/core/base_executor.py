@@ -14,10 +14,15 @@ class BaseExecutor(ABC):
     def __init__(self, name: str):
         self.name = name
         self.audit_logger = None
+        self.websocket_manager = None
     
     def set_audit_logger(self, audit_logger):
         """Wire up audit logger"""
         self.audit_logger = audit_logger
+    
+    def set_websocket_manager(self, websocket_manager):
+        """Set the WebSocket manager for real-time updates"""
+        self.websocket_manager = websocket_manager
     
     @abstractmethod
     async def execute(self, operation: str, command: List[str], context: Dict[str, Any]) -> Dict[str, Any]:

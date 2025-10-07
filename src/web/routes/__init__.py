@@ -1,30 +1,24 @@
 """
-Routes Module
-Organizes all API routes by provider and capability
+Web Layer Routes Module
+HTTP routing logic that maps to API layer controllers following PAP pattern
 """
 
-from .aws import setup_aws_routes
-from .gcp import setup_gcp_routes  
-from .k8s import setup_k8s_routes
+from .gcp import setup_gcp_routes
 from .core import setup_core_routes
 
 
 def setup_all_routes(app, controller_registry):
-    """Setup all routes organized by provider"""
+    """Setup all web layer routes that map to API controllers"""
     
     # Core system routes (status, config, etc)
     setup_core_routes(app, controller_registry)
     
-    # Provider-specific routes
-    setup_aws_routes(app, controller_registry)
+    # Provider-specific routes (only existing ones)
     setup_gcp_routes(app, controller_registry)
-    setup_k8s_routes(app, controller_registry)
     
-    print("📡 All routes organized by provider and capability")
-    print("   - AWS: /api/aws/*")
-    print("   - GCP: /api/gcp/*") 
-    print("   - K8s: /api/k8s/*")
-    print("   - Core: /api/{status,config,auth}")
+    print("🌐 Web layer routes mapped to API controllers (PAP)")
+    print("   - GCP: /api/gcp/* → GCP Controller") 
+    print("   - Core: /api/{status,config,auth} → System Controllers")
 
 
 def list_all_routes(app):

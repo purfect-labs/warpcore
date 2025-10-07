@@ -3,7 +3,7 @@ WARPCORE GCP Authentication Orchestrator
 PAP Layer 3: Compose authentication workflows across providers
 """
 
-from ..base_orchestrator import BaseOrchestrator
+from ..core.base_orchestrator import BaseOrchestrator
 from typing import Dict, Any
 
 class GCPAuthOrchestrator(BaseOrchestrator):

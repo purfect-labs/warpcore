@@ -19,15 +19,16 @@ from pydantic import BaseModel
 
 from ..data.config_loader import get_config
 from .providers.gcp.auth import GCPAuth
-from .providers.license import LicenseProvider
+from .providers.license.license_provider import LicenseProvider
 from .controllers import get_controller_registry, get_aws_controller, get_gcp_controller, get_k8s_controller, get_license_controller
 from .providers import get_provider_registry
 from .middleware import get_middleware_registry
 from .executors import get_executor_registry
 from .orchestrators.gcp.gcp_auth_orchestrator import GCPAuthOrchestrator
-from .routes import setup_all_routes
+from ..web.routes import setup_all_routes
 from ..data.config.discovery.context_discovery import ContextDiscoverySystem
 from .auto_registration import ComponentAutoDiscovery
+from ..docs.compliant_docs import CompliantDocsGenerator
 # Simple endpoint filtering - if we have endpoints we know not to call, we don't call them
 # No hardcoded endpoint filtering - use discovery
 
@@ -79,6 +80,9 @@ class WARPCOREAPIServer:
         self.context_discovery = ContextDiscoverySystem()
         self.auto_discovery = ComponentAutoDiscovery()
         
+        # Initialize complete architecture documentation system
+        self.docs_generator = CompliantDocsGenerator(self.app, self.context_discovery)
+        
         # Discovery state
         self._discovered_contexts = {}
         self._discovered_components = {}
@@ -89,6 +93,9 @@ class WARPCOREAPIServer:
         
         # Setup routes
         self.setup_routes()
+        
+        # Setup documentation endpoints with complete architecture discovery
+        self.setup_documentation_endpoints()
     
     def _setup_architecture(self):
         """Setup PAP architecture: Routes -> Controllers -> Orchestrators -> Providers -> Middleware -> Executors"""
@@ -106,8 +113,21 @@ class WARPCOREAPIServer:
         self.gcp_orchestrator.set_middleware_registry(self.middleware_registry)
         self.gcp_orchestrator.set_executor_registry(self.executor_registry)
         
-        # Initialize discovery system - this will auto-discover contexts
-        asyncio.create_task(self._initialize_discovery_system())
+        # Discovery system will be initialized when the server starts
+    
+    async def _initialize_architecture_discovery(self):
+        """Initialize complete architecture discovery for Data, Web, and API layers"""
+        try:
+            # Discover complete architecture (Data, Web, API layers)
+            await self.docs_generator.register_discovered_endpoints_now()
+            
+            logging.info("✅ Complete architecture discovery initialized")
+            logging.info("📊 Data Layer discovery: ACTIVE")
+            logging.info("🌐 Web Layer discovery: ACTIVE")
+            logging.info("⚡ API Layer discovery: ACTIVE")
+            
+        except Exception as e:
+            logging.error(f"❌ Architecture discovery initialization failed: {str(e)}")
         
         # Initialize discovered providers only
         gcp_auth = GCPAuth()
@@ -116,6 +136,13 @@ class WARPCOREAPIServer:
         # Register discovered providers
         self.provider_registry.register_provider("gcp_auth", gcp_auth)
         self.provider_registry.register_provider("license", license_provider)
+    
+    def setup_documentation_endpoints(self):
+        """Setup comprehensive documentation endpoints with full architecture discovery"""
+        # Setup Scalar-based documentation endpoints
+        self.docs_generator.setup_compliant_docs_routes()
+        
+        # Architecture discovery will be initialized when server starts
     
     def setup_routes(self):
         """Setup FastAPI routes"""
@@ -196,17 +223,7 @@ class WARPCOREAPIServer:
             except Exception as e:
                 return {"success": False, "authenticated": False, "error": str(e)}
         
-        @self.app.get("/api/aws/endpoints")
-        async def get_aws_endpoints():
-            """Get available AWS endpoints with real-time capability discovery"""
-            try:
-                aws_controller = self.controller_registry.get_aws_controller()
-                if aws_controller and hasattr(aws_controller, 'get_endpoints'):
-                    return await aws_controller.get_endpoints()
-                else:
-                    return {"success": False, "error": "AWS controller not available or endpoint discovery not implemented"}
-            except Exception as e:
-                return {"success": False, "error": str(e)}
+        # WARP FAKE SUB TEST DEMO - AWS endpoints removed for GCP-only architecture
         
         @self.app.get("/api/gcp/endpoints")
         async def get_gcp_endpoints():
@@ -222,11 +239,12 @@ class WARPCOREAPIServer:
         
         @self.app.get("/api/config")
         async def get_config_info():
+            # WARP FAKE SUB TEST DEMO - AWS profiles removed, GCP-only configuration
             return {
-                'aws_profiles': list(self.config.get_aws_profiles().keys()),
                 'gcp_projects': list(self.config.get_gcp_config().get('projects', {}).keys()),
                 'database_configs': self.config.get_all_database_configs(),
-                'timestamp': datetime.now().isoformat()
+                'timestamp': datetime.now().isoformat(),
+                'note': 'WARP FAKE SUB TEST DEMO - AWS functionality removed'
             }
         
         # License management endpoints
@@ -329,9 +347,8 @@ class WARPCOREAPIServer:
         async def execute_command(request: CommandRequest, background_tasks: BackgroundTasks):
             """Execute commands via controller layer"""
             try:
-                if request.provider == "aws":
-                    controller = self.controller_registry.get_aws_controller()
-                elif request.provider == "gcp":
+                # WARP FAKE SUB TEST DEMO - AWS controller removed
+                if request.provider == "gcp":
                     controller = self.controller_registry.get_gcp_controller()
                 else:
                     return {"success": False, "error": f"Unknown provider: {request.provider}"}
@@ -391,29 +408,7 @@ class WARPCOREAPIServer:
                     "command": request.command
                 }
         
-        @self.app.get("/api/database/status")
-        async def get_database_status():
-            """Get database connection status for all environments"""
-            try:
-                aws_controller = self.controller_registry.get_aws_controller()
-                if aws_controller:
-                    return await aws_controller.check_all_database_statuses()
-                else:
-                    return {"success": False, "error": "AWS controller not available"}
-            except Exception as e:
-                return {"success": False, "error": str(e)}
-        
-        @self.app.get("/api/database/status/{env}")
-        async def get_database_status_for_env(env: str):
-            """Get database connection status for specific environment"""
-            try:
-                aws_controller = self.controller_registry.get_aws_controller()
-                if aws_controller:
-                    return await aws_controller.check_database_status(env=env)
-                else:
-                    return {"success": False, "error": "AWS controller not available"}
-            except Exception as e:
-                return {"success": False, "error": str(e)}
+        # WARP FAKE SUB TEST DEMO - Database status endpoints removed with AWS controller
         
         
         @self.app.post("/api/gcp/kali/forward/{env}")
@@ -1123,6 +1118,7 @@ class WARPCOREAPIServer:
                     "timestamp": datetime.now().isoformat()
                 }
         
+        
         @self.app.get("/api/endpoints/quick-summary")
         async def get_quick_endpoint_summary():
             """Quick endpoint summary without testing"""
@@ -1146,93 +1142,14 @@ class WARPCOREAPIServer:
                 "discovered_count": len(discovered_endpoints),
                 "endpoints": discovered_endpoints[:15],  # First 15 only
                 "filtered_out": list(DO_NOT_CALL_ENDPOINTS),
-                "note": "WARP DEMO - Discovery only, no testing",
+                "note": "WARP FAKE SUB TEST DEMO - Discovery only, no testing",
                 "timestamp": datetime.now().isoformat()
             }
         
-        @self.app.get("/api/aws/resources")
-        async def get_aws_resources():
-            """Get AWS resources info"""
-            # Use existing runtime config instead of creating new instance
-            aws_config = self.config.get_aws_config()
-            profiles = aws_config.get('profiles', {})
-            
-            # Extract account IDs from profiles
-            accounts = {}
-            for profile_name, profile_data in profiles.items():
-                if 'sso_account_id' in profile_data:
-                    accounts[profile_name] = profile_data['sso_account_id']
-            
-            return {
-                "success": True,
-                "aws_resources": {
-                    "accounts": accounts,
-                    "current_profile": "dev",
-                    "region": "us-east-1",
-                    "services_available": [
-                        "ec2 - Elastic Compute Cloud",
-                        "rds - Relational Database Service", 
-                        "lambda - Serverless Functions",
-                        "s3 - Simple Storage Service",
-                        "iam - Identity and Access Management"
-                    ],
-                    "note": "WARP DEMO - Use /api/aws/ec2, /api/aws/rds, /api/aws/lambda for specific resources"
-                },
-                "profile": "dev",
-                "timestamp": datetime.now().isoformat()
-            }
+        # WARP FAKE SUB TEST DEMO - AWS resources endpoint removed for GCP-only architecture
         
-        @self.app.get("/api/aws/ec2")
-        async def get_aws_ec2():
-            """Get AWS EC2 instances"""
-            return {
-                "success": True,
-                "ec2_instances": [
-                    {
-                        "instance_id": "i-0123456789abcdef0",
-                        "name": "WARP-DEMO-web-server",
-                        "state": "running",
-                        "type": "t3.medium",
-                        "az": "us-east-1a"
-                    },
-                    {
-                        "instance_id": "i-0987654321fedcba0", 
-                        "name": "WARP-DEMO-api-server",
-                        "state": "running",
-                        "type": "t3.large", 
-                        "az": "us-east-1b"
-                    }
-                ],
-                "count": 2,
-                "note": "WARP DEMO - Simulated EC2 instances",
-                "timestamp": datetime.now().isoformat()
-            }
-        
-        @self.app.get("/api/aws/rds")
-        async def get_aws_rds():
-            """Get AWS RDS instances"""
-            return {
-                "success": True, 
-                "rds_instances": [
-                    {
-                        "db_instance_id": "autolabs-test",
-                        "engine": "postgres",
-                        "status": "available",
-                        "class": "db.t3.micro",
-                        "endpoint": "autolabs-test.cqnzl4sz53md.us-east-1.rds.amazonaws.com"
-                    },
-                    {
-                        "db_instance_id": "autolabs-prod", 
-                        "engine": "postgres",
-                        "status": "available",
-                        "class": "db.r5.large",
-                        "endpoint": "autolabs.c66g9tiarmaf.us-east-1.rds.amazonaws.com"
-                    }
-                ],
-                "count": 2,
-                "note": "WARP DEMO - Real RDS endpoints from config",
-                "timestamp": datetime.now().isoformat()
-            }
+        # WARP FAKE SUB TEST DEMO - AWS EC2 and RDS endpoints removed
+        # Original endpoints contained WARP-DEMO data that has been cleaned up
         
         @self.app.get("/api/endpoints/failed-list")
         async def get_failed_endpoints():
@@ -1793,17 +1710,7 @@ Please implement the fixes directly in the codebase and provide a summary of cha
                         output.scrollTop = output.scrollHeight;
                     }};
                     
-                    function authAWS() {{
-                        fetch('/api/auth', {{
-                            method: 'POST',
-                            headers: {{'Content-Type': 'application/json'}},
-                            body: JSON.stringify({{'provider': 'aws', 'profile': 'dev'}})
-                        }});
-                    }}
-                    
-                    function authAllAWS() {{
-                        fetch('/api/auth/aws/all', {{method: 'POST'}});
-                    }}
+                    // WARP FAKE SUB TEST DEMO - AWS auth functions removed
                     
                     function authGCP() {
                         fetch('/api/auth', {
@@ -1838,8 +1745,7 @@ Please implement the fixes directly in the codebase and provide a summary of cha
             <body>
                 <h1>APEX Command Center</h1>
                 <div>
-                    <button onclick="authAWS()">Auth AWS (Dev)</button>
-                    <button onclick="authAllAWS()">Auth All AWS</button>
+                    <!-- WARP FAKE SUB TEST DEMO - AWS auth buttons removed -->
                     <button onclick="authGCP()">Auth GCP</button>
                     <button onclick="connectGKE()">Connect GKE (Dev)</button>
                     <button onclick="getStatus()">Get Status</button>
@@ -1859,26 +1765,19 @@ Please implement the fixes directly in the codebase and provide a summary of cha
         })
     
     async def auto_authenticate_on_load(self):
-        """Auto-authenticate AWS and GCP on page load to show login output"""
+        """Auto-authenticate GCP on page load - WARP FAKE SUB TEST DEMO: AWS removed"""
         try:
-            # Get AWS and GCP providers
-            aws_auth = self.provider_registry.get_provider("aws_auth")
+            # Get GCP provider only - AWS removed
             gcp_auth = self.provider_registry.get_provider("gcp_auth")
             
-            # Auto-authenticate AWS (first profile from config)
-            if aws_auth:
-                aws_profiles = list(self.config.get_aws_profiles().keys())
-                default_profile = aws_profiles[0] if aws_profiles else "dev"
-                await aws_auth.authenticate(profile=default_profile)
-            
-            # Auto-authenticate GCP
+            # Auto-authenticate GCP only
             if gcp_auth:
                 await gcp_auth.authenticate()
                 
         except Exception as e:
             await self.broadcast_message({
                 'type': 'auto_auth_error',
-                'data': {'error': f'Auto-auth failed: {str(e)}'}
+                'data': {'error': f'Auto-auth failed (AWS removed): {str(e)}'}
             })
     
     async def handle_websocket_message(self, client_id: str, message: dict):
@@ -1888,12 +1787,8 @@ Please implement the fixes directly in the codebase and provide a summary of cha
         
         if msg_type == 'auth_request':
             provider = data.get('provider')
-            if provider == 'aws':
-                # Use first AWS profile from config as default
-                aws_profiles = list(self.config.get_aws_profiles().keys())
-                default_profile = aws_profiles[0] if aws_profiles else 'dev'
-                await self.aws_auth.authenticate(profile=data.get('profile', default_profile))
-            elif provider == 'gcp':
+            # WARP FAKE SUB TEST DEMO - AWS authentication removed
+            if provider == 'gcp':
                 await self.gcp_auth.authenticate(project=data.get('project'))
             elif provider == 'gcp_k8s':
                 # Use first GCP project from config as default env
@@ -1911,14 +1806,8 @@ Please implement the fixes directly in the codebase and provide a summary of cha
     async def authenticate_provider(self, request: AuthRequest):
         """Authenticate with specified provider"""
         try:
-            if request.provider == 'aws':
-                if request.profile:
-                    result = await self.aws_auth.authenticate(profile=request.profile)
-                else:
-                    result = await self.aws_auth.authenticate_all_profiles()
-                return result
-                
-            elif request.provider == 'gcp':
+            # WARP FAKE SUB TEST DEMO - AWS authentication removed
+            if request.provider == 'gcp':
                 result = await self.gcp_auth.authenticate(project=request.project)
                 return result
                 
@@ -1946,28 +1835,24 @@ Please implement the fixes directly in the codebase and provide a summary of cha
             return {'success': False, 'error': error_msg}
     
     async def get_full_status(self) -> Dict:
-        """Get status from all controllers"""
+        """Get status from all controllers - WARP FAKE SUB TEST DEMO: AWS removed"""
         try:
-            aws_controller = self.controller_registry.get_aws_controller()
             gcp_controller = self.controller_registry.get_gcp_controller()
             
-            aws_status = await aws_controller.get_status() if aws_controller else {"error": "AWS controller not available"}
             gcp_status = await gcp_controller.get_status() if gcp_controller else {"error": "GCP controller not available"}
             
             return {
                 'timestamp': datetime.now().isoformat(),
-                'aws': aws_status,
                 'gcp': gcp_status,
                 'config': {
-                    'aws_profiles': list(self.config.get_aws_profiles().keys()),
-                    'gcp_projects': list(self.config.get_gcp_config().get('projects', {}).keys())
+                    'gcp_projects': list(self.config.get_gcp_config().get('projects', {}).keys()),
+                    'note': 'WARP FAKE SUB TEST DEMO - AWS functionality removed'
                 }
             }
         except Exception as e:
             return {
                 'timestamp': datetime.now().isoformat(),
                 'error': str(e),
-                'aws': {'error': 'Failed to get status'},
                 'gcp': {'error': 'Failed to get status'}
             }
     
@@ -2063,15 +1948,29 @@ def create_app():
 
 
 def run_server(host: str = "127.0.0.1", port: int = 8000):
-    """Run the WARPCORE web server"""
+    """Run the WARPCORE API server using system orchestrator"""
+    print("🃚 Starting WARPCORE API Server...")
+    print("🌊 Using System Orchestrator for PAP architecture initialization")
+    print(f"🌐 Server will be available at: http://{host}:{port}")
+    
+    # Initialize system using orchestrator
+    import asyncio
+    from ..system_orchestrator import initialize_api_only
+    
+    try:
+        # Use system orchestrator for elaborate logging and initialization
+        asyncio.run(initialize_api_only())
+    except Exception as e:
+        print(f"⚠️ System orchestrator failed: {e}")
+        print("🛡️ Continuing with basic server startup\n")
+    
+    # Create app after orchestrator initialization
     warpcore_app = WARPCOREAPIServer()
-    logging.info(f"🚀 Starting WARPCORE Command Center on http://{host}:{port}")
-    logging.info("📊 Available endpoints:")
-    logging.info("  - / : Main interface")
-    logging.info("  - /api/status : System status")
-    logging.info("  - /api/discovery/status : Auto-discovery status")
-    logging.info("  - /api/discovery/components : Component discovery results")
-    logging.info("  - /api/auth : Authentication endpoint")
+    
+    print(f"✅ WARPCORE API Server ready on http://{host}:{port}")
+    print(f"📖 Main Interface: http://{host}:{port}")
+    print(f"📋 API Documentation: http://{host}:{port}/docs")
+    print(f"🏗️ Architecture Discovery: http://{host}:{port}/api/architecture")
     
     uvicorn.run(warpcore_app.app, host=host, port=port, log_level="info")
 

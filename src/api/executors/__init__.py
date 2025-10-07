@@ -4,8 +4,8 @@ Command execution safety gates and validation
 """
 
 from typing import Dict, Any, Optional, List
-from .base_executor import BaseExecutor
-from .command_executor import CommandExecutor
+from .core.base_executor import BaseExecutor
+from .command.command_executor import CommandExecutor
 
 
 class ExecutorRegistry:
