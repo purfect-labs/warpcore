@@ -1,0 +1,139 @@
+{
+  "flow_config": {
+    "diagram_type": "flowchart TD",
+    "title": "WARPCORE Agent Flow Configuration",
+    "version": "1.0.0",
+    "watermark": "🚀 WARP-DEMO MERMAID CONFIG"
+  },
+  "node_styles": {
+    "origin": {
+      "fill": "#ff6b6b",
+      "stroke": "#333",
+      "stroke_width": "2px",
+      "shape": "rectangle"
+    },
+    "boss": {
+      "fill": "#4ecdc4",
+      "stroke": "#333",
+      "stroke_width": "2px",
+      "shape": "rectangle"
+    },
+    "pathfinder": {
+      "fill": "#45b7d1",
+      "stroke": "#333",
+      "stroke_width": "2px",
+      "shape": "rectangle"
+    },
+    "oracle": {
+      "fill": "#ffeaa7",
+      "stroke": "#333",
+      "stroke_width": "2px",
+      "shape": "rectangle"
+    },
+    "architect": {
+      "fill": "#96ceb4",
+      "stroke": "#333",
+      "stroke_width": "2px",
+      "shape": "rectangle"
+    },
+    "enforcer": {
+      "fill": "#fab1a0",
+      "stroke": "#333",
+      "stroke_width": "2px",
+      "shape": "rectangle"
+    },
+    "craftsman": {
+      "fill": "#fd79a8",
+      "stroke": "#333",
+      "stroke_width": "2px",
+      "shape": "rectangle"
+    },
+    "craftbuddy": {
+      "fill": "#e17055",
+      "stroke": "#333",
+      "stroke_width": "2px",
+      "shape": "rectangle"
+    },
+    "gatekeeper": {
+      "fill": "#00b894",
+      "stroke": "#333",
+      "stroke_width": "2px",
+      "shape": "rectangle"
+    },
+    "complete": {
+      "fill": "#a8e6cf",
+      "stroke": "#333",
+      "stroke_width": "2px",
+      "shape": "rectangle"
+    },
+    "user": {
+      "fill": "#74b9ff",
+      "stroke": "#333",
+      "stroke_width": "2px",
+      "shape": "circle"
+    }
+  },
+  "node_templates": {
+    "agent_node": "{position}[\"{position}<br/>{name}<br/>{role_short}\"]",
+    "user_node": "USER([\"👤 USER<br/>{description}\"])",
+    "external_node": "{id}([\"🌐 {name}<br/>{description}\"])"
+  },
+  "edge_styles": {
+    "default": {
+      "style": "-->",
+      "label_format": "|\"{label}\"|"
+    },
+    "loop": {
+      "style": "-.->",
+      "label_format": "|\"{label}\"|",
+      "color": "#ff9f43"
+    },
+    "decision": {
+      "style": "==>",
+      "label_format": "|\"{label}\"|",
+      "color": "#00cec9"
+    },
+    "external": {
+      "style": "-->",
+      "label_format": "|\"{label}\"|",
+      "color": "#6c5ce7"
+    }
+  },
+  "style_classes": {
+    "generate_classes": true,
+    "class_definitions": [
+      "classDef origin fill:{fill},stroke:{stroke},stroke-width:{stroke_width}",
+      "classDef boss fill:{fill},stroke:{stroke},stroke-width:{stroke_width}",
+      "classDef pathfinder fill:{fill},stroke:{stroke},stroke-width:{stroke_width}",
+      "classDef oracle fill:{fill},stroke:{stroke},stroke-width:{stroke_width}",
+      "classDef architect fill:{fill},stroke:{stroke},stroke-width:{stroke_width}",
+      "classDef enforcer fill:{fill},stroke:{stroke},stroke-width:{stroke_width}",
+      "classDef craftsman fill:{fill},stroke:{stroke},stroke-width:{stroke_width}",
+      "classDef craftbuddy fill:{fill},stroke:{stroke},stroke-width:{stroke_width}",
+      "classDef gatekeeper fill:{fill},stroke:{stroke},stroke-width:{stroke_width}",
+      "classDef complete fill:{fill},stroke:{stroke},stroke-width:{stroke_width}"
+    ]
+  },
+  "flow_patterns": {
+    "role_truncation": {
+      "max_length": 25,
+      "suffix": "..."
+    },
+    "node_spacing": {
+      "vertical_spacing": 2,
+      "horizontal_spacing": 3
+    },
+    "label_formatting": {
+      "max_label_length": 30,
+      "wrap_labels": true,
+      "use_icons": true
+    }
+  },
+  "output_options": {
+    "include_styling": true,
+    "include_comments": true,
+    "compact_format": false,
+    "add_title_comment": true,
+    "add_watermark_comment": true
+  }
+}
