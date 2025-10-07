@@ -123,20 +123,171 @@ class AgentFlowGenerator:
     
     def load_schema(self) -> Optional[Dict]:
         """Load the comprehensive flow schema from JSON file"""
-        schema_file = self.agents_dir.parent / "warpcore_agent_flow_schema.json"
+        # Try agents/docs directory first (static location)
+        agents_docs_schema = Path(__file__).parent / "warpcore_agent_flow_schema.json"
         
+        if agents_docs_schema.exists():
+            try:
+                with open(agents_docs_schema, 'r') as f:
+                    schema = json.load(f)
+                print(f"✅ Loaded comprehensive flow schema (agents/docs): {agents_docs_schema}")
+                return schema
+            except Exception as e:
+                print(f"⚠️ Error loading schema file {agents_docs_schema}: {e}")
+        
+        # Fallback to agency directory
+        schema_file = self.agents_dir.parent / "warpcore_agent_flow_schema.json"
         if schema_file.exists():
             try:
                 with open(schema_file, 'r') as f:
                     schema = json.load(f)
-                print(f"✅ Loaded comprehensive flow schema: {schema_file}")
+                print(f"✅ Loaded comprehensive flow schema (agency): {schema_file}")
                 return schema
             except Exception as e:
                 print(f"⚠️ Error loading schema file {schema_file}: {e}")
-        else:
-            print(f"⚠️ Schema file not found: {schema_file}")
         
+        # Final fallback to main docs directory
+        docs_schema_file = self.docs_dir / "warpcore_agent_flow_schema.json"
+        if docs_schema_file.exists():
+            try:
+                with open(docs_schema_file, 'r') as f:
+                    schema = json.load(f)
+                print(f"✅ Loaded comprehensive flow schema (main docs): {docs_schema_file}")
+                return schema
+            except Exception as e:
+                print(f"⚠️ Error loading schema file {docs_schema_file}: {e}")
+        
+        print(f"❌ Schema file not found in any location:")
+        print(f"  - {agents_docs_schema}")
+        print(f"  - {schema_file}")
+        print(f"  - {docs_schema_file}")
         return None
+    
+    def save_schema_to_docs(self) -> bool:
+        """Save current schema to agents/docs directory for static availability"""
+        if not self.flow_schema:
+            print("⚠️ No schema loaded, cannot save to docs")
+            return False
+        
+        # Save to agents/docs directory (same directory as this script)
+        docs_schema_file = Path(__file__).parent / "warpcore_agent_flow_schema.json"
+        
+        try:
+            with open(docs_schema_file, 'w') as f:
+                json.dump(self.flow_schema, f, indent=2)
+            print(f"✅ Schema saved to docs: {docs_schema_file}")
+            return True
+        except Exception as e:
+            print(f"❌ Error saving schema to docs: {e}")
+            return False
+    
+    def save_mermaid_to_docs(self) -> bool:
+        """Save standalone Mermaid diagram to agents/docs directory"""
+        try:
+            mermaid_flow = self.generate_mermaid_flow()
+            
+            # Save raw Mermaid code
+            mermaid_file = Path(__file__).parent / "warpcore_agent_flow.mermaid"
+            with open(mermaid_file, 'w') as f:
+                f.write(mermaid_flow)
+            print(f"✅ Mermaid diagram saved: {mermaid_file}")
+            
+            # Also save as HTML with Mermaid viewer
+            html_content = self._generate_standalone_mermaid_html(mermaid_flow)
+            html_file = Path(__file__).parent / "warpcore_agent_flow_standalone.html"
+            with open(html_file, 'w') as f:
+                f.write(html_content)
+            print(f"✅ Standalone Mermaid HTML saved: {html_file}")
+            
+            return True
+        except Exception as e:
+            print(f"❌ Error saving Mermaid diagram: {e}")
+            return False
+    
+    def _generate_standalone_mermaid_html(self, mermaid_code: str) -> str:
+        """Generate a standalone HTML file with just the Mermaid diagram"""
+        timestamp = datetime.now().isoformat()
+        
+        return f"""<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>WARPCORE Agent Flow - Standalone Mermaid Diagram</title>
+    <script src="https://cdn.jsdelivr.net/npm/mermaid@10.6.1/dist/mermaid.min.js"></script>
+    <style>
+        body {{
+            margin: 0;
+            padding: 20px;
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+            background: linear-gradient(135deg, #0f0f23 0%, #1a1a3e 100%);
+            color: #e6e6e6;
+            min-height: 100vh;
+        }}
+        .header {{
+            text-align: center;
+            margin-bottom: 20px;
+        }}
+        .header h1 {{
+            color: #00ff88;
+            font-size: 2rem;
+            margin-bottom: 10px;
+            text-shadow: 0 0 20px rgba(0, 255, 136, 0.5);
+        }}
+        .watermark {{
+            background: rgba(255, 0, 0, 0.1);
+            color: #ff6b6b;
+            padding: 5px 10px;
+            border-radius: 5px;
+            font-size: 0.8rem;
+            border: 1px solid #ff6b6b;
+            display: inline-block;
+        }}
+        .mermaid-container {{
+            background: rgba(0, 0, 0, 0.3);
+            border-radius: 10px;
+            padding: 20px;
+            text-align: center;
+            margin: 20px auto;
+            max-width: 1200px;
+        }}
+        .info {{
+            text-align: center;
+            margin-top: 20px;
+            font-size: 0.9rem;
+            color: #b0b0b0;
+        }}
+    </style>
+</head>
+<body>
+    <div class="header">
+        <h1>🤖 WARPCORE Agent Flow</h1>
+        <div class="watermark">🚀 WARP-DEMO STANDALONE MERMAID - Generated: {timestamp}</div>
+    </div>
+    
+    <div class="mermaid-container">
+        <div class="mermaid">
+{mermaid_code}
+        </div>
+    </div>
+    
+    <div class="info">
+        <p>This is a standalone Mermaid diagram showing the complete WARPCORE agent workflow.</p>
+        <p>Generated from comprehensive agent schema with all flow relationships and decision logic.</p>
+    </div>
+    
+    <script>
+        mermaid.initialize({{
+            startOnLoad: true,
+            theme: 'dark',
+            flowchart: {{
+                useMaxWidth: true,
+                htmlLabels: true
+            }}
+        }});
+    </script>
+</body>
+</html>"""
     
     def _extract_role(self, prompt: str) -> str:
         """Extract role description from agent prompt"""
@@ -905,6 +1056,12 @@ class AgentFlowGenerator:
         
         # Ensure docs directory exists
         os.makedirs(os.path.dirname(output_file), exist_ok=True)
+        
+        # Save schema to agents/docs directory for static availability
+        self.save_schema_to_docs()
+        
+        # Save standalone Mermaid diagram to agents/docs directory
+        self.save_mermaid_to_docs()
         
         html_content = self.generate_html_documentation()
         

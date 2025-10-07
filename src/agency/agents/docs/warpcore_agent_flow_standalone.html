@@ -1,0 +1,125 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>WARPCORE Agent Flow - Standalone Mermaid Diagram</title>
+    <script src="https://cdn.jsdelivr.net/npm/mermaid@10.6.1/dist/mermaid.min.js"></script>
+    <style>
+        body {
+            margin: 0;
+            padding: 20px;
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+            background: linear-gradient(135deg, #0f0f23 0%, #1a1a3e 100%);
+            color: #e6e6e6;
+            min-height: 100vh;
+        }
+        .header {
+            text-align: center;
+            margin-bottom: 20px;
+        }
+        .header h1 {
+            color: #00ff88;
+            font-size: 2rem;
+            margin-bottom: 10px;
+            text-shadow: 0 0 20px rgba(0, 255, 136, 0.5);
+        }
+        .watermark {
+            background: rgba(255, 0, 0, 0.1);
+            color: #ff6b6b;
+            padding: 5px 10px;
+            border-radius: 5px;
+            font-size: 0.8rem;
+            border: 1px solid #ff6b6b;
+            display: inline-block;
+        }
+        .mermaid-container {
+            background: rgba(0, 0, 0, 0.3);
+            border-radius: 10px;
+            padding: 20px;
+            text-align: center;
+            margin: 20px auto;
+            max-width: 1200px;
+        }
+        .info {
+            text-align: center;
+            margin-top: 20px;
+            font-size: 0.9rem;
+            color: #b0b0b0;
+        }
+    </style>
+</head>
+<body>
+    <div class="header">
+        <h1>🤖 WARPCORE Agent Flow</h1>
+        <div class="watermark">🚀 WARP-DEMO STANDALONE MERMAID - Generated: 2025-10-07T17:03:48.985750</div>
+    </div>
+    
+    <div class="mermaid-container">
+        <div class="mermaid">
+flowchart TD
+    0a["0a<br/>ORIGIN<br/>Bootstrap Agent"]
+    0b["0b<br/>BOSS<br/>Workflow Orchestrator"]
+    1["1<br/>PATHFINDER<br/>Schema Coherence Reconcil..."]
+    2b["2b<br/>ORACLE<br/>User Input Requirements T..."]
+    2a["2a<br/>ARCHITECT<br/>Requirements Generator"]
+    3["3<br/>ENFORCER<br/>Enhanced Requirements Val..."]
+    4a["4a<br/>CRAFTSMAN<br/>Implementation Agent"]
+    4b["4b<br/>CRAFTBUDDY<br/>Creative Enhancement & De..."]
+    5["5<br/>GATEKEEPER<br/>Gate Promote Agent"]
+    USER(["👤 USER<br/>Requirements Input"])
+    0a -->|"bootstrap"| 0b
+    0b -->|"orchestration"| 1
+    1 -->|"analysis"| 2a
+    2b -->|"user_requirements"| 2a
+    2a -->|"requirements"| 3
+    3 -->|"validation"| 4a
+    4a -->|"implementation"| 4b
+    4b -->|"loop_back_for_enhancement"| 4a
+    4b -->|"promote_for_final_validation"| 5
+    5 -->|"needs_fixes_or_improvements"| 4a
+    5 -->|"complete_cycle_start_new_workflow"| 0b
+    USER -->|"user_specifications"| 2b
+
+    
+    %% Styling
+    classDef origin fill:#ff6b6b,stroke:#333,stroke-width:2px
+    classDef boss fill:#4ecdc4,stroke:#333,stroke-width:2px
+    classDef pathfinder fill:#45b7d1,stroke:#333,stroke-width:2px
+    classDef oracle fill:#ffeaa7,stroke:#333,stroke-width:2px
+    classDef architect fill:#96ceb4,stroke:#333,stroke-width:2px
+    classDef enforcer fill:#fab1a0,stroke:#333,stroke-width:2px
+    classDef craftsman fill:#fd79a8,stroke:#333,stroke-width:2px
+    classDef craftbuddy fill:#e17055,stroke:#333,stroke-width:2px
+    classDef gatekeeper fill:#00b894,stroke:#333,stroke-width:2px
+    classDef complete fill:#a8e6cf,stroke:#333,stroke-width:2px
+    class 0a origin
+    class 0b boss
+    class 1 pathfinder
+    class 2b oracle
+    class 2a architect
+    class 3 enforcer
+    class 4a craftsman
+    class 4b craftbuddy
+    class 5 gatekeeper
+
+        </div>
+    </div>
+    
+    <div class="info">
+        <p>This is a standalone Mermaid diagram showing the complete WARPCORE agent workflow.</p>
+        <p>Generated from comprehensive agent schema with all flow relationships and decision logic.</p>
+    </div>
+    
+    <script>
+        mermaid.initialize({
+            startOnLoad: true,
+            theme: 'dark',
+            flowchart: {
+                useMaxWidth: true,
+                htmlLabels: true
+            }
+        });
+    </script>
+</body>
+</html>

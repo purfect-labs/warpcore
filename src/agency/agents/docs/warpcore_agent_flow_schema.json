@@ -3,7 +3,7 @@
   "schema_version": "1.0.0",
   "generated_from": "Comprehensive schema definition + real agent files",
   "timestamp": "2025-10-07T16:55:35.921274",
-  "watermark": "🚀 WARP-DEMO FLOW SCHEMA",
+  "watermark": "\ud83d\ude80 WARP-DEMO FLOW SCHEMA",
   "agent_definitions": {
     "origin": {
       "position": "0a",
@@ -25,7 +25,7 @@
       "schema_types": {
         "receives": "BOOTSTRAP_REQUEST",
         "produces": "ORCHESTRATOR_CONTEXT",
-        "transformation": "bootstrap_request → orchestrator_context"
+        "transformation": "bootstrap_request \u2192 orchestrator_context"
       },
       "data_flow": {
         "input_schema": "null | bootstrap_request",
@@ -55,7 +55,7 @@
       "schema_types": {
         "receives": "ORCHESTRATOR_CONTEXT",
         "produces": "ANALYSIS_REQUEST",
-        "transformation": "orchestrator_context → analysis_request"
+        "transformation": "orchestrator_context \u2192 analysis_request"
       },
       "data_flow": {
         "input_schema": "orchestrator_context",
@@ -85,7 +85,7 @@
       "schema_types": {
         "receives": "ANALYSIS_REQUEST",
         "produces": "SCHEMA_COHERENCE_ANALYSIS",
-        "transformation": "analysis_request → schema_coherence_analysis"
+        "transformation": "analysis_request \u2192 schema_coherence_analysis"
       },
       "data_flow": {
         "input_schema": "analysis_request",
@@ -116,7 +116,7 @@
       "schema_types": {
         "receives": "USER_SPECIFICATIONS",
         "produces": "SCHEMA_COHERENCE_ANALYSIS",
-        "transformation": "user_specifications → schema_coherence_analysis"
+        "transformation": "user_specifications \u2192 schema_coherence_analysis"
       },
       "data_flow": {
         "input_schema": "user_specifications",
@@ -148,7 +148,7 @@
       "schema_types": {
         "receives": "SCHEMA_COHERENCE_ANALYSIS",
         "produces": "REQUIREMENTS_ANALYSIS",
-        "transformation": "schema_coherence_analysis → requirements_analysis"
+        "transformation": "schema_coherence_analysis \u2192 requirements_analysis"
       },
       "data_flow": {
         "input_schema": "schema_coherence_analysis",
@@ -178,7 +178,7 @@
       "schema_types": {
         "receives": "REQUIREMENTS_ANALYSIS",
         "produces": "VALIDATED_REQUIREMENTS",
-        "transformation": "requirements_analysis → validated_requirements"
+        "transformation": "requirements_analysis \u2192 validated_requirements"
       },
       "data_flow": {
         "input_schema": "requirements_analysis",
@@ -210,7 +210,7 @@
       "schema_types": {
         "receives": "VALIDATED_REQUIREMENTS",
         "produces": "IMPLEMENTATION_RESULTS",
-        "transformation": "validated_requirements → implementation_results"
+        "transformation": "validated_requirements \u2192 implementation_results"
       },
       "data_flow": {
         "input_schema": "validated_requirements",
@@ -242,7 +242,7 @@
       "schema_types": {
         "receives": "IMPLEMENTATION_RESULTS",
         "produces": "ENHANCEMENT_DECISION",
-        "transformation": "implementation_results → enhancement_decision"
+        "transformation": "implementation_results \u2192 enhancement_decision"
       },
       "data_flow": {
         "input_schema": "implementation_results",
@@ -278,7 +278,7 @@
       "schema_types": {
         "receives": "ENHANCEMENT_DECISION",
         "produces": "GATE_DECISION",
-        "transformation": "enhancement_decision → gate_decision"
+        "transformation": "enhancement_decision \u2192 gate_decision"
       },
       "data_flow": {
         "input_schema": "enhancement_decision",
