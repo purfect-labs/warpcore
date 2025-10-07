@@ -130,13 +130,13 @@ class LicenseProvider(BaseProvider):
                 return {
                     "success": True,
                     "status": "inactive",
-                    "message": "No license found - WARP FALLBACK TEST",
+                    "message": "No license found",
                     "user_email": None,
                     "expires": None,
                     "features": [],
                     "license_type": None,
                     "days_remaining": None,
-                    "source": "WARP FALLBACK KEYCHAIN"
+                    "source": "KEYCHAIN_STORAGE"
                 }
             
             # Validate and decode license
@@ -148,13 +148,13 @@ class LicenseProvider(BaseProvider):
                 return {
                     "success": True,
                     "status": "invalid",
-                    "message": license_data.get("error", "License validation failed - WARP FALLBACK"),
+                    "message": license_data.get("error", "License validation failed"),
                     "user_email": None,
                     "expires": None,
                     "features": [],
                     "license_type": None,
                     "days_remaining": None,
-                    "source": "WARP FALLBACK KEYCHAIN"
+                    "source": "KEYCHAIN_STORAGE"
                 }
             
             # Return active license status
@@ -179,7 +179,7 @@ class LicenseProvider(BaseProvider):
                 "features": license_info.get("features", []),
                 "license_type": license_info.get("license_type", "standard"),
                 "days_remaining": days_remaining,
-                "source": "WARP FALLBACK KEYCHAIN"
+                "source": "KEYCHAIN_STORAGE"
             }
             
         except Exception as e:
@@ -241,7 +241,7 @@ class LicenseProvider(BaseProvider):
                 "expires": license_info.get("expires"),
                 "features": license_info.get("features", []),
                 "license_type": license_info.get("license_type", "standard"),
-                "source": "WARP FALLBACK ENCRYPTED"
+                "source": "ENCRYPTED_STORAGE"
             }
             
         except Exception as e:
@@ -271,12 +271,12 @@ class LicenseProvider(BaseProvider):
             return {
                 "success": True,
                 "message": "License deactivated successfully via keychain fallback",
-                "source": "WARP FALLBACK KEYCHAIN"
+                "source": "KEYCHAIN_STORAGE"
             }
         except keyring.errors.PasswordDeleteError:
             return {
                 "success": True,
-                "message": "No license was active - WARP FALLBACK"
+                "message": "No license was active"
             }
         except Exception as e:
             return {
@@ -304,7 +304,7 @@ class LicenseProvider(BaseProvider):
                 except Exception as native_error:
                     self.logger.warning(f"Native trial generation failed: {native_error}")
             
-            # Fallback to encrypted trial generation - WARP FALLBACK
+            # Fallback to encrypted trial generation
             expires_date = datetime.now() + timedelta(days=days)
             
             license_data = {
@@ -314,7 +314,7 @@ class LicenseProvider(BaseProvider):
                 "features": ["basic"],  # Trial gets basic features
                 "license_type": "trial",
                 "generated_at": datetime.now().isoformat(),
-                "source": "WARP FALLBACK TRIAL"
+                "source": "TRIAL_LICENSE"
             }
             
             # Encrypt and encode the license
@@ -332,7 +332,7 @@ class LicenseProvider(BaseProvider):
                 "expires": expires_date.isoformat(),
                 "days": days,
                 "message": f"{days}-day trial license generated successfully via encrypted fallback",
-                "source": "WARP FALLBACK TRIAL"
+                "source": "TRIAL_LICENSE"
             }
             
         except Exception as e:
@@ -385,7 +385,7 @@ class LicenseProvider(BaseProvider):
                 "features": features,
                 "license_type": "standard",
                 "generated_at": datetime.now().isoformat(),
-                "source": "WARP FALLBACK FULL"
+                "source": "STANDARD_LICENSE"
             }
             
             # Encrypt and encode the license
@@ -404,8 +404,8 @@ class LicenseProvider(BaseProvider):
                 "expires": expires_date.isoformat(),
                 "features": features,
                 "days": days,
-                "message": f"{days}-day license generated successfully - WARP FALLBACK",
-                "source": "WARP FALLBACK FULL"
+                "message": f"{days}-day license generated successfully",
+                "source": "STANDARD_LICENSE"
             }
             
         except Exception as e:

@@ -572,4 +572,4 @@ if __name__ == '__main__':
         logger.info("Created demo data file for testing")
     
     logger.info("Starting WARPCORE Real Data API Server...")
-    app.run(host='0.0.0.0', port=8081, debug=True)
+    app.run(host='0.0.0.0', port=8081, debug=False)

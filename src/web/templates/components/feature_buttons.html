@@ -7,7 +7,7 @@
         <!-- Basic Feature Button - Always Available -->
         <div class="feature-button-group basic-feature">
             <div class="feature-header">
-                <h4>🆓 Basic Features</h4>
+                <h4>🆓 Essential Features</h4>
                 <div class="feature-status basic">Always Available</div>
             </div>
             <div class="feature-description">
@@ -19,7 +19,7 @@
                 onclick="tryBasicFeature()"
                 title="Essential features available to all users"
             >
-                🚀 Use Basic Features
+                🚀 Access Essential Features
             </button>
             <div class="feature-result" id="basic-feature-result"></div>
         </div>
@@ -41,7 +41,7 @@
                 onclick="tryProfessionalFeature()"
                 title="Activate a license to unlock professional features"
             >
-                🔒 Professional Features (License Required)
+                🔒 Premium Features (License Required)
             </button>
             <div class="feature-result" id="premium-feature-result"></div>
             <div class="license-prompt" id="license-prompt">
@@ -355,7 +355,7 @@ function updateButtonStates() {
         // License is active - unlock premium features
         premiumBtn.classList.remove('locked');
         premiumBtn.classList.add('unlocked');
-        premiumBtn.innerHTML = '⭐ Premium Feature (Unlocked)';
+        premiumBtn.innerHTML = '⭐ Premium Features (Unlocked)';
         premiumBtn.title = 'Click to try premium feature';
         
         premiumStatus.innerHTML = 'Unlocked';
@@ -366,7 +366,7 @@ function updateButtonStates() {
         // No license - lock premium features
         premiumBtn.classList.add('locked');
         premiumBtn.classList.remove('unlocked');
-        premiumBtn.innerHTML = '🔒 Premium Feature (License Required)';
+        premiumBtn.innerHTML = '🔒 Premium Features (License Required)';
         premiumBtn.title = 'Activate a license to unlock premium features';
         
         premiumStatus.innerHTML = 'License Required';
@@ -398,7 +398,7 @@ function tryBasicFeature() {
     resultDiv.className = 'feature-result success';
     resultDiv.style.display = 'block';
     resultDiv.innerHTML = `
-        <strong>✅ Basic Features Available!</strong><br>
+        <strong>✅ Essential Features Available!</strong><br>
         <small>Essential functionality available to all users including kubectl access and basic cloud operations.</small>
         <br><small>Accessed at: ${new Date().toLocaleTimeString()}</small>
     `;

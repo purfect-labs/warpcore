@@ -197,7 +197,7 @@ class DatabaseSchemaProvider(BaseProvider):
         try:
             # Add test watermark if in test mode
             if self.config.is_test_mode():
-                revocation_data['watermark'] = 'WARP-DEMO-REVOCATION'
+                revocation_data['watermark'] = 'REVOCATION_RECORD'
             
             # Add timestamp if not provided
             if 'revoked_at' not in revocation_data:
@@ -215,7 +215,7 @@ class DatabaseSchemaProvider(BaseProvider):
             revocation_id = cursor.lastrowid
             
             if self.config.is_test_mode():
-                self.logger.info(f"WARP-DEMO-KEY: Created revocation record {revocation_id}")
+                self.logger.info(f"Created revocation record {revocation_id}")
             
             return revocation_id
             
@@ -242,8 +242,8 @@ class DatabaseSchemaProvider(BaseProvider):
             
             if self.config.is_test_mode():
                 for result in results:
-                    result['query_watermark'] = 'WARP-DEMO-KEY-QUERY'
-                self.logger.info(f"WARP-DEMO-VALIDATION: Retrieved {len(results)} active licenses")
+                    result['query_watermark'] = 'QUERY_METADATA'
+                self.logger.info(f"Retrieved {len(results)} active licenses")
             
             return results
             
@@ -270,8 +270,8 @@ class DatabaseSchemaProvider(BaseProvider):
             
             if self.config.is_test_mode():
                 for result in results:
-                    result['history_watermark'] = 'WARP-DEMO-VALIDATION-HISTORY'
-                self.logger.info(f"WARP-DEMO-VALIDATION: Retrieved {len(results)} validation records")
+                    result['history_watermark'] = 'HISTORY_METADATA'
+                self.logger.info(f"Retrieved {len(results)} validation records")
             
             return results
             
@@ -291,13 +291,13 @@ class DatabaseSchemaProvider(BaseProvider):
                     watermark = ?
                 WHERE expires_at < datetime('now') 
                 AND is_active = 1
-            """, ('WARP-DEMO-CLEANUP' if self.config.is_test_mode() else '',))
+            """, ('CLEANUP_OPERATION' if self.config.is_test_mode() else '',))
             
             self.connection.commit()
             cleaned_count = cursor.rowcount
             
             if self.config.is_test_mode() and cleaned_count > 0:
-                self.logger.info(f"WARP-DEMO-KEY: Cleaned up {cleaned_count} expired licenses")
+                self.logger.info(f"Cleaned up {cleaned_count} expired licenses")
             
             return cleaned_count
             
@@ -329,8 +329,8 @@ class DatabaseSchemaProvider(BaseProvider):
                 version = "0.0.0-none"
             
             if self.config.is_test_mode():
-                version += "-WARP-DEMO-VALIDATION"
-                self.logger.info(f"WARP-DEMO-KEY: Schema version {version}")
+                version += "-VALIDATION_BUILD"
+                self.logger.info(f"Schema version {version}")
             
             return version
             
@@ -345,7 +345,7 @@ class DatabaseSchemaProvider(BaseProvider):
             self.connection = None
             
             if self.config.is_test_mode():
-                self.logger.info("WARP-DEMO-KEY: Database connection closed")
+                self.logger.info("Database connection closed")
 
 
 # Global database schema provider instance

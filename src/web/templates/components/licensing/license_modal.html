@@ -2,7 +2,7 @@
 <div class="modal-overlay" id="license-modal" style="display: none;">
     <div class="modal-content license-modal">
         <div class="modal-header">
-            <h3 class="modal-title">🔑 WARP License Management</h3>
+            <h3 class="modal-title">🔑 License Activation - POC Demo</h3>
             <button class="modal-close" onclick="closeLicenseModal()">×</button>
         </div>
         
@@ -47,7 +47,8 @@
                     <form id="license-activate-form">
                         <div class="form-group">
                             <label for="license-key">License Key:</label>
-                            <input type="text" id="license-key" placeholder="Enter your license key" class="license-input">
+                            <input type="text" id="license-key" placeholder="Enter demo license key" class="license-input">
+                            <div id="license-format-feedback" class="format-feedback"></div>
                         </div>
                         <div class="form-group">
                             <label for="user-email">Email Address:</label>

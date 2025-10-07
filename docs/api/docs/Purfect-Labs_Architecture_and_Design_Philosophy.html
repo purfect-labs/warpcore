@@ -60,11 +60,11 @@
 
     <section id="core-pattern">
       <h2>3. Core Architectural Pattern</h2>
-      <p>All projects follow the canonical sequence:</p>
-      <p><strong>Route → Controller → Orchestrator → Provider → Middleware → Executor</strong></p>
+      <p>All projects follow the simplified canonical sequence (routes layer removed for direct FastAPI patterns):</p>
+      <p><strong>FastAPI → Controller → Orchestrator → Provider → Middleware → Executor</strong></p>
       <div class="grid">
         <div>
-          <h3>Route</h3><p>Entry points (API/CLI/UI); minimal logic.</p>
+          <h3>FastAPI</h3><p>Direct route decorators (@app.get/@app.post); minimal logic, no abstraction layers.</p>
           <h3>Controller</h3><p>Validation and translation into domain‑safe requests.</p>
           <h3>Orchestrator</h3><p>Workflow composition, dependency coordination, environment context.</p>
         </div>
@@ -74,6 +74,7 @@
           <h3>Executor</h3><p>Final boundary for system calls / network requests with strict safety gates.</p>
         </div>
       </div>
+      <div class="callout"><strong>2025 Simplification:</strong> Route abstraction layers removed in favor of native FastAPI decorators for improved performance and reduced complexity. Controllers now called directly from FastAPI route handlers.</div>
     </section>
 
     <section id="influences">
@@ -106,8 +107,8 @@
       <h2>6. Application Topology</h2>
       <pre><code>/src
   ├── system_orchestrator.py  # Global system coordinator (outside PAP layers)
-  ├── api/                    # API layer - REST endpoints and business logic
-  │   ├── routes/             # HTTP endpoint definitions
+  ├── api/                    # API layer - Direct FastAPI endpoints and business logic
+  │   ├── main.py             # FastAPI application with direct route decorators
   │   ├── controllers/        # Request validation and business coordination
   │   ├── orchestrators/      # Complex workflow orchestration
   │   ├── providers/          # External service integrations
@@ -126,15 +127,45 @@
   │   │   └── provider_discovery.py   # Provider capability discovery
   │   └── utils/              # Data layer utilities
   ├── web/                    # Web layer - UI templates and assets
-  │   ├── routes/             # Web route definitions
-  │   ├── templates/          # HTML template rendering
+  │   ├── templates/          # HTML template rendering with license POC
+  │   │   └── components/     # Reusable UI components
+  │   │       ├── feature_buttons.html    # License POC demo buttons
+  │   │       └── licensing/             # License activation components
   │   ├── static/             # CSS, JS, and asset files
+  │   │   ├── css/license_poc.css        # License POC styling
+  │   │   └── js/                        # JavaScript modules
+  │   │       ├── license_activation.js  # License activation flow
+  │   │       └── button_lock_manager.js # Secure button lock mechanism
   │   └── testing/shadow/     # Shadow testing framework
+  ├── testing/                # Comprehensive testing framework
+  │   └── e2e/                # End-to-end Playwright tests
+  │       ├── pap_flow_tests.spec.js     # PAP architecture flow tests
+  │       ├── license_poc_tests.spec.js  # License POC functionality tests
+  │       └── playwright.config.js       # Test configuration with /tmp context
   └── docs/                   # Documentation generation
       ├── compliant_docs.py   # Auto-discovery documentation system
       └── unified_docs.py     # Unified documentation generator</code></pre>
       <p><em>Provider parity:</em> Each provider exposes parallel method names and argument shapes where feasible, enabling cross-cloud orchestration and predictable tests. Auto-discovery scans this structure to generate live documentation.</p>
       <p><em>System Orchestrator:</em> The <code>system_orchestrator.py</code> exists outside the PAP layers as an external coordinator, managing layer initialization (Data → Web → API), shared configuration, and cross-layer dependencies. It ensures proper startup sequencing and graceful error handling across all three tiers.</p>
+    </section>
+
+    <section id="license-poc">
+      <h2>6.5. License POC Architecture</h2>
+      <p>WARPCORE includes a complete license activation proof-of-concept demonstrating secure feature gating and user activation flows.</p>
+      <div class="grid">
+        <div>
+          <h3>Two-Button Demo</h3>
+          <p><strong>Essential Features:</strong> Always available to all users for basic functionality.</p>
+          <p><strong>Professional Features:</strong> License-gated advanced functionality with secure validation.</p>
+        </div>
+        <div>
+          <h3>Activation Flow</h3>
+          <p><strong>License Modal:</strong> Professional activation interface with real-time key validation.</p>
+          <p><strong>Button Lock Manager:</strong> Secure mechanism preventing unauthorized feature access.</p>
+        </div>
+      </div>
+      <p><strong>Security Features:</strong> DOM manipulation prevention, real-time license validation, periodic status checks, and fail-secure design ensuring locked features remain inaccessible without valid licenses.</p>
+      <p><strong>Integration:</strong> License system fully integrates with PAP flow: FastAPI endpoints → License Controller → License Orchestrator → License Provider → Database.</p>
     </section>
 
     <section id="standalone">
@@ -149,7 +180,7 @@
       <h3>8.2 Doctrines</h3>
       <ol>
         <li><strong>Delegated Autonomy:</strong> Each application is its own control plane, delegating execution to system capabilities while retaining governance through middleware.</li>
-        <li><strong>Structured Flow:</strong> All processes follow <em>Route → Controller → Orchestrator → Provider → Middleware → Executor</em>.</li>
+        <li><strong>Structured Flow:</strong> All processes follow <em>FastAPI → Controller → Orchestrator → Provider → Middleware → Executor</em> (route abstraction removed for native FastAPI patterns).</li>
         <li><strong>Zero-Configuration Realization:</strong> First-run success; adaptive discovery without manual setup.</li>
       </ol>
       <h3>8.3 Purpose</h3>
