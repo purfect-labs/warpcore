@@ -129,13 +129,13 @@
             </div>
         </header>
 
-        <!-- Real Data Dashboard Content will be injected here by JavaScript -->
+        <!-- Tab Navigation and Content will be injected here by JavaScript -->
         <div id="realDataContent" class="loading-real-data">
             Loading real workflow data and building interactive analytics...
         </div>
 
-        <!-- Fallback dashboard grid (hidden initially) -->
-        <div class="dashboard-grid" style="display: none;">
+        <!-- Dashboard grid for tabs -->
+        <div class="dashboard-grid">
             <!-- This will be shown if real data loading fails -->
             <div class="dashboard-card full-width">
                 <div class="card-header">
@@ -159,45 +159,25 @@
     
     <!-- Enhanced Real Data Dashboard Initialization -->
     <script>
-        // Override the dashboard container for real data
+        // Initialize enhanced workflow dashboard
         document.addEventListener('DOMContentLoaded', () => {
             // Wait for real dashboard to initialize
             setTimeout(() => {
                 const realDataContent = document.getElementById('realDataContent');
-                const dashboardGrid = document.querySelector('.dashboard-grid');
+                const statusText = document.getElementById('statusText');
                 
-                // Check if real dashboard loaded successfully
-                if (window.realDashboard && window.realDashboard.executionLogs) {
+                // Check if enhanced dashboard loaded successfully
+                if (window.realDashboard) {
                     realDataContent.style.display = 'none';
-                    dashboardGrid.style.display = 'block';
                     
-                    // Update status
-                    const statusText = document.getElementById('statusText');
+                    // Update status for workflow files
                     if (statusText) {
-                        statusText.textContent = `Loaded ${window.realDashboard.executionLogs.length} execution logs`;
+                        statusText.textContent = 'Enhanced workflow dashboard loaded';
                     }
                 } else {
-                    // Show fallback if real data failed to load
-                    setTimeout(() => {
-                        if (!window.realDashboard || !window.realDashboard.executionLogs?.length) {
-                            realDataContent.innerHTML = `
-                                <div class="dashboard-card full-width">
-                                    <div class="card-header">
-                                        <h2>⚠️ No Real Data Available</h2>
-                                    </div>
-                                    <div class="card-content">
-                                        <p>No workflow execution logs found. This could be because:</p>
-                                        <ul style="text-align: left; margin: 1rem 0;">
-                                            <li>No workflows have been executed yet</li>
-                                            <li>The API server is not running</li>
-                                            <li>Data files are not available in .data/ directory</li>
-                                        </ul>
-                                        <div style="margin: 2rem 0;">
-                                            <button onclick="window.location.href='index.html'" class="stream-btn">View Live Dashboard</button>
-                                            <button onclick="window.location.reload()" class="stream-btn">Retry</button>
-                                        </div>
-                                    </div>
-                                </div>
+                    // Fallback initialization
+                    console.log('Enhanced dashboard not loaded, showing fallback');
+                }
                             `;
                         }
                     }, 3000);

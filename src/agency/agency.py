@@ -751,6 +751,65 @@ class WARPCOREAgency:
             print("Available actions: build, flow, html")
             return False
     
+    def launch_web_dashboard(self) -> bool:
+        """Launch the web dashboard with workflow files viewer"""
+        print("\n🌐 Launching WARPCORE Web Dashboard...")
+        
+        web_dir = self.base_path / "web"
+        api_server = web_dir / "api-server.py"
+        
+        if not api_server.exists():
+            print(f"❌ API server not found: {api_server}")
+            return False
+        
+        print(f"📁 Web directory: {web_dir}")
+        print(f"🔗 Dashboard URL: http://localhost:8081/real-data-dashboard.html")
+        print(f"🔍 API endpoint: http://localhost:8081/api/workflow-files")
+        print(f"📊 Data source: {self.data_path}")
+        
+        try:
+            import subprocess
+            import webbrowser
+            import time
+            
+            # Start API server in background
+            print("🚀 Starting API server...")
+            process = subprocess.Popen(
+                [sys.executable, "api-server.py"],
+                cwd=str(web_dir),
+                stdout=subprocess.DEVNULL,
+                stderr=subprocess.DEVNULL
+            )
+            
+            # Give server time to start
+            time.sleep(3)
+            
+            # Open dashboard in browser
+            dashboard_url = "http://localhost:8081/real-data-dashboard.html"
+            print(f"🌐 Opening dashboard: {dashboard_url}")
+            webbrowser.open(dashboard_url)
+            
+            print("\n✨ WARPCORE Dashboard is running!")
+            print("📊 Features:")
+            print("  • Interactive workflow files browser")
+            print("  • Real-time agent execution data")
+            print("  • Nested cache file structure")
+            print("  • Agent performance metrics")
+            print("\n⌨️  Press Ctrl+C to stop the server")
+            
+            # Wait for user interrupt
+            try:
+                process.wait()
+            except KeyboardInterrupt:
+                print("\n🛑 Shutting down dashboard...")
+                process.terminate()
+                
+            return True
+            
+        except Exception as e:
+            print(f"❌ Failed to launch dashboard: {e}")
+            return False
+    
     def execute_individual_agent(self, agent_alias: str, workflow_id: Optional[str] = None, user_input_or_spec: Optional[str] = None, user_input: Optional[Dict] = None) -> bool:
         """Execute individual agent with workflow ID or input"""
         print(f"\n🤖 Executing {agent_alias} agent...")
@@ -895,6 +954,10 @@ class WARPCOREAgency:
         # Handle docs command
         if workflow_id.lower() == 'docs':
             return self.docs_command()
+        
+        # Handle web dashboard command
+        if workflow_id.lower() == 'web':
+            return self.launch_web_dashboard()
         
         # Check if it's an individual agent request
         if workflow_id.lower() in self.agent_aliases.keys():

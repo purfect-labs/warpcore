@@ -1,0 +1,1025 @@
+{
+  "metadata": {
+    "title": "WARPCORE License UI Complete Workflow Specification",
+    "version": "1.0.0",
+    "compliance": "Provider-Abstraction-Pattern (PAP)",
+    "target_directory": "/Users/shawn_meredith/code/pets/apex/web",
+    "created_date": "2025-10-08T03:21:20Z",
+    "description": "Comprehensive specification for completing the license management UI workflow with full API integration, PAP compliance, and user experience flows"
+  },
+
+  "current_infrastructure": {
+    "api_endpoints": {
+      "license_server_base": "http://localhost:8001",
+      "main_app_base": "http://localhost:8000",
+      "endpoints": {
+        "generate": {
+          "method": "POST",
+          "path": "/api/license/generate",
+          "request_model": "LicenseGenerateRequest",
+          "fields": ["user_email", "user_name", "license_type", "hardware_signature"],
+          "response": "LicenseGenerationResponse with license_key"
+        },
+        "validate": {
+          "method": "POST", 
+          "path": "/api/license/validate",
+          "request_model": "LicenseValidateRequest",
+          "fields": ["license_key", "hardware_signature"],
+          "response": "LicenseValidationResponse with valid/invalid status"
+        },
+        "purchase": {
+          "method": "POST",
+          "path": "/api/license/purchase", 
+          "request_model": "LicensePurchaseRequest",
+          "fields": ["user_email", "user_name", "license_type", "payment_method"],
+          "response": "PurchaseResponse with license_key if successful"
+        },
+        "status": {
+          "method": "GET",
+          "path": "/api/license/status",
+          "response": "Current license status for authenticated user"
+        },
+        "user_licenses": {
+          "method": "GET", 
+          "path": "/api/license/user/{email}",
+          "response": "Array of user licenses"
+        },
+        "revoke": {
+          "method": "DELETE",
+          "path": "/api/license/revoke/{id}",
+          "response": "Revocation confirmation"
+        },
+        "license_types": {
+          "method": "GET",
+          "path": "/api/license/types",
+          "response": "Available license types and pricing"
+        },
+        "server_status": {
+          "method": "GET",
+          "path": "/api/server/status", 
+          "response": "License server status and capabilities"
+        }
+      }
+    },
+    
+    "existing_ui_components": {
+      "license_modal": {
+        "file": "src/web/templates/components/licensing/license_modal.html",
+        "status": "partial_implementation",
+        "features": ["tab_navigation", "form_validation", "basic_activation"],
+        "missing": ["real_time_polling", "error_recovery", "state_management"]
+      },
+      "license_activation_js": {
+        "file": "src/web/static/js/license_activation.js", 
+        "status": "incomplete",
+        "features": ["basic_validation", "form_handling"],
+        "missing": ["async_operations", "state_persistence", "error_handling"]
+      },
+      "license_css": {
+        "files": [
+          "src/web/static/css/components/licensing/license.css",
+          "src/web/static/css/components/shared/license.css"
+        ],
+        "status": "styled_but_incomplete",
+        "missing": ["loading_states", "error_states", "success_animations"]
+      }
+    }
+  },
+
+  "pap_compliance_requirements": {
+    "provider_abstraction": {
+      "license_provider_interface": {
+        "description": "Abstract license provider supporting local/remote modes",
+        "implementation": {
+          "base_provider": "LicenseProvider",
+          "local_provider": "LocalLicenseProvider",  
+          "remote_provider": "RemoteLicenseProvider",
+          "factory": "LicenseProviderFactory"
+        },
+        "methods": [
+          "generateLicense(request)",
+          "validateLicense(key, signature)",
+          "purchaseLicense(request)", 
+          "getLicenseStatus()",
+          "revokeLicense(id)",
+          "getLicenseTypes()"
+        ]
+      },
+      "service_abstraction": {
+        "license_service": "Orchestrates license operations",
+        "validation_service": "Handles real-time validation",
+        "payment_service": "Abstract payment processing",
+        "notification_service": "User feedback and alerts"
+      },
+      "configuration_driven": {
+        "license_modes": ["local", "remote", "hybrid"],
+        "feature_flags": ["trial_enabled", "payment_enabled", "hardware_binding"],
+        "environment_configs": ["development", "staging", "production"]
+      }
+    }
+  },
+
+  "license_workflow_specifications": {
+    "license_generation_flow": {
+      "description": "Generate new license key for user",
+      "steps": [
+        {
+          "step": "user_input",
+          "action": "Collect user email, name, license type",
+          "validation": ["email_format", "required_fields", "license_type_valid"]
+        },
+        {
+          "step": "hardware_signature",
+          "action": "Generate or collect hardware fingerprint",
+          "method": "navigator.userAgent + screen dimensions + timezone"
+        },
+        {
+          "step": "api_request",
+          "action": "POST /api/license/generate",
+          "payload": {
+            "user_email": "string",
+            "user_name": "string", 
+            "license_type": "trial|standard|enterprise",
+            "hardware_signature": "string"
+          }
+        },
+        {
+          "step": "response_handling",
+          "action": "Process generation response",
+          "success": "Display license key with copy functionality",
+          "error": "Show specific error message and retry option"
+        },
+        {
+          "step": "activation_polling",
+          "action": "Poll for license activation status",
+          "interval": 3000,
+          "max_attempts": 10
+        }
+      ],
+      "ui_components": {
+        "form": "LicenseGenerationForm",
+        "result": "LicenseKeyDisplay", 
+        "polling": "ActivationStatusPoller"
+      }
+    },
+
+    "license_validation_flow": {
+      "description": "Real-time license key validation",
+      "steps": [
+        {
+          "step": "format_validation",
+          "action": "Check WARP-XXXX-XXXX-XXXX format",
+          "pattern": "^WARP-[A-Z0-9]{4}-[A-Z0-9]{4}-[A-Z0-9]{4}$"
+        },
+        {
+          "step": "api_validation", 
+          "action": "POST /api/license/validate",
+          "payload": {
+            "license_key": "string",
+            "hardware_signature": "string"
+          }
+        },
+        {
+          "step": "validation_feedback",
+          "action": "Show real-time validation status",
+          "states": ["checking", "valid", "invalid", "expired", "revoked"]
+        }
+      ],
+      "debounce": 500,
+      "cache_valid_results": 300000
+    },
+
+    "license_purchase_flow": {
+      "description": "Complete purchase workflow with payment",
+      "steps": [
+        {
+          "step": "license_selection",
+          "action": "User selects license tier",
+          "options": ["trial", "professional", "enterprise"]
+        },
+        {
+          "step": "user_details",
+          "action": "Collect billing information",
+          "fields": ["user_email", "user_name", "company", "billing_address"]
+        },
+        {
+          "step": "payment_processing",
+          "action": "Integration with payment provider",
+          "providers": ["stripe", "paypal", "demo"],
+          "demo_mode": "Immediate success for testing"
+        },
+        {
+          "step": "license_delivery",
+          "action": "Generate and deliver license key",
+          "methods": ["email", "download", "in_app_display"]
+        },
+        {
+          "step": "activation_guidance",
+          "action": "Guide user through activation process",
+          "includes": ["copy_key", "activation_instructions", "support_links"]
+        }
+      ]
+    },
+
+    "license_activation_flow": {
+      "description": "Multi-step license activation with status tracking",
+      "steps": [
+        {
+          "step": "pre_activation",
+          "action": "Validate license key and check eligibility",
+          "validations": ["format", "server_validation", "hardware_compatibility"]
+        },
+        {
+          "step": "activation_request",
+          "action": "Submit activation request",
+          "includes": ["license_key", "user_email", "hardware_signature"]
+        },
+        {
+          "step": "activation_polling",
+          "action": "Poll activation status",
+          "interval": 2000,
+          "timeout": 30000,
+          "states": ["pending", "processing", "active", "failed"]
+        },
+        {
+          "step": "post_activation",
+          "action": "Update UI and enable features",
+          "actions": ["refresh_feature_gates", "update_user_tier", "show_success_message"]
+        }
+      ]
+    },
+
+    "trial_license_flow": {
+      "description": "14-day trial initiation and management",
+      "steps": [
+        {
+          "step": "trial_eligibility",
+          "action": "Check if user can start trial",
+          "checks": ["email_not_used", "no_active_trial", "not_expired_recently"]
+        },
+        {
+          "step": "trial_generation",
+          "action": "Generate 14-day trial license",
+          "auto_activate": true,
+          "features": ["professional_tier", "all_gcp_features", "advanced_monitoring"]
+        },
+        {
+          "step": "trial_tracking",
+          "action": "Track trial usage and time remaining",
+          "notifications": ["7_days_left", "1_day_left", "expired"],
+          "conversion_prompts": ["day_3", "day_10", "expiration"]
+        }
+      ]
+    },
+
+    "license_management_flow": {
+      "description": "Ongoing license management operations",
+      "operations": {
+        "view_status": {
+          "action": "Display current license information",
+          "includes": ["tier", "features", "expiration", "usage_stats"]
+        },
+        "refresh_status": {
+          "action": "Force refresh license status from server",
+          "use_cases": ["after_upgrade", "troubleshooting", "periodic_sync"]
+        },
+        "revoke_license": {
+          "action": "Revoke current license",
+          "confirmation": "Double confirmation required",
+          "cleanup": ["clear_local_cache", "reset_feature_gates", "notify_server"]
+        },
+        "upgrade_license": {
+          "action": "Upgrade to higher tier",
+          "flow": "Redirect to purchase flow with current tier context"
+        },
+        "transfer_license": {
+          "action": "Transfer license to different hardware",
+          "requirements": ["owner_verification", "old_hardware_deactivation"]
+        }
+      }
+    }
+  },
+
+  "ui_component_architecture": {
+    "provider_layer": {
+      "license_provider": {
+        "interface": "ILicenseProvider",
+        "implementations": {
+          "local_provider": {
+            "description": "Local demo mode with immediate responses", 
+            "endpoints": "localhost:8001",
+            "features": ["demo_licenses", "instant_activation", "warp_watermarks"]
+          },
+          "remote_provider": {
+            "description": "Production remote license server",
+            "endpoints": "configurable_production_server",
+            "features": ["real_payments", "email_delivery", "hardware_binding"]
+          }
+        },
+        "factory_method": "createLicenseProvider(mode, config)"
+      }
+    },
+
+    "service_layer": {
+      "license_service": {
+        "responsibilities": ["coordinate_license_operations", "state_management", "caching"],
+        "methods": [
+          "initializeService()",
+          "getCurrentLicenseStatus()",
+          "validateLicenseKey(key)",
+          "activateLicense(key, email)",
+          "purchaseLicense(request)",
+          "refreshLicenseStatus()",
+          "revokeLicense(id)"
+        ]
+      },
+      "validation_service": {
+        "responsibilities": ["real_time_validation", "format_checking", "debouncing"],
+        "methods": [
+          "validateFormat(key)",
+          "validateWithServer(key, signature)", 
+          "getCachedValidation(key)",
+          "clearValidationCache()"
+        ]
+      },
+      "notification_service": {
+        "responsibilities": ["user_feedback", "toast_notifications", "error_display"],
+        "methods": [
+          "showSuccess(message)",
+          "showError(message, details)",
+          "showLoading(message)",
+          "hideNotifications()"
+        ]
+      }
+    },
+
+    "component_layer": {
+      "license_modal": {
+        "file": "LicenseModal.js",
+        "props": ["isOpen", "onClose", "initialTab"],
+        "state": ["activeTab", "licenseStatus", "loading"],
+        "children": ["LicenseStatusDisplay", "LicenseActivationForm", "TrialForm", "UpgradeOptions"]
+      },
+      "license_status_display": {
+        "file": "LicenseStatusDisplay.js", 
+        "props": ["licenseStatus", "onRefresh"],
+        "features": ["tier_badge", "expiration_warning", "feature_list", "usage_metrics"]
+      },
+      "license_activation_form": {
+        "file": "LicenseActivationForm.js",
+        "props": ["onActivate", "validationService"],
+        "features": ["real_time_validation", "format_feedback", "activation_polling"]
+      },
+      "license_key_display": {
+        "file": "LicenseKeyDisplay.js",
+        "props": ["licenseKey", "showCopyButton"],
+        "features": ["copy_to_clipboard", "qr_code_generation", "email_option"]
+      },
+      "trial_form": {
+        "file": "TrialForm.js", 
+        "props": ["onStartTrial", "eligibilityCheck"],
+        "features": ["email_validation", "terms_acceptance", "instant_activation"]
+      },
+      "upgrade_options": {
+        "file": "UpgradeOptions.js",
+        "props": ["currentTier", "onUpgrade"],
+        "features": ["tier_comparison", "feature_matrix", "pricing_display"]
+      },
+      "license_table": {
+        "file": "LicenseTable.js",
+        "props": ["licenses", "onRevoke", "onTransfer"], 
+        "features": ["sortable_columns", "filter_by_status", "bulk_operations"]
+      }
+    },
+
+    "state_management": {
+      "license_store": {
+        "initial_state": {
+          "current_license": null,
+          "license_status": "unknown",
+          "user_licenses": [],
+          "license_types": [],
+          "loading": false,
+          "error": null,
+          "last_updated": null
+        },
+        "actions": [
+          "INITIALIZE_LICENSE_STATE",
+          "SET_CURRENT_LICENSE", 
+          "UPDATE_LICENSE_STATUS",
+          "SET_USER_LICENSES",
+          "SET_LOADING",
+          "SET_ERROR",
+          "CLEAR_ERROR"
+        ],
+        "persistence": {
+          "storage": "localStorage",
+          "key": "warpcore_license_state",
+          "ttl": 3600000,
+          "encrypt": "true"
+        }
+      },
+      "event_system": {
+        "events": [
+          "license:status_changed",
+          "license:activated",
+          "license:expired", 
+          "license:revoked",
+          "license:trial_started",
+          "license:upgrade_available"
+        ],
+        "dispatcher": "CustomEventDispatcher",
+        "subscribers": ["FeatureGateManager", "UIUpdateManager", "AnalyticsTracker"]
+      }
+    }
+  },
+
+  "license_tier_feature_matrix": {
+    "tiers": {
+      "basic": {
+        "name": "Basic (Free)",
+        "price": "$0/month",
+        "duration": "unlimited", 
+        "features": [
+          "local_operations",
+          "basic_monitoring", 
+          "single_environment",
+          "community_support"
+        ],
+        "limits": {
+          "environments": 1,
+          "exports": false,
+          "advanced_features": false,
+          "priority_support": false
+        },
+        "feature_gates": ["basic"]
+      },
+      "professional": {
+        "name": "Professional", 
+        "price": "$99/month",
+        "duration": "monthly_or_annual",
+        "features": [
+          "gcp_authentication",
+          "kubernetes_operations", 
+          "live_log_streaming",
+          "multi_environment_support",
+          "export_capabilities",
+          "advanced_monitoring",
+          "email_support"
+        ],
+        "limits": {
+          "environments": 5,
+          "exports": true,
+          "advanced_features": true,
+          "priority_support": false
+        },
+        "feature_gates": ["basic", "professional"]
+      },
+      "enterprise": {
+        "name": "Enterprise",
+        "price": "$299/month", 
+        "duration": "annual_only",
+        "features": [
+          "all_professional_features",
+          "unlimited_environments",
+          "custom_integrations",
+          "priority_support",
+          "dedicated_account_manager",
+          "sso_integration",
+          "audit_logging",
+          "compliance_reports"
+        ],
+        "limits": {
+          "environments": "unlimited",
+          "exports": true,
+          "advanced_features": true,
+          "priority_support": true
+        },
+        "feature_gates": ["basic", "professional", "enterprise"]
+      },
+      "trial": {
+        "name": "Professional Trial",
+        "price": "$0",
+        "duration": "14_days",
+        "features": "same_as_professional",
+        "conversion_target": "professional",
+        "feature_gates": ["basic", "professional", "trial"]
+      }
+    }
+  },
+
+  "api_integration_specifications": {
+    "request_patterns": {
+      "standard_headers": {
+        "Content-Type": "application/json",
+        "X-WARP-Client": "warpcore-ui",
+        "X-WARP-Version": "3.0.0"
+      },
+      "authentication": {
+        "method": "bearer_token_or_session",
+        "header": "Authorization: Bearer {token}"
+      },
+      "error_handling": {
+        "retry_logic": {
+          "max_retries": 3,
+          "backoff": "exponential",
+          "retry_codes": [408, 429, 500, 502, 503, 504]
+        },
+        "timeout": 10000
+      }
+    },
+
+    "response_patterns": {
+      "standard_success": {
+        "structure": {
+          "success": true,
+          "data": "object",
+          "timestamp": "ISO_8601",
+          "server_mode": "local|remote|hybrid"
+        }
+      },
+      "standard_error": {
+        "structure": {
+          "success": false,
+          "error": "error_message",
+          "error_code": "ERROR_CODE",
+          "details": "additional_context",
+          "timestamp": "ISO_8601"
+        }
+      }
+    },
+
+    "polling_specifications": {
+      "activation_polling": {
+        "endpoint": "/api/license/status",
+        "interval": 3000,
+        "max_duration": 30000,
+        "exponential_backoff": true,
+        "stop_conditions": ["active", "failed", "timeout"]
+      },
+      "validation_polling": {
+        "endpoint": "/api/license/validate", 
+        "interval": 1000,
+        "max_attempts": 5,
+        "cache_results": 300000
+      }
+    },
+
+    "websocket_integration": {
+      "endpoint": "ws://localhost:8000/ws/license",
+      "events": [
+        "license_status_changed",
+        "license_activated",
+        "license_revoked",
+        "trial_expired"
+      ],
+      "fallback": "http_polling"
+    }
+  },
+
+  "ui_interaction_patterns": {
+    "real_time_validation": {
+      "license_key_format": {
+        "pattern": "^WARP-[A-Z0-9]{4}-[A-Z0-9]{4}-[A-Z0-9]{4}$",
+        "format_feedback": {
+          "typing": "Format: WARP-XXXX-XXXX-XXXX",
+          "invalid": "Invalid format. Use WARP-XXXX-XXXX-XXXX",
+          "valid_format": "✓ Format correct, validating...",
+          "server_valid": "✅ Valid license key",
+          "server_invalid": "❌ Invalid license key"
+        },
+        "debounce": 500
+      },
+      "email_validation": {
+        "pattern": "^[a-zA-Z0-9._%+-]+@[a-zA-Z0-9.-]+\\.[a-zA-Z]{2,}$",
+        "feedback": {
+          "invalid": "Please enter a valid email address",
+          "valid": "✓ Valid email format"
+        }
+      }
+    },
+
+    "progressive_disclosure": {
+      "tab_navigation": {
+        "tabs": ["activate", "trial", "upgrade", "manage"],
+        "default_tab": "activate",
+        "tab_switching": "instant",
+        "tab_validation": "prevent_switch_if_form_dirty"
+      },
+      "form_sections": {
+        "collapsible": true,
+        "accordion_behavior": false,
+        "section_completion_indicators": true
+      }
+    },
+
+    "loading_states": {
+      "form_submission": {
+        "button_text": "Activating License...",
+        "button_disabled": true,
+        "spinner": "inline",
+        "form_disabled": true
+      },
+      "validation": {
+        "indicator": "inline_spinner",
+        "placeholder_text": "Validating...",
+        "timeout": 10000
+      },
+      "page_loading": {
+        "skeleton_loader": true,
+        "progress_indicator": false
+      }
+    },
+
+    "feedback_mechanisms": {
+      "toast_notifications": {
+        "position": "top-right",
+        "duration": 5000,
+        "types": ["success", "error", "warning", "info"],
+        "dismissible": true,
+        "stacking": true
+      },
+      "inline_messages": {
+        "form_validation": "below_field",
+        "section_feedback": "within_section",
+        "modal_feedback": "above_form"
+      },
+      "success_animations": {
+        "license_activation": "checkmark_animation",
+        "form_completion": "slide_in_success_panel",
+        "trial_start": "confetti_animation"
+      }
+    },
+
+    "keyboard_navigation": {
+      "tab_order": ["license_key", "email", "validate_button", "activate_button"],
+      "keyboard_shortcuts": {
+        "escape": "close_modal",
+        "enter": "submit_active_form", 
+        "ctrl_c": "copy_license_key",
+        "tab": "next_field",
+        "shift_tab": "previous_field"
+      },
+      "focus_management": {
+        "modal_open": "focus_first_input",
+        "modal_close": "return_to_trigger",
+        "form_error": "focus_first_error_field"
+      }
+    }
+  },
+
+  "error_handling_specifications": {
+    "network_errors": {
+      "connection_refused": {
+        "message": "Unable to connect to license server. Please try again.",
+        "actions": ["retry", "check_server_status", "use_cached_data"],
+        "fallback": "offline_mode"
+      },
+      "timeout": {
+        "message": "Request timed out. Please check your connection and try again.",
+        "timeout_duration": 10000,
+        "retry_strategy": "exponential_backoff"
+      },
+      "rate_limiting": {
+        "message": "Too many requests. Please wait before trying again.",
+        "retry_after": "from_response_headers",
+        "exponential_backoff": true
+      }
+    },
+
+    "validation_errors": {
+      "invalid_license_key": {
+        "message": "Invalid license key format. Please check and try again.",
+        "hint": "License keys should be in format WARP-XXXX-XXXX-XXXX",
+        "focus_field": "license_key"
+      },
+      "expired_license": {
+        "message": "This license has expired.",
+        "actions": ["renew_license", "start_trial", "contact_support"],
+        "cta": "Upgrade to continue using professional features"
+      },
+      "revoked_license": {
+        "message": "This license has been revoked.",
+        "actions": ["contact_support", "purchase_new_license"],
+        "support_contact": "support@warpcore.dev"
+      },
+      "duplicate_activation": {
+        "message": "This license is already activated on another device.",
+        "actions": ["transfer_license", "revoke_other_device", "contact_support"]
+      }
+    },
+
+    "server_errors": {
+      "internal_server_error": {
+        "message": "Server error occurred. Our team has been notified.",
+        "error_id": "generated_uuid",
+        "actions": ["try_again_later", "contact_support"],
+        "fallback": "cached_license_state"
+      },
+      "service_unavailable": {
+        "message": "License service is temporarily unavailable.",
+        "retry_after": 60000,
+        "actions": ["automatic_retry", "offline_mode"]
+      }
+    },
+
+    "business_logic_errors": {
+      "trial_already_used": {
+        "message": "Trial already used for this email address.",
+        "actions": ["purchase_license", "use_different_email", "contact_support"]
+      },
+      "payment_failed": {
+        "message": "Payment processing failed.",
+        "details": "from_payment_provider",
+        "actions": ["retry_payment", "try_different_card", "contact_support"],
+        "rollback": "revert_license_generation"
+      },
+      "license_limit_exceeded": {
+        "message": "Maximum number of licenses reached for this tier.",
+        "actions": ["upgrade_tier", "revoke_unused_licenses", "contact_sales"]
+      }
+    },
+
+    "recovery_strategies": {
+      "automatic_retry": {
+        "max_attempts": 3,
+        "backoff_strategy": "exponential",
+        "base_delay": 1000,
+        "max_delay": 10000
+      },
+      "graceful_degradation": {
+        "offline_mode": "show_cached_license_status",
+        "reduced_functionality": "disable_license_dependent_features",
+        "user_notification": "inform_about_limitations"
+      },
+      "state_recovery": {
+        "persist_form_data": true,
+        "restore_on_error": true,
+        "clear_on_success": true
+      }
+    }
+  },
+
+  "testing_specifications": {
+    "multi_layer_testing": {
+      "playwright_e2e_tests": {
+        "test_files": [
+          "license_activation_flow.spec.js",
+          "trial_license_flow.spec.js", 
+          "purchase_workflow.spec.js",
+          "license_management.spec.js"
+        ],
+        "scenarios": [
+          "successful_license_activation",
+          "invalid_license_key_handling",
+          "trial_start_and_expiration",
+          "license_upgrade_flow",
+          "error_recovery_scenarios"
+        ],
+        "user_interactions": "native_browser_events",
+        "assertions": "visual_and_functional"
+      },
+      "api_integration_tests": {
+        "curl_tests": [
+          "curl -X POST localhost:8001/api/license/generate -d '{json}'",
+          "curl -X POST localhost:8001/api/license/validate -d '{json}'", 
+          "curl -X POST localhost:8001/api/license/purchase -d '{json}'"
+        ],
+        "wget_validation": [
+          "wget -qO- localhost:8000/license-modal > license_page.html",
+          "grep 'license-modal' license_page.html"
+        ],
+        "response_validation": "json_schema_validation"
+      },
+      "component_unit_tests": {
+        "jest_tests": [
+          "LicenseModal.test.js",
+          "LicenseService.test.js",
+          "ValidationService.test.js",
+          "LicenseStore.test.js"
+        ],
+        "test_scenarios": [
+          "component_rendering",
+          "prop_validation",
+          "event_handling", 
+          "state_transitions",
+          "error_boundaries"
+        ]
+      },
+      "state_management_tests": {
+        "redux_tests": "action_creators_reducers_selectors",
+        "async_operations": "thunk_saga_testing",
+        "persistence": "localStorage_integration",
+        "synchronization": "websocket_state_sync"
+      }
+    },
+
+    "error_scenario_testing": {
+      "network_failure_simulation": {
+        "offline_mode": "navigator.onLine = false",
+        "slow_network": "throttle_network_to_2g",
+        "intermittent_connectivity": "random_connection_drops",
+        "server_downtime": "mock_server_unavailable"
+      },
+      "invalid_input_testing": {
+        "malformed_license_keys": ["", "INVALID", "WARP-123", "WARP-XXXX-YYYY"],
+        "invalid_emails": ["", "invalid", "user@", "@domain.com"],
+        "boundary_conditions": "empty_forms_max_length_special_chars"
+      },
+      "timeout_testing": {
+        "api_timeouts": "simulate_slow_server_responses",
+        "polling_timeouts": "test_activation_polling_limits",
+        "user_timeout": "test_user_inactivity_handling"
+      }
+    },
+
+    "performance_testing": {
+      "response_time_benchmarks": {
+        "license_validation": "< 500ms",
+        "license_generation": "< 2000ms", 
+        "license_activation": "< 5000ms",
+        "ui_responsiveness": "< 100ms_interaction_feedback"
+      },
+      "polling_efficiency": {
+        "activation_polling": "exponential_backoff_verification",
+        "status_polling": "minimal_server_load",
+        "cache_effectiveness": "reduce_redundant_requests"
+      },
+      "memory_usage": {
+        "component_memory_leaks": "mount_unmount_cycles",
+        "state_persistence": "localStorage_size_management",
+        "event_listener_cleanup": "prevent_listener_accumulation"
+      }
+    }
+  },
+
+  "configuration_specifications": {
+    "environment_configs": {
+      "development": {
+        "license_server": "http://localhost:8001",
+        "mode": "local",
+        "demo_licenses": true,
+        "instant_activation": true,
+        "payment_simulation": true,
+        "debug_logging": true
+      },
+      "staging": {
+        "license_server": "https://staging-license.warpcore.dev",
+        "mode": "hybrid", 
+        "demo_licenses": false,
+        "instant_activation": false,
+        "payment_simulation": false,
+        "debug_logging": false
+      },
+      "production": {
+        "license_server": "https://license.warpcore.dev",
+        "mode": "remote",
+        "demo_licenses": false,
+        "instant_activation": false,
+        "payment_simulation": false,
+        "debug_logging": false
+      }
+    },
+    
+    "feature_flags": {
+      "license_management": {
+        "trial_enabled": true,
+        "payment_enabled": "environment_dependent",
+        "hardware_binding": true,
+        "websocket_updates": false,
+        "offline_mode": true
+      },
+      "ui_features": {
+        "license_qr_codes": false,
+        "bulk_license_operations": false,
+        "license_analytics": true,
+        "export_functionality": "tier_dependent"
+      }
+    },
+
+    "runtime_configuration": {
+      "polling_intervals": {
+        "activation_polling": 3000,
+        "status_refresh": 300000,
+        "trial_expiry_check": 3600000
+      },
+      "timeout_settings": {
+        "api_timeout": 10000,
+        "polling_timeout": 30000,
+        "user_inactivity": 1800000
+      },
+      "cache_settings": {
+        "license_cache_ttl": 3600000,
+        "validation_cache_ttl": 300000,
+        "user_preferences_ttl": 86400000
+      }
+    }
+  },
+
+  "implementation_checklist": {
+    "phase_1_foundation": {
+      "tasks": [
+        "✅ Create LicenseProvider abstraction layer",
+        "✅ Implement LicenseService with state management",
+        "✅ Set up ValidationService with debouncing",
+        "✅ Create NotificationService for user feedback",
+        "✅ Implement basic LicenseStore with persistence"
+      ],
+      "files_to_create": [
+        "src/services/LicenseProvider.js",
+        "src/services/LicenseService.js", 
+        "src/services/ValidationService.js",
+        "src/services/NotificationService.js",
+        "src/stores/LicenseStore.js"
+      ]
+    },
+    
+    "phase_2_components": {
+      "tasks": [
+        "✅ Enhance LicenseModal with full workflow support",
+        "✅ Create LicenseStatusDisplay component",
+        "✅ Implement LicenseActivationForm with real-time validation",
+        "✅ Build TrialForm with eligibility checking",
+        "✅ Create UpgradeOptions component with tier comparison",
+        "✅ Implement LicenseKeyDisplay with copy functionality"
+      ],
+      "files_to_update": [
+        "src/web/templates/components/licensing/license_modal.html",
+        "src/web/static/js/license_activation.js"
+      ],
+      "files_to_create": [
+        "src/web/static/js/components/LicenseStatusDisplay.js",
+        "src/web/static/js/components/LicenseActivationForm.js",
+        "src/web/static/js/components/TrialForm.js",
+        "src/web/static/js/components/UpgradeOptions.js",
+        "src/web/static/js/components/LicenseKeyDisplay.js"
+      ]
+    },
+
+    "phase_3_integration": {
+      "tasks": [
+        "✅ Integrate all components with LicenseService",
+        "✅ Implement real-time polling for activation status",
+        "✅ Add WebSocket support for live updates",
+        "✅ Implement comprehensive error handling",
+        "✅ Add offline mode support with cached data",
+        "✅ Integrate with feature gate system"
+      ]
+    },
+
+    "phase_4_testing": {
+      "tasks": [
+        "✅ Write Playwright E2E tests for all workflows",
+        "✅ Create component unit tests with Jest",
+        "✅ Implement API integration tests with curl/wget",
+        "✅ Add error scenario testing",
+        "✅ Performance testing and optimization",
+        "✅ Multi-browser compatibility testing"
+      ]
+    }
+  },
+
+  "migration_guide": {
+    "from_current_state": {
+      "existing_components": {
+        "license_modal.html": "Enhance with new component architecture",
+        "license_activation.js": "Refactor to use new service layer",
+        "license.css": "Add new state classes and animations"
+      },
+      "new_architecture": {
+        "service_layer": "Add provider abstraction and state management",
+        "component_layer": "Break monolithic components into composable parts",
+        "error_handling": "Implement comprehensive error recovery",
+        "testing": "Add multi-layer testing approach"
+      }
+    },
+    
+    "deployment_strategy": {
+      "phase_1": "Deploy service layer and basic components",
+      "phase_2": "Gradually migrate existing functionality",
+      "phase_3": "Add advanced features and optimizations",
+      "rollback_plan": "Feature flags for gradual rollout"
+    }
+  },
+
+  "next_steps": {
+    "immediate": [
+      "Review this specification with development team",
+      "Set up development environment with license server",
+      "Create basic service layer implementation", 
+      "Update existing license modal with new architecture"
+    ],
+    "short_term": [
+      "Implement core components and workflows",
+      "Add comprehensive testing suite",
+      "Integrate with existing WARPCORE features",
+      "Deploy to staging environment"
+    ],
+    "long_term": [
+      "Production deployment with monitoring",
+      "Performance optimization and caching",
+      "Advanced features like WebSocket updates",
+      "Analytics and usage tracking"
+    ]
+  }
+}

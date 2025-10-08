@@ -133,9 +133,17 @@ class RealDataDashboard {
             </div>
         `;
         
-        // Insert tabs before the dashboard grid
-        const dashboardGrid = document.querySelector('.dashboard-grid');
-        dashboardGrid.parentNode.insertBefore(tabContainer, dashboardGrid);
+        // Insert tabs into dashboard content container
+        const dashboardContent = document.getElementById('dashboard-content');
+        if (dashboardContent) {
+            dashboardContent.appendChild(tabContainer);
+        } else {
+            // Fallback to dashboard grid if available
+            const dashboardGrid = document.querySelector('.dashboard-grid');
+            if (dashboardGrid) {
+                dashboardGrid.parentNode.insertBefore(tabContainer, dashboardGrid);
+            }
+        }
         
         // Add tab switching functionality
         document.querySelectorAll('.tab-btn').forEach(btn => {

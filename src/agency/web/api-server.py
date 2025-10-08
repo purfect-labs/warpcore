@@ -708,66 +708,14 @@ def health_check():
         'data_files_found': len(glob.glob(os.path.join(DATA_DIR, '*.json')))
     })
 
-# Static file serving for dashboard
 @app.route('/')
-def serve_dashboard():
-    return send_from_directory('.', 'index.html')
-
-@app.route('/real-data')
-def serve_real_data_dashboard():
-    return send_from_directory('.', 'real-data-dashboard.html')
+def dashboard():
+    """Serve the main dashboard"""
+    return send_from_directory('.', 'dashboard.html')
 
 @app.route('/<path:path>')
 def serve_static(path):
     return send_from_directory('.', path)
-
-if __name__ == '__main__':
-    # Check if data directory exists
-    if not os.path.exists(DATA_DIR):
-        logger.warning(f"Data directory {DATA_DIR} does not exist")
-        os.makedirs(DATA_DIR, exist_ok=True)
-    
-    # Check for JSON files
-    json_files = glob.glob(os.path.join(DATA_DIR, '*.json'))
-    logger.info(f"Found {len(json_files)} JSON files in {DATA_DIR}")
-    
-    if len(json_files) == 0:
-        logger.warning("No JSON data files found. Creating demo data...")
-        # Create sample demo data for testing
-        demo_data = {
-            "workflow_execution": {
-                "agents": {
-                    "DemoAgent": {
-                        "actions": [
-                            {
-                                "type": "PLANNING",
-                                "timestamp": datetime.now().isoformat(),
-                                "motive": "WARP test - Initial planning phase",
-                                "content": {"phase": "initialization"}
-                            },
-                            {
-                                "type": "EXECUTING", 
-                                "timestamp": datetime.now().isoformat(),
-                                "motive": "WARP test - Execution phase",
-                                "content": {"status": "in_progress"}
-                            }
-                        ]
-                    }
-                }
-            }
-        }
-        
-        with open(os.path.join(DATA_DIR, 'wf_demo_seq_001_sample.json'), 'w') as f:
-            json.dump(demo_data, f, indent=2)
-        
-        logger.info("Created demo data file for testing")
-    
-
-@app.route('/')
-def dashboard():
-    """Serve the main dashboard"""
-    return send_from_directory('.', 'real-data-dashboard.html')
-
 
 if __name__ == '__main__':
     logger.info("Starting WARPCORE Real Data API Server...")
