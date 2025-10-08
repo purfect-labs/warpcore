@@ -46,10 +46,9 @@ class LicenseController(BaseController):
             "controller": self.name,
             "orchestrator_wired": self._orchestrator_wired,
             "config_loaded": True,
-            "demo_mode": self.config.is_demo_mode(),
             "broadcast_enabled": self.config.should_broadcast_events(),
             "cache_duration": self.config.get_cache_duration(),
-            "watermark": watermark["controller"]
+            "watermark": watermark.get("enabled", True)
         }
     
     async def get_license_status(self) -> Dict[str, Any]:
@@ -89,7 +88,7 @@ class LicenseController(BaseController):
                 return {
                     "valid": False,
                     "error": "License key required",
-                    "watermark": watermark["controller"]
+                    "watermark": watermark.get("enabled", True)
                 }
             
             if not self._orchestrator_wired:
@@ -98,7 +97,7 @@ class LicenseController(BaseController):
                     "valid": license_key.startswith("test-") or license_key.startswith("warp-"),
                     "license_type": "test",
                     "features": ["basic", "test"],
-                    "watermark": watermark["controller"],
+                    "watermark": watermark.get("enabled", True),
                     "orchestrator_available": False
                 }
             
@@ -118,7 +117,7 @@ class LicenseController(BaseController):
                         "controller": self.name,
                         "valid": result.get("valid", False),
                         "license_type": result.get("license_type"),
-                        "watermark": watermark["controller"]
+                        "watermark": watermark.get("enabled", True)
                     }
                 })
             
@@ -129,7 +128,7 @@ class LicenseController(BaseController):
             return {
                 "valid": False,
                 "error": f"Controller license validation failed: {str(e)}",
-                "watermark": watermark["error"]
+                "watermark": watermark.get("enabled", True)
             }
     
     async def activate_license(self, license_key: str, user_email: str = None) -> Dict[str, Any]:
@@ -141,7 +140,7 @@ class LicenseController(BaseController):
                 return {
                     "success": False,
                     "error": "License orchestrator not available",
-                    "watermark": watermark["controller"]
+                    "watermark": watermark.get("enabled", True)
                 }
             
             # Use orchestrator for complex activation workflow
@@ -161,7 +160,7 @@ class LicenseController(BaseController):
                         "user_email": user_email,
                         "license_type": result.get("license_type"),
                         "message": "License activated via PAP flow",
-                        "watermark": watermark["controller"]
+                        "watermark": watermark.get("enabled", True)
                     }
                 })
             
@@ -172,7 +171,7 @@ class LicenseController(BaseController):
             return {
                 "success": False,
                 "error": f"Controller license activation failed: {str(e)}",
-                "watermark": watermark["error"]
+                "watermark": watermark.get("enabled", True)
             }
     
     async def deactivate_license(self) -> Dict[str, Any]:
@@ -184,7 +183,7 @@ class LicenseController(BaseController):
                 return {
                     "success": False,
                     "error": "License orchestrator not available",
-                    "watermark": watermark["controller"]
+                    "watermark": watermark.get("enabled", True)
                 }
             
             # Use orchestrator for cleanup workflow
@@ -202,7 +201,7 @@ class LicenseController(BaseController):
                     "data": {
                         "controller": self.name,
                         "message": "License deactivated via PAP flow",
-                        "watermark": watermark["controller"]
+                        "watermark": watermark.get("enabled", True)
                     }
                 })
             
@@ -213,7 +212,7 @@ class LicenseController(BaseController):
             return {
                 "success": False,
                 "error": f"Controller license deactivation failed: {str(e)}",
-                "watermark": watermark["error"]
+                "watermark": watermark.get("enabled", True)
             }
     
     async def generate_trial_license(self, user_email: str, days: int = None) -> Dict[str, Any]:
@@ -225,7 +224,7 @@ class LicenseController(BaseController):
                 return {
                     "success": False,
                     "error": "License orchestrator not available",
-                    "watermark": watermark["controller"]
+                    "watermark": watermark.get("enabled", True)
                 }
             
             # Use orchestrator for trial generation with business rules
@@ -245,7 +244,7 @@ class LicenseController(BaseController):
                         "user_email": user_email,
                         "days": result.get("days"),
                         "message": "Trial license generated via PAP flow",
-                        "watermark": watermark["controller"]
+                        "watermark": watermark.get("enabled", True)
                     }
                 })
             
@@ -256,7 +255,7 @@ class LicenseController(BaseController):
             return {
                 "success": False,
                 "error": f"Controller trial generation failed: {str(e)}",
-                "watermark": watermark["error"]
+                "watermark": watermark.get("enabled", True)
             }
     
     async def generate_full_license(self, user_email: str, user_name: str, days: int, features: list) -> Dict[str, Any]:
@@ -268,7 +267,7 @@ class LicenseController(BaseController):
                 return {
                     "success": False,
                     "error": "License orchestrator not available", 
-                    "watermark": watermark["controller"]
+                    "watermark": watermark.get("enabled", True)
                 }
             
             # Use orchestrator for full license generation with feature validation
@@ -290,7 +289,7 @@ class LicenseController(BaseController):
                         "days": days,
                         "features": features,
                         "message": "Full license generated via PAP flow",
-                        "watermark": watermark["controller"]
+                        "watermark": watermark.get("enabled", True)
                     }
                 })
             
@@ -301,7 +300,7 @@ class LicenseController(BaseController):
             return {
                 "success": False,
                 "error": f"Controller full license generation failed: {str(e)}",
-                "watermark": watermark["error"]
+                "watermark": watermark.get("enabled", True)
             }
     
     async def generate_custom_license_key(self, user_email: str, user_name: str = None, days: int = 365, features: list = None, license_type: str = "standard") -> Dict[str, Any]:
@@ -339,7 +338,7 @@ class LicenseController(BaseController):
                 return {
                     "success": False,
                     "error": "License orchestrator not available",
-                    "watermark": watermark["controller"]
+                    "watermark": watermark.get("enabled", True)
                 }
             
             # Use orchestrator for secure license generation
@@ -365,7 +364,7 @@ class LicenseController(BaseController):
                         "features_count": len(features),
                         "hardware_binding": hardware_binding,
                         "message": "Production secure license generated via PAP flow",
-                        "watermark": watermark["controller"]
+                        "watermark": watermark.get("enabled", True)
                     }
                 })
             
@@ -376,27 +375,26 @@ class LicenseController(BaseController):
             return {
                 "success": False,
                 "error": f"Controller secure license generation failed: {str(e)}",
-                "watermark": watermark["error"]
+                "watermark": watermark.get("enabled", True)
             }
     
     async def get_subscription_info(self) -> Dict[str, Any]:
         """Get subscription info - uses data layer config for demo data"""
         try:
             watermark = self.config.get_watermark_config()
-            demo_data = self.config.get_demo_data()
-            features_config = self.config.get_features_config()
+            available_features = self.config.get_available_features()
             
             # For now, return demo subscription data from config
             return {
                 "success": True,
                 "data": {
                     "subscription_type": "WARP TEST SUBSCRIPTION",
-                    "features_available": list(features_config.keys()),
+                    "features_available": available_features,
                     "features_active": ["basic", "test"],
                     "billing_status": "demo",
                     "renewal_date": "2025-12-31",
-                    "demo_users": len(demo_data.get("test_users", [])),
-                    "watermark": watermark["controller"],
+                    "demo_users": 0,
+                    "watermark": watermark.get("enabled", True),
                     "controller_processed": True,
                     "config_driven": True
                 }
@@ -407,7 +405,7 @@ class LicenseController(BaseController):
             return {
                 "success": False,
                 "error": f"Controller subscription info failed: {str(e)}",
-                "watermark": watermark["error"]
+                "watermark": watermark.get("enabled", True)
             }
     
     async def initiate_license_purchase(self, tier: str, user_email: str, billing_info: Optional[Dict[str, Any]] = None) -> Dict[str, Any]:
@@ -523,3 +521,45 @@ class LicenseController(BaseController):
         """Set purchase orchestrator for license purchase workflows"""
         self.purchase_orchestrator = purchase_orchestrator
         self.logger.info("LICENSE CONTROLLER: Purchase orchestrator wired")
+    
+    def get_tier_info(self, tier: str) -> Dict[str, Any]:
+        """Get tier information including features and pricing"""
+        tiers = {
+            "basic": {
+                "id": "basic",
+                "name": "Basic",
+                "icon": "🆓",
+                "price": "Free",
+                "feature_count": 3,
+                "description": "Essential features for getting started with WARPCORE",
+                "features": ["Terminal Access", "Basic Commands", "Local Operations"]
+            },
+            "professional": {
+                "id": "professional", 
+                "name": "Professional",
+                "icon": "⭐",
+                "price": "$29/month",
+                "feature_count": 8,
+                "description": "Advanced features for professional development workflows",
+                "features": [
+                    "GCP Authentication", "Kubernetes Operations", "Live Log Streaming",
+                    "Multi-Environment Support", "Export Capabilities", "Advanced Monitoring",
+                    "Priority Support", "API Access"
+                ]
+            },
+            "enterprise": {
+                "id": "enterprise",
+                "name": "Enterprise",
+                "icon": "🏢",
+                "price": "Contact Sales",
+                "feature_count": 15,
+                "description": "Complete enterprise solution with custom integrations",
+                "features": [
+                    "All Professional Features", "Custom Integrations", "SSO Support",
+                    "Advanced Security", "Dedicated Support", "SLA Guarantees",
+                    "Multi-tenant Support", "Custom Workflows", "Enterprise Analytics"
+                ]
+            }
+        }
+        
+        return tiers.get(tier, tiers["basic"])

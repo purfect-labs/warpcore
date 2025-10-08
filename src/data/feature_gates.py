@@ -196,7 +196,7 @@ class FeatureGateManager:
         license_type = license_status.get("license_type", "").lower()
         if license_type == "trial":
             self.current_tier = LicenseTier.TRIAL
-        elif license_type in ["premium", "standard", "enterprise"]:
+        elif license_type in ["premium", "standard", "enterprise", "professional"]:
             self.current_tier = LicenseTier.PREMIUM
         else:
             self.current_tier = LicenseTier.BASIC
@@ -212,7 +212,7 @@ class FeatureGateManager:
         license_type = license_status.get("license_type", "").lower()
         if license_type == "trial":
             self.current_tier = LicenseTier.TRIAL
-        elif license_type in ["premium", "standard", "enterprise"]:
+        elif license_type in ["premium", "standard", "enterprise", "professional"]:
             self.current_tier = LicenseTier.PREMIUM
         else:
             self.current_tier = LicenseTier.BASIC

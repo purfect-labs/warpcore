@@ -226,6 +226,16 @@ class LicenseConfig:
         """Check if background tasks should be used"""
         return self.get_routes_config().get("background_tasks", True)
     
+    def get_watermark_config(self) -> Dict[str, Any]:
+        """Get watermark configuration for license validation"""
+        validation = self._license_config.get("license_validation", {})
+        return {
+            "enabled": validation.get("watermark_enabled", True),
+            "secret_key": validation.get("watermark_secret", "warpcore-validation-key"),
+            "algorithm": validation.get("watermark_algorithm", "HS256"),
+            "expiry_buffer_minutes": validation.get("expiry_buffer_minutes", 60)
+        }
+    
     def reload_config(self):
         """Reload configuration from data layer"""
         self.base_config.reload()

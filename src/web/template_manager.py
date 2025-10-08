@@ -77,16 +77,19 @@ class WARPCORETemplateManager:
     def _generate_current_tier_info(self, license_status: Optional[Dict[str, Any]]) -> Dict[str, Any]:
         """Generate current tier information from license status"""
         if not license_status or license_status.get('status') != 'active':
+            # Update feature gate manager first to get correct basic features
+            feature_gate_manager.update_license_status_sync(None)
             return {
                 'name': 'Free',
                 'tier': 'free',
-                'feature_count': len(feature_gate_manager.get_available_features('free')),
+                'feature_count': len(feature_gate_manager.get_available_features()),
                 'icon': '🆓',
                 'description': 'Basic features only'
             }
         
         license_type = license_status.get('license_type', 'free')
-        available_features = feature_gate_manager.get_available_features(license_type)
+        # Feature gate manager is already updated with license status in get_template_context
+        available_features = feature_gate_manager.get_available_features()
         
         tier_info = {
             'free': {'name': 'Free', 'icon': '🆓', 'description': 'Basic features'},
@@ -119,19 +122,19 @@ class WARPCORETemplateManager:
                 'name': 'Professional Trial',
                 'icon': '🎁',
                 'price': 'Free for 14 days',
-                'features': feature_gate_manager.get_available_features('trial')
+                'features': self._get_tier_features('trial')
             },
             'professional': {
                 'name': 'Professional',
                 'icon': '⚡',
                 'price': '$99/month',
-                'features': feature_gate_manager.get_available_features('professional')
+                'features': self._get_tier_features('professional')
             },
             'enterprise': {
                 'name': 'Enterprise',
                 'icon': '🏢',
                 'price': 'Contact Sales',
-                'features': feature_gate_manager.get_available_features('enterprise')
+                'features': self._get_tier_features('enterprise')
             }
         }
         
@@ -149,6 +152,24 @@ class WARPCORETemplateManager:
                 })
         
         return upgrade_options
+    
+    def _get_tier_features(self, tier: str) -> list:
+        """Get features for a specific tier without changing current state"""
+        # Map tier names to feature gate manager tiers
+        tier_mapping = {
+            'free': ['core_k8s', 'basic_terminal', 'system_status'],
+            'trial': ['core_k8s', 'basic_terminal', 'system_status', 'kiali_connect', 'aws_sso', 'gcp_auth', 'live_logs'],
+            'professional': ['core_k8s', 'basic_terminal', 'system_status', 'kiali_connect', 'aws_sso', 'gcp_auth', 'live_logs', 
+                           'kiali_dashboard', 'rds_connect', 'ci_cd_ops', 'advanced_monitoring'],
+            'enterprise': ['all']  # All features
+        }
+        
+        if tier == 'enterprise':
+            # Return all available feature names
+            from ..data.feature_gates import FEATURE_DEFINITIONS
+            return list(FEATURE_DEFINITIONS.keys())
+        
+        return tier_mapping.get(tier, tier_mapping['free'])
     
     def render_template(self, template_name: str, **context) -> str:
         """Render a template with context"""
