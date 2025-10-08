@@ -2,7 +2,7 @@
 <div class="modal-overlay" id="license-modal" style="display: none;">
     <div class="modal-content license-modal">
         <div class="modal-header">
-            <h3 class="modal-title">🔑 License Management</h3>
+            <h3 class="modal-title">🔑 WARPCORE License Activation</h3>
             <button class="modal-close" onclick="closeLicenseModal()">×</button>
         </div>
         
@@ -65,15 +65,15 @@
                 <div class="license-tab-content" id="license-tab-trial">
                     <h5>Start Free Trial</h5>
                     <div class="trial-benefits">
-                        <p>🆓 Get full access to Trial features for 30 days:</p>
+                        <p>🆓 Get full access to Professional features for 14 days:</p>
                         <ul>
-                            <li>✅ AWS SSO Authentication</li>
                             <li>✅ GCP Authentication</li>
+                            <li>✅ Kubernetes Operations</li>
                             <li>✅ Live Log Streaming</li>
-                            <li>✅ Kiali Port Forwarding</li>
-                            <li>✅ ECS Operations</li>
-                            <li>✅ CloudWatch Logs</li>
-                            <li>✅ Active Connection Monitoring</li>
+                            <li>✅ Multi-Environment Support</li>
+                            <li>✅ Export Capabilities</li>
+                            <li>✅ Advanced Monitoring</li>
+                            <li>✅ Priority Support</li>
                         </ul>
                     </div>
                     <form id="trial-form">
@@ -82,7 +82,7 @@
                             <input type="email" id="trial-email" placeholder="your.email@company.com" class="license-input" required>
                         </div>
                         <div class="form-actions">
-                            <button type="submit" class="btn-primary">Start 30-Day Trial</button>
+                            <button type="submit" class="btn-primary">Start 14-Day Trial</button>
                         </div>
                     </form>
                 </div>
@@ -145,6 +145,85 @@ function closeLicenseModal() {
     document.getElementById('license-modal').style.display = 'none';
 }
 
+// Generate hardware fingerprint for license binding
+function getHardwareSignature() {
+    // Generate hardware fingerprint for license binding
+    const canvas = document.createElement('canvas');
+    const ctx = canvas.getContext('2d');
+    ctx.textBaseline = 'top';
+    ctx.font = '14px Arial';
+    ctx.fillText('Hardware fingerprint', 2, 2);
+    
+    const signature = [
+        navigator.userAgent,
+        navigator.language,
+        screen.width + 'x' + screen.height,
+        screen.colorDepth,
+        new Date().getTimezoneOffset(),
+        canvas.toDataURL()
+    ].join('|');
+    
+    // Simple hash function
+    let hash = 0;
+    for (let i = 0; i < signature.length; i++) {
+        const char = signature.charCodeAt(i);
+        hash = ((hash << 5) - hash) + char;
+        hash = hash & hash; // Convert to 32-bit integer
+    }
+    
+    return Math.abs(hash).toString(16);
+}
+
+// Feedback functions
+function showLoading(message) {
+    const resultDiv = document.getElementById('license-validation-result');
+    resultDiv.innerHTML = `<div class="loading"><span class="spinner"></span> ${message}</div>`;
+}
+
+function showSuccess(message) {
+    const resultDiv = document.getElementById('license-validation-result');
+    resultDiv.innerHTML = `<div class="success">${message}</div>`;
+}
+
+function showError(message) {
+    const resultDiv = document.getElementById('license-validation-result');
+    resultDiv.innerHTML = `<div class="error">${message}</div>`;
+}
+
+// License activation polling
+async function pollLicenseActivation(licenseKey, maxAttempts = 10) {
+    for (let attempt = 1; attempt <= maxAttempts; attempt++) {
+        try {
+            const response = await fetch('http://localhost:8001/api/license/validate', {
+                method: 'POST',
+                headers: { 'Content-Type': 'application/json' },
+                body: JSON.stringify({ 
+                    license_key: licenseKey,
+                    hardware_signature: getHardwareSignature()
+                })
+            });
+            
+            const result = await response.json();
+            
+            if (result.valid) {
+                showSuccess('✅ License activated successfully!');
+                setTimeout(() => location.reload(), 2000);
+                return true;
+            }
+            
+            if (attempt < maxAttempts) {
+                showLoading(`🔄 Activating license... (${attempt}/${maxAttempts})`);
+                await new Promise(resolve => setTimeout(resolve, 3000));
+            }
+        } catch (error) {
+            console.error('Polling error:', error);
+        }
+    }
+    
+    showError('❌ License activation timed out. Please try again.');
+    return false;
+}
+
 function showLicenseTab(tabName) {
     // Update tab buttons
     document.querySelectorAll('.license-tab').forEach(tab => {
@@ -164,26 +243,39 @@ async function validateLicenseKey() {
     const resultDiv = document.getElementById('license-validation-result');
     
     if (!licenseKey) {
-        resultDiv.innerHTML = '<div class="error">Please enter a license key</div>';
+        showError('Please enter a license key');
         return;
     }
     
+    // Check WARP format first
+    const warpFormat = /^WARP-[A-Z0-9]{4}-[A-Z0-9]{4}-[A-Z0-9]{4}$/;
+    if (!warpFormat.test(licenseKey)) {
+        showError('Invalid format. License keys should be WARP-XXXX-XXXX-XXXX');
+        return;
+    }
+    
+    showLoading('Validating license key...');
+    
     try {
-        const response = await fetch('/api/license/validate', {
+        const response = await fetch('http://localhost:8001/api/license/validate', {
             method: 'POST',
             headers: { 'Content-Type': 'application/json' },
-            body: JSON.stringify({ license_key: licenseKey })
+            body: JSON.stringify({ 
+                license_key: licenseKey,
+                hardware_signature: getHardwareSignature()
+            })
         });
         
         const result = await response.json();
         
         if (result.valid) {
-            resultDiv.innerHTML = '<div class="success">✅ License key is valid!</div>';
+            showSuccess('✅ License key is valid!');
         } else {
-            resultDiv.innerHTML = `<div class="error">❌ ${result.error || 'Invalid license key'}</div>`;
+            showError(`❌ ${result.error || 'Invalid license key'}`);
         }
     } catch (error) {
-        resultDiv.innerHTML = '<div class="error">❌ Validation failed</div>';
+        showError('❌ Validation failed - check connection to license server');
+        console.error('Validation error:', error);
     }
 }
 
@@ -195,30 +287,26 @@ document.getElementById('license-activate-form')?.addEventListener('submit', asy
     const userEmail = document.getElementById('user-email').value;
     
     if (!licenseKey || !userEmail) {
-        alert('Please fill in all fields');
+        showError('Please fill in all fields');
         return;
     }
     
-    try {
-        const response = await fetch('/api/license/activate', {
-            method: 'POST',
-            headers: { 'Content-Type': 'application/json' },
-            body: JSON.stringify({ 
-                license_key: licenseKey,
-                user_email: userEmail 
-            })
-        });
-        
-        const result = await response.json();
-        
-        if (result.success) {
-            alert('License activated successfully! Page will reload.');
-            location.reload();
-        } else {
-            alert('License activation failed: ' + (result.error || 'Unknown error'));
-        }
-    } catch (error) {
-        alert('License activation failed: ' + error.message);
+    // Validate format first
+    const warpFormat = /^WARP-[A-Z0-9]{4}-[A-Z0-9]{4}-[A-Z0-9]{4}$/;
+    if (!warpFormat.test(licenseKey)) {
+        showError('Invalid format. License keys should be WARP-XXXX-XXXX-XXXX');
+        return;
+    }
+    
+    showLoading('Activating license...');
+    
+    // Start polling for activation status
+    const success = await pollLicenseActivation(licenseKey);
+    
+    if (success) {
+        // Store license key for future use
+        localStorage.setItem('warpcore_license_key', licenseKey);
+        localStorage.setItem('warpcore_license_email', userEmail);
     }
 });
 
@@ -229,30 +317,44 @@ document.getElementById('trial-form')?.addEventListener('submit', async function
     const email = document.getElementById('trial-email').value;
     
     if (!email) {
-        alert('Please enter your email address');
+        showError('Please enter your email address');
         return;
     }
     
+    showLoading('Generating 14-day trial license...');
+    
     try {
-        const response = await fetch('/api/license/generate-trial', {
+        const response = await fetch('http://localhost:8001/api/license/generate', {
             method: 'POST',
             headers: { 'Content-Type': 'application/json' },
             body: JSON.stringify({ 
                 user_email: email,
-                days: 30
+                user_name: email.split('@')[0],
+                license_type: 'trial',
+                hardware_signature: getHardwareSignature()
             })
         });
         
         const result = await response.json();
         
         if (result.success) {
-            alert('Trial license generated! Page will reload.');
-            location.reload();
+            const licenseKey = result.license_key;
+            showSuccess(`✅ Trial license generated: ${licenseKey}`);
+            
+            // Store for future use
+            localStorage.setItem('warpcore_license_key', licenseKey);
+            localStorage.setItem('warpcore_license_email', email);
+            
+            // Auto-activate by polling
+            setTimeout(async () => {
+                await pollLicenseActivation(licenseKey);
+            }, 1000);
         } else {
-            alert('Trial generation failed: ' + (result.error || 'Unknown error'));
+            showError('Trial generation failed: ' + (result.error || 'Unknown error'));
         }
     } catch (error) {
-        alert('Trial generation failed: ' + error.message);
+        showError('Trial generation failed: ' + error.message);
+        console.error('Trial generation error:', error);
     }
 });
 
