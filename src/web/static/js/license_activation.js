@@ -138,6 +138,35 @@ function selectUpgrade(tier) {
     alert(`Upgrade to ${tier} selected. Contact sales for licensing options.`);
 }
 
+// Direct license status refresh (used by profile dropdown)
+async function refreshLicenseStatusDirect() {
+    console.log('🔑 WARPCORE: Direct license status refresh');
+    
+    try {
+        const response = await fetch('/api/license/status');
+        const result = await response.json();
+        
+        if (result.success) {
+            console.log('✅ License status refreshed');
+            // Update license status badge in header
+            const headerBadge = document.getElementById('license-status-badge-header');
+            if (headerBadge && result.data) {
+                if (result.data.status === 'active') {
+                    headerBadge.textContent = '✅ Licensed';
+                    headerBadge.className = 'status-badge active';
+                } else {
+                    headerBadge.textContent = '❌ Unlicensed';
+                    headerBadge.className = 'status-badge inactive';
+                }
+            }
+        } else {
+            console.warn('Failed to refresh license status');
+        }
+    } catch (error) {
+        console.error('❌ Direct refresh error:', error);
+    }
+}
+
 // Hardware fingerprinting for license binding (from WARPCORE template)
 function getHardwareSignature() {
     console.log('🔑 WARPCORE: Generating hardware signature');
