@@ -226,6 +226,12 @@ class WARPCOREAgency:
         short_uuid = str(uuid.uuid4())[:8]
         return f"wf_{timestamp}_{short_uuid}"
     
+    def generate_trace_id(self) -> str:
+        """Generate timestamp-based trace ID for ordering workflow steps"""
+        timestamp = datetime.now().strftime("%Y%m%d_%H%M%S_%f")
+        short_uuid = str(uuid.uuid4())[:6]
+        return f"tr_{timestamp}_{short_uuid}"
+    
     def load_agent_spec(self, agent_name: str) -> Optional[Dict[str, Any]]:
         """Load agent specification from file and inject target directory context throughout"""
         # Check if it's an alias and resolve to actual filename
@@ -252,6 +258,11 @@ class WARPCOREAgency:
             agent_spec['analysis_target'] = client_dir_str
             agent_spec['agency_cache_dir'] = agency_dir_str
             
+            # Generate and inject trace ID for step ordering
+            trace_id = self.generate_trace_id()
+            agent_spec['trace_id'] = trace_id
+            print(f"🔗 Generated trace ID: {trace_id} for {agent_name}")
+            
             # Inject client directory context into prompt
             if 'prompt' in agent_spec:
                 prompt = agent_spec['prompt']
@@ -264,6 +275,8 @@ class WARPCOREAgency:
 **AGENCY_CACHE_DIR**: {agency_dir_str}
 **TARGET_AGENCY_CACHE**: {client_dir_str}/.agency/.data
 **SYSTEM_AGENCY_CACHE**: {agency_dir_str}/.data
+**TRACE_ID**: {trace_id} (timestamp-based step ordering)
+**CACHE_WITH_TRACE**: {{workflow_id}}_{{trace_id}}_{{agent_name}}_{{output_type}}.json
 **LLM_COLLECTOR**: {llm_collector_path} (run this to understand codebase)
 **WORK_AGAINST**: {client_dir_str} (analyze this directory)
 **CACHE_RESULTS_TO_PRIMARY**: {client_dir_str}/.agency/.data (target cache)

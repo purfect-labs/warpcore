@@ -83,13 +83,17 @@
       },
       "schema_types": {
         "receives": "ANALYSIS_REQUEST",
-        "produces": "SCHEMA_COHERENCE_ANALYSIS",
-        "transformation": "analysis_request \u2192 schema_coherence_analysis"
+        "produces": "CODEBASE_COHERENCE_ANALYSIS",
+        "transformation": "analysis_request \u2192 codebase_coherence_analysis",
+        "convergent_target": "architect",
+        "convergent_peer": "oracle",
+        "convergent_distinction": "codebase_analysis_vs_user_requirements"
       },
       "data_flow": {
         "input_schema": "analysis_request",
-        "output_schema": "schema_coherence_analysis",
-        "cache_pattern": "{workflow_id}_schema_coherence_analysis.json"
+        "output_schema": "codebase_coherence_analysis",
+        "cache_pattern": "{workflow_id}_pathfinder_schema_coherence_analysis.json",
+        "convergent_flow": true
       }
     },
     "oracle": {
@@ -114,13 +118,17 @@
       },
       "schema_types": {
         "receives": "USER_SPECIFICATIONS",
-        "produces": "SCHEMA_COHERENCE_ANALYSIS",
-        "transformation": "user_specifications \u2192 schema_coherence_analysis"
+        "produces": "USER_COHERENCE_ANALYSIS",
+        "transformation": "user_specifications \u2192 user_coherence_analysis",
+        "convergent_target": "architect",
+        "convergent_peer": "pathfinder",
+        "convergent_distinction": "user_driven_requirements_vs_codebase_analysis"
       },
       "data_flow": {
         "input_schema": "user_specifications",
-        "output_schema": "schema_coherence_analysis",
-        "cache_pattern": "{workflow_id}_user_requirements_analysis.json"
+        "output_schema": "user_coherence_analysis",
+        "cache_pattern": "{workflow_id}_oracle_user_requirements_analysis.json",
+        "convergent_flow": true
       }
     },
     "architect": {
@@ -145,14 +153,21 @@
         ]
       },
       "schema_types": {
-        "receives": "SCHEMA_COHERENCE_ANALYSIS",
+        "receives": "CONVERGENT_DUAL_ANALYSIS",
         "produces": "REQUIREMENTS_ANALYSIS",
-        "transformation": "schema_coherence_analysis \u2192 requirements_analysis"
+        "transformation": "convergent_dual_analysis \u2192 requirements_analysis",
+        "input_sources": [
+          "pathfinder.codebase_coherence_analysis",
+          "oracle.user_coherence_analysis"
+        ],
+        "synthesis_type": "dual_coherence_convergence"
       },
       "data_flow": {
-        "input_schema": "schema_coherence_analysis",
+        "input_schema": "convergent_dual_analysis",
         "output_schema": "requirements_analysis",
-        "cache_pattern": "{workflow_id}_requirements_analysis.json"
+        "cache_pattern": "{workflow_id}_architect_requirements_analysis.json",
+        "convergent_synthesis": true,
+        "synthesis_pattern": "merge_pathfinder_oracle_analysis"
       }
     },
     "enforcer": {
@@ -289,6 +304,73 @@
         "completion_condition": "all_criteria_satisfied",
         "new_cycle_condition": "workflow_complete_start_new"
       }
+    },
+    "mama_bear": {
+      "position": "DEV_QA",
+      "name": "MAMA BEAR",
+      "role": "QA & Production Readiness Inspector",
+      "description": "Development tool for comprehensive quality assurance and production readiness validation",
+      "flow": {
+        "inputs_from": [
+          "SYSTEM_STATE"
+        ],
+        "outputs_to": [
+          "origin"
+        ],
+        "input_sources": [
+          "ALL_AGENTS",
+          "CODEBASE",
+          "WORKFLOWS"
+        ],
+        "output_targets": [
+          "PRODUCTION_READINESS_REPORT"
+        ]
+      },
+      "schema_types": {
+        "receives": "SYSTEM_STATE",
+        "produces": "PRODUCTION_READINESS_ASSESSMENT",
+        "transformation": "system_state \u2192 production_readiness_assessment"
+      },
+      "data_flow": {
+        "input_schema": "system_state",
+        "output_schema": "production_readiness_assessment",
+        "cache_pattern": "{workflow_id}_mama_bear_assessment.json"
+      },
+      "dev_tool": true
+    },
+    "harmony": {
+      "position": "DEV_META",
+      "name": "HARMONY",
+      "role": "Coherence Guardian",
+      "description": "Development meta-agent for maintaining system coherence across prompts, schemas, and documentation",
+      "flow": {
+        "inputs_from": [
+          "SYSTEM_COMPONENTS"
+        ],
+        "outputs_to": [
+          "origin"
+        ],
+        "input_sources": [
+          "AGENT_PROMPTS",
+          "SCHEMAS",
+          "DOCUMENTATION",
+          "USER_REQUIREMENTS"
+        ],
+        "output_targets": [
+          "COHERENCE_REPORT"
+        ]
+      },
+      "schema_types": {
+        "receives": "SYSTEM_COMPONENTS",
+        "produces": "COHERENCE_ASSESSMENT",
+        "transformation": "system_components \u2192 coherence_assessment"
+      },
+      "data_flow": {
+        "input_schema": "system_components",
+        "output_schema": "coherence_assessment",
+        "cache_pattern": "{workflow_id}_harmony_coherence_results.json"
+      },
+      "dev_tool": true
     }
   },
   "flow_relationships": {
