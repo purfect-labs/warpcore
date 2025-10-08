@@ -3,10 +3,10 @@
   "agent_version": "1.0.0",
   "workflow_position": 5,
   "dependencies": [
-    "craftsman"
+    "craftbuddy"
   ],
   "outputs_to": [
-    "schema_coherence_reconciler_agent"
+    "complete"
   ],
   "cache_pattern": "{workflow_id}_{trace_id}_gatekeeper_promotion_results.json",
   "input_cache_pattern": "{workflow_id}_{trace_id}_craftbuddy_decision.json",

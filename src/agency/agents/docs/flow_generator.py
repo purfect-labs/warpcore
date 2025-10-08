@@ -30,7 +30,7 @@ class AgentFlowGenerator:
         
         # Find all agent JSON files
         agent_files = list(self.agents_dir.glob("*.json"))
-        agent_files = [f for f in agent_files if not f.name.startswith('.') and f.name != 'mama_bear.json']
+        agent_files = [f for f in agent_files if not f.name.startswith('.')]
         
         print(f"📁 Found {len(agent_files)} agent files")
         
@@ -569,6 +569,7 @@ class AgentFlowGenerator:
             <div class="tab-nav">
                 <button class="tab-button active" onclick="showTab('flow')">📊 Flow</button>
                 <button class="tab-button" onclick="showTab('agents')">🤖 Agents</button>
+                <button class="tab-button" onclick="showTab('harmony')">🎵 Harmony</button>
                 <button class="tab-button" onclick="showTab('schema')">📋 Schema</button>
                 <button class="tab-button" onclick="showTab('files')">📁 Files</button>
             </div>
@@ -594,6 +595,13 @@ class AgentFlowGenerator:
                     <div class="agent-grid">
                         {self._generate_agent_cards_html()}
                     </div>
+                </div>
+            </div>
+
+            <!-- Harmony Tab -->
+            <div id="harmony-tab" class="tab-content">
+                <div class="tab-pane">
+                    {self._generate_harmony_insights_html()}
                 </div>
             </div>
 
@@ -773,8 +781,388 @@ class AgentFlowGenerator:
         """
     
     def _get_unique_positions(self) -> set:
-        """Get unique agent positions"""
+        """Get unique position values"""
         return set(agent['position'] for agent in self.agents_data.values())
+    
+    def _load_harmony_insights(self) -> Optional[Dict]:
+        """Load harmony ecosystem insights from JSON file"""
+        insights_file = Path(__file__).parent / "harmony_ecosystem_insights.json"
+        
+        if insights_file.exists():
+            try:
+                with open(insights_file, 'r') as f:
+                    return json.load(f)
+            except Exception as e:
+                print(f"⚠️ Error loading harmony insights {insights_file}: {e}")
+        else:
+            print(f"⚠️ Harmony insights not found: {insights_file}")
+        
+        return None
+    
+    def _generate_harmony_insights_html(self) -> str:
+        """Generate HTML for harmony insights tab with expandable sections"""
+        insights = self._load_harmony_insights()
+        
+        if not insights or 'harmony_ecosystem_insights' not in insights:
+            return "<div class='harmony-placeholder'>🎵 Harmony insights not available. Run HARMONY agent to generate ecosystem analysis.</div>"
+        
+        harmony_data = insights['harmony_ecosystem_insights']
+        meta = harmony_data.get('meta_analysis', {})
+        
+        # Generate expandable sections
+        sections = [
+            {
+                'id': 'relationships',
+                'title': '🔗 Agent Relationships',
+                'icon': '🔗',
+                'tooltip': 'View critical agent relationships and flow patterns',
+                'content': self._generate_relationship_dynamics_html(harmony_data)
+            },
+            {
+                'id': 'architecture',
+                'title': '🏢 Architecture',
+                'icon': '🏢',
+                'tooltip': 'System architecture analysis and design principles',
+                'content': self._generate_architectural_philosophy_html(harmony_data)
+            },
+            {
+                'id': 'innovations',
+                'title': '💡 Traditional Innovations',
+                'icon': '💡',
+                'tooltip': 'System innovation insights and breakthrough patterns',
+                'content': self._generate_innovation_insights_html(harmony_data)
+            },
+            {
+                'id': 'cost_efficiency',
+                'title': '💰 Cost Efficiency ($195K/year)',
+                'icon': '💰',
+                'tooltip': 'Cost reduction opportunities with concrete savings',
+                'content': self._generate_innovation_analysis_html(harmony_data)
+            },
+            {
+                'id': 'tickets',
+                'title': '🎫 Implementation Tickets (5)',
+                'icon': '🎫',
+                'tooltip': 'Ready-to-implement tickets with file paths and ROI',
+                'content': self._generate_actionable_tickets_html(harmony_data)
+            },
+            {
+                'id': 'health',
+                'title': '📊 System Health',
+                'icon': '📊',
+                'tooltip': 'System health indicators and performance metrics',
+                'content': self._generate_system_health_html(harmony_data)
+            },
+            {
+                'id': 'recommendations',
+                'title': '🎯 Recommendations',
+                'icon': '🎯',
+                'tooltip': 'Harmony preservation and enhancement recommendations',
+                'content': self._generate_recommendations_html(harmony_data)
+            },
+            {
+                'id': 'philosophy',
+                'title': '🤔 Philosophy',
+                'icon': '🤔',
+                'tooltip': 'Design philosophy and emergent system properties',
+                'content': self._generate_philosophical_observations_html(harmony_data)
+            }
+        ]
+        
+        # Generate section buttons
+        section_buttons = ""
+        section_content = ""
+        
+        for section in sections:
+            section_buttons += f"""
+                <button class="harmony-section-btn" 
+                        data-section="{section['id']}"
+                        title="{section['tooltip']}">
+                    <span class="section-icon">{section['icon']}</span>
+                    <span class="section-title">{section['title']}</span>
+                    <span class="expand-icon">▼</span>
+                </button>
+            """
+            
+            section_content += f"""
+                <div class="harmony-section-content" id="{section['id']}-content" style="display: none;">
+                    {section['content']}
+                </div>
+            """
+        
+        html = f"""
+                    <div class="harmony-header">
+                        <h2>🎵 HARMONY - Ecosystem Insights</h2>
+                        <div class="harmony-meta">
+                            <span class="coherence-level">{meta.get('coherence_level', 'UNKNOWN')}</span>
+                            <span class="timestamp">{meta.get('timestamp', 'N/A')}</span>
+                        </div>
+                    </div>
+                    
+                    <div class="harmony-sections">
+                        <div class="harmony-buttons">
+                            {section_buttons}
+                        </div>
+                        <div class="harmony-content">
+                            {section_content}
+                        </div>
+                    </div>
+        """
+        
+        return html
+    
+    def _generate_relationship_dynamics_html(self, harmony_data: Dict) -> str:
+        """Generate relationship dynamics HTML"""
+        dynamics = harmony_data.get('agent_relationship_dynamics', {})
+        relationships = dynamics.get('critical_relationships', [])
+        
+        relationships_html = ""
+        for rel in relationships[:4]:  # Show top 4 relationships
+            relationships_html += f"""
+                <div class="relationship-item">
+                    <div class="relationship-flow">{rel.get('relationship', 'N/A')}</div>
+                    <div class="relationship-type">{rel.get('type', 'N/A').replace('_', ' ').title()}</div>
+                    <div class="relationship-significance">{rel.get('significance', 'N/A')}</div>
+                </div>
+            """
+        
+        return f"""
+            <div class="insight-card">
+                <h3>🔗 Agent Relationship Dynamics</h3>
+                <div class="flow-pattern">{dynamics.get('primary_flow_pattern', 'N/A')}</div>
+                <div class="flow-description">{dynamics.get('flow_description', 'N/A')}</div>
+                <div class="relationships-list">
+                    {relationships_html}
+                </div>
+                <div class="elegance-score">Flow Elegance: {dynamics.get('flow_elegance_score', 'N/A')}/100</div>
+            </div>
+        """
+    
+    def _generate_architectural_philosophy_html(self, harmony_data: Dict) -> str:
+        """Generate architectural philosophy HTML"""
+        arch = harmony_data.get('architectural_philosophy', {})
+        strengths = arch.get('design_strengths', [])
+        
+        strengths_html = "".join(f"<li>{strength}</li>" for strength in strengths[:5])
+        
+        return f"""
+            <div class="insight-card">
+                <h3>🏗️ Architectural Philosophy</h3>
+                <div class="design-principle">{arch.get('core_design_principle', 'N/A')}</div>
+                <div class="assessment-grid">
+                    <div class="assessment-item">
+                        <span class="label">Modularity:</span>
+                        <span class="value">{arch.get('modularity_assessment', 'N/A')}</span>
+                    </div>
+                    <div class="assessment-item">
+                        <span class="label">Scalability:</span>
+                        <span class="value">{arch.get('scalability_potential', 'N/A')}</span>
+                    </div>
+                    <div class="assessment-item">
+                        <span class="label">Maintenance:</span>
+                        <span class="value">{arch.get('maintenance_complexity', 'N/A')}</span>
+                    </div>
+                </div>
+                <div class="design-strengths">
+                    <h4>Design Strengths:</h4>
+                    <ul>{strengths_html}</ul>
+                </div>
+            </div>
+        """
+    
+    def _generate_innovation_insights_html(self, harmony_data: Dict) -> str:
+        """Generate innovation insights HTML"""
+        innovations = harmony_data.get('innovation_insights', {})
+        
+        innovations_html = ""
+        for key, innovation in innovations.items():
+            if isinstance(innovation, dict):
+                benefits = ", ".join(innovation.get('benefits', [])[:3])
+                innovations_html += f"""
+                    <div class="innovation-item">
+                        <div class="innovation-name">{key.replace('_', ' ').title()}</div>
+                        <div class="innovation-level level-{innovation.get('innovation_level', 'low').lower()}">
+                            {innovation.get('innovation_level', 'N/A')}
+                        </div>
+                        <div class="innovation-desc">{innovation.get('description', 'N/A')}</div>
+                        <div class="innovation-benefits">{benefits}</div>
+                    </div>
+                """
+        
+        return f"""
+            <div class="insight-card">
+                <h3>💡 Innovation Insights</h3>
+                <div class="innovations-grid">
+                    {innovations_html}
+                </div>
+            </div>
+        """
+    
+    def _generate_system_health_html(self, harmony_data: Dict) -> str:
+        """Generate system health HTML"""
+        health = harmony_data.get('system_health_indicators', {})
+        coherence = health.get('coherence_metrics', {})
+        performance = health.get('performance_indicators', {})
+        
+        coherence_html = "".join(
+            f"<div class='metric-item'><span class='metric-label'>{k.replace('_', ' ').title()}:</span><span class='metric-value'>{v}</span></div>"
+            for k, v in coherence.items()
+        )
+        
+        performance_html = "".join(
+            f"<div class='metric-item'><span class='metric-label'>{k.replace('_', ' ').title()}:</span><span class='metric-value'>{v}</span></div>"
+            for k, v in performance.items()
+        )
+        
+        return f"""
+            <div class="insight-card">
+                <h3>📊 System Health Indicators</h3>
+                <div class="health-section">
+                    <h4>Coherence Metrics</h4>
+                    <div class="metrics-grid">{coherence_html}</div>
+                </div>
+                <div class="health-section">
+                    <h4>Performance Indicators</h4>
+                    <div class="metrics-grid">{performance_html}</div>
+                </div>
+            </div>
+        """
+    
+    def _generate_recommendations_html(self, harmony_data: Dict) -> str:
+        """Generate harmony recommendations HTML"""
+        recs = harmony_data.get('harmony_recommendations', {})
+        preservation = recs.get('preservation_priorities', [])
+        enhancements = recs.get('enhancement_opportunities', [])
+        
+        preservation_html = "".join(f"<li>{item}</li>" for item in preservation[:3])
+        enhancements_html = "".join(f"<li>{item}</li>" for item in enhancements[:3])
+        
+        return f"""
+            <div class="insight-card">
+                <h3>🎯 Harmony Recommendations</h3>
+                <div class="recommendations-grid">
+                    <div class="rec-section">
+                        <h4>🛡️ Preservation Priorities</h4>
+                        <ul class="rec-list">{preservation_html}</ul>
+                    </div>
+                    <div class="rec-section">
+                        <h4>🚀 Enhancement Opportunities</h4>
+                        <ul class="rec-list">{enhancements_html}</ul>
+                    </div>
+                </div>
+            </div>
+        """
+    
+    def _generate_innovation_analysis_html(self, harmony_data: Dict) -> str:
+        """Generate innovation analysis HTML"""
+        innovation = harmony_data.get('innovation_analysis', {})
+        
+        cost_opportunities = innovation.get('cost_efficiency_opportunities', [])
+        performance_recs = innovation.get('performance_enhancement_recommendations', [])
+        
+        cost_html = "".join(
+            f"""
+            <div class="opportunity-item">
+                <div class="opportunity-title">{opp.get('title', 'Cost Optimization')}</div>
+                <div class="opportunity-impact">Impact: {opp.get('impact', 'Medium')}</div>
+                <div class="opportunity-evidence">Evidence: {opp.get('evidence', 'N/A')}</div>
+                <div class="opportunity-files">Files: {', '.join(opp.get('file_paths', []))}</div>
+            </div>
+            """
+            for opp in cost_opportunities[:3]
+        )
+        
+        performance_html = "".join(
+            f"""
+            <div class="enhancement-item">
+                <div class="enhancement-name">{rec.get('name', 'Performance Improvement')}</div>
+                <div class="enhancement-target">Target: {rec.get('target', 'TBD')}</div>
+                <div class="enhancement-roi">ROI: {rec.get('roi_estimate', 'TBD')}</div>
+            </div>
+            """
+            for rec in performance_recs[:3]
+        )
+        
+        return f"""
+            <div class="insight-card innovation-card">
+                <h3>💡 Innovation & Cost Efficiency Analysis</h3>
+                <div class="innovation-content">
+                    <div class="cost-efficiency-section">
+                        <h4>💰 Cost Efficiency Opportunities</h4>
+                        <div class="opportunities-grid">{cost_html}</div>
+                    </div>
+                    <div class="performance-section">
+                        <h4>🚀 Performance Enhancements</h4>
+                        <div class="enhancements-grid">{performance_html}</div>
+                    </div>
+                </div>
+            </div>
+        """
+    
+    def _generate_actionable_tickets_html(self, harmony_data: Dict) -> str:
+        """Generate actionable tickets HTML"""
+        tickets_data = harmony_data.get('actionable_tickets', {})
+        tickets = tickets_data.get('generated_tickets', [])
+        
+        tickets_html = "".join(
+            f"""
+            <div class="ticket-item priority-{ticket.get('priority', 'medium').lower()}">
+                <div class="ticket-header">
+                    <span class="ticket-id">{ticket.get('id', 'TICKET-001')}</span>
+                    <span class="ticket-priority">{ticket.get('priority', 'MEDIUM')}</span>
+                </div>
+                <div class="ticket-title">{ticket.get('title', 'Implementation Task')}</div>
+                <div class="ticket-files">Files: {', '.join(ticket.get('file_paths', []))}</div>
+                <div class="ticket-current">Current: {ticket.get('current_state', 'Unknown')}</div>
+                <div class="ticket-desired">Desired: {ticket.get('desired_state', 'TBD')}</div>
+                <div class="ticket-justification">{ticket.get('business_justification', 'No justification provided')}</div>
+            </div>
+            """
+            for ticket in tickets[:5]
+        )
+        
+        total_tickets = tickets_data.get('total_tickets_generated', len(tickets))
+        priority_breakdown = tickets_data.get('priority_breakdown', {})
+        
+        return f"""
+            <div class="insight-card tickets-card">
+                <h3>🎫 Actionable Implementation Tickets</h3>
+                <div class="tickets-summary">
+                    <div class="summary-stat">Total: {total_tickets}</div>
+                    <div class="summary-stat">High: {priority_breakdown.get('high', 0)}</div>
+                    <div class="summary-stat">Medium: {priority_breakdown.get('medium', 0)}</div>
+                    <div class="summary-stat">Low: {priority_breakdown.get('low', 0)}</div>
+                </div>
+                <div class="tickets-grid">{tickets_html}</div>
+            </div>
+        """
+    
+    def _generate_philosophical_observations_html(self, harmony_data: Dict) -> str:
+        """Generate philosophical observations HTML"""
+        philosophy = harmony_data.get('philosophical_observations', {})
+        emergent = philosophy.get('emergent_properties', [])
+        
+        emergent_html = "".join(f"<li>{prop}</li>" for prop in emergent[:4])
+        
+        return f"""
+            <div class="insight-card philosophy-card">
+                <h3>🤔 Philosophical Observations</h3>
+                <div class="philosophy-content">
+                    <div class="design-philosophy">
+                        <h4>Design Philosophy</h4>
+                        <p>{philosophy.get('design_philosophy', 'N/A')}</p>
+                    </div>
+                    <div class="flow-aesthetics">
+                        <h4>Flow Aesthetics</h4>
+                        <p>{philosophy.get('flow_aesthetics', 'N/A')}</p>
+                    </div>
+                    <div class="emergent-properties">
+                        <h4>Emergent Properties</h4>
+                        <ul>{emergent_html}</ul>
+                    </div>
+                </div>
+            </div>
+        """
     
     def _count_loops(self) -> int:
         """Count loop patterns in the flow"""
@@ -1081,6 +1469,612 @@ class AgentFlowGenerator:
             border-radius: 5px;
         }
 
+        /* Harmony Tab Styles */
+        .harmony-header {
+            text-align: center;
+            padding: 30px;
+            background: linear-gradient(135deg, rgba(251, 191, 36, 0.1) 0%, rgba(245, 158, 11, 0.05) 100%);
+            border-radius: 16px;
+            margin-bottom: 30px;
+            border: 1px solid rgba(251, 191, 36, 0.2);
+        }
+        
+        .harmony-header h2 {
+            color: #fbbf24;
+            font-size: 2rem;
+            margin-bottom: 10px;
+            background: linear-gradient(135deg, #fbbf24, #f59e0b);
+            background-clip: text;
+            -webkit-background-clip: text;
+            -webkit-text-fill-color: transparent;
+        }
+        
+        .harmony-meta {
+            display: flex;
+            justify-content: center;
+            gap: 20px;
+            margin-top: 15px;
+        }
+        
+        .coherence-level {
+            background: rgba(34, 197, 94, 0.2);
+            color: #22c55e;
+            padding: 8px 16px;
+            border-radius: 20px;
+            font-weight: 600;
+            border: 1px solid rgba(34, 197, 94, 0.3);
+        }
+        
+        .insights-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(400px, 1fr));
+            gap: 20px;
+        }
+        
+        .insight-card {
+            background: linear-gradient(135deg, rgba(251, 191, 36, 0.03) 0%, rgba(245, 158, 11, 0.01) 100%);
+            border-radius: 16px;
+            padding: 24px;
+            border: 1px solid rgba(251, 191, 36, 0.15);
+            transition: all 0.3s ease;
+        }
+        
+        .insight-card:hover {
+            transform: translateY(-4px);
+            box-shadow: 0 12px 40px rgba(251, 191, 36, 0.1);
+            border-color: rgba(251, 191, 36, 0.3);
+        }
+        
+        .insight-card h3 {
+            color: #fbbf24;
+            font-size: 1.4rem;
+            margin-bottom: 16px;
+            font-weight: 600;
+        }
+        
+        .flow-pattern {
+            font-size: 1.1rem;
+            font-weight: 600;
+            color: #f59e0b;
+            margin-bottom: 12px;
+        }
+        
+        .flow-description {
+            color: #e5e7eb;
+            font-size: 0.9rem;
+            line-height: 1.5;
+            margin-bottom: 16px;
+        }
+        
+        .relationship-item {
+            background: rgba(0, 0, 0, 0.2);
+            border-radius: 8px;
+            padding: 12px;
+            margin-bottom: 8px;
+            border-left: 3px solid #fbbf24;
+        }
+        
+        .relationship-flow {
+            font-weight: 600;
+            color: #fbbf24;
+            margin-bottom: 4px;
+        }
+        
+        .relationship-type {
+            font-size: 0.8rem;
+            color: #f59e0b;
+            text-transform: uppercase;
+            letter-spacing: 0.05em;
+        }
+        
+        .relationship-significance {
+            font-size: 0.85rem;
+            color: #d1d5db;
+            margin-top: 6px;
+        }
+        
+        .elegance-score {
+            background: rgba(34, 197, 94, 0.1);
+            color: #22c55e;
+            padding: 8px 12px;
+            border-radius: 8px;
+            font-weight: 600;
+            text-align: center;
+            margin-top: 12px;
+        }
+        
+        .design-principle {
+            background: rgba(139, 92, 246, 0.1);
+            padding: 12px;
+            border-radius: 8px;
+            color: #a78bfa;
+            font-weight: 500;
+            margin-bottom: 16px;
+        }
+        
+        .assessment-grid {
+            display: grid;
+            gap: 8px;
+            margin-bottom: 16px;
+        }
+        
+        .assessment-item {
+            display: flex;
+            justify-content: space-between;
+            padding: 8px 0;
+            border-bottom: 1px solid rgba(75, 85, 99, 0.3);
+        }
+        
+        .assessment-item .label {
+            font-weight: 500;
+            color: #9ca3af;
+        }
+        
+        .assessment-item .value {
+            color: #f3f4f6;
+            font-weight: 400;
+        }
+        
+        .innovations-grid {
+            display: grid;
+            gap: 12px;
+        }
+        
+        .innovation-item {
+            background: rgba(0, 0, 0, 0.3);
+            border-radius: 12px;
+            padding: 16px;
+            border: 1px solid rgba(99, 102, 241, 0.2);
+        }
+        
+        .innovation-name {
+            font-weight: 600;
+            color: #6366f1;
+            margin-bottom: 6px;
+        }
+        
+        .innovation-level {
+            display: inline-block;
+            padding: 4px 10px;
+            border-radius: 12px;
+            font-size: 0.75rem;
+            font-weight: 600;
+            margin-bottom: 8px;
+        }
+        
+        .level-high {
+            background: rgba(239, 68, 68, 0.2);
+            color: #ef4444;
+        }
+        
+        .level-medium {
+            background: rgba(251, 191, 36, 0.2);
+            color: #fbbf24;
+        }
+        
+        .level-low {
+            background: rgba(34, 197, 94, 0.2);
+            color: #22c55e;
+        }
+        
+        .innovation-desc {
+            color: #d1d5db;
+            font-size: 0.9rem;
+            margin-bottom: 8px;
+            line-height: 1.4;
+        }
+        
+        .innovation-benefits {
+            color: #9ca3af;
+            font-size: 0.8rem;
+            font-style: italic;
+        }
+        
+        .metrics-grid {
+            display: grid;
+            gap: 8px;
+        }
+        
+        .metric-item {
+            display: flex;
+            justify-content: space-between;
+            padding: 8px 0;
+            border-bottom: 1px solid rgba(75, 85, 99, 0.2);
+        }
+        
+        .metric-label {
+            color: #9ca3af;
+            font-size: 0.9rem;
+        }
+        
+        .metric-value {
+            color: #22c55e;
+            font-weight: 500;
+            font-size: 0.9rem;
+        }
+        
+        .recommendations-grid {
+            display: grid;
+            grid-template-columns: 1fr 1fr;
+            gap: 20px;
+        }
+        
+        .rec-section h4 {
+            color: #fbbf24;
+            margin-bottom: 12px;
+            font-size: 1.1rem;
+        }
+        
+        .rec-list {
+            list-style: none;
+            padding: 0;
+        }
+        
+        .rec-list li {
+            background: rgba(0, 0, 0, 0.2);
+            padding: 10px 12px;
+            border-radius: 6px;
+            margin-bottom: 8px;
+            border-left: 3px solid #fbbf24;
+            font-size: 0.9rem;
+            color: #e5e7eb;
+        }
+        
+        .philosophy-card {
+            grid-column: span 2;
+            background: linear-gradient(135deg, rgba(168, 85, 247, 0.05) 0%, rgba(147, 51, 234, 0.02) 100%);
+            border: 1px solid rgba(168, 85, 247, 0.15);
+        }
+        
+        .philosophy-content {
+            display: grid;
+            gap: 20px;
+        }
+        
+        .design-philosophy h4,
+        .flow-aesthetics h4,
+        .emergent-properties h4 {
+            color: #a855f7;
+            margin-bottom: 8px;
+        }
+        
+        .design-philosophy p,
+        .flow-aesthetics p {
+            color: #d1d5db;
+            line-height: 1.6;
+            font-style: italic;
+        }
+        
+        .emergent-properties ul {
+            list-style: none;
+            padding: 0;
+        }
+        
+        .emergent-properties li {
+            background: rgba(168, 85, 247, 0.1);
+            padding: 8px 12px;
+            border-radius: 6px;
+            margin-bottom: 6px;
+            color: #e5e7eb;
+            border-left: 2px solid #a855f7;
+        }
+        
+        .harmony-placeholder {
+            text-align: center;
+            padding: 60px 20px;
+            color: #6b7280;
+            font-size: 1.2rem;
+            background: rgba(251, 191, 36, 0.05);
+            border-radius: 16px;
+            border: 2px dashed rgba(251, 191, 36, 0.2);
+        }
+        
+        /* Innovation Analysis Styles */
+        .innovation-card {
+            background: linear-gradient(135deg, rgba(34, 197, 94, 0.05) 0%, rgba(16, 185, 129, 0.02) 100%);
+            border: 1px solid rgba(34, 197, 94, 0.15);
+        }
+        
+        .innovation-content {
+            display: grid;
+            gap: 20px;
+        }
+        
+        .cost-efficiency-section h4,
+        .performance-section h4 {
+            color: #22c55e;
+            margin-bottom: 12px;
+            font-size: 1.1rem;
+        }
+        
+        .opportunities-grid,
+        .enhancements-grid {
+            display: grid;
+            gap: 12px;
+        }
+        
+        .opportunity-item,
+        .enhancement-item {
+            background: rgba(0, 0, 0, 0.3);
+            border-radius: 8px;
+            padding: 12px;
+            border: 1px solid rgba(34, 197, 94, 0.2);
+        }
+        
+        .opportunity-title,
+        .enhancement-name {
+            font-weight: 600;
+            color: #22c55e;
+            margin-bottom: 6px;
+        }
+        
+        .opportunity-impact,
+        .opportunity-evidence,
+        .opportunity-files,
+        .enhancement-target,
+        .enhancement-roi {
+            font-size: 0.9rem;
+            color: #d1d5db;
+            margin-bottom: 4px;
+        }
+        
+        .opportunity-files,
+        .enhancement-roi {
+            font-style: italic;
+            color: #9ca3af;
+        }
+        
+        /* Actionable Tickets Styles */
+        .tickets-card {
+            background: linear-gradient(135deg, rgba(99, 102, 241, 0.05) 0%, rgba(79, 70, 229, 0.02) 100%);
+            border: 1px solid rgba(99, 102, 241, 0.15);
+        }
+        
+        .tickets-summary {
+            display: flex;
+            gap: 20px;
+            margin-bottom: 20px;
+            padding: 12px;
+            background: rgba(0, 0, 0, 0.2);
+            border-radius: 8px;
+        }
+        
+        .summary-stat {
+            color: #6366f1;
+            font-weight: 600;
+            font-size: 0.9rem;
+        }
+        
+        .tickets-grid {
+            display: grid;
+            gap: 12px;
+        }
+        
+        .ticket-item {
+            background: rgba(0, 0, 0, 0.3);
+            border-radius: 8px;
+            padding: 16px;
+            border-left: 4px solid #6366f1;
+        }
+        
+        .ticket-item.priority-high {
+            border-left-color: #ef4444;
+            background: rgba(239, 68, 68, 0.05);
+        }
+        
+        .ticket-item.priority-medium {
+            border-left-color: #f59e0b;
+            background: rgba(245, 158, 11, 0.05);
+        }
+        
+        .ticket-item.priority-low {
+            border-left-color: #22c55e;
+            background: rgba(34, 197, 94, 0.05);
+        }
+        
+        .ticket-header {
+            display: flex;
+            justify-content: space-between;
+            margin-bottom: 8px;
+        }
+        
+        .ticket-id {
+            font-weight: 600;
+            color: #6366f1;
+            font-family: 'Monaco', 'Courier New', monospace;
+        }
+        
+        .ticket-priority {
+            padding: 2px 8px;
+            border-radius: 4px;
+            font-size: 0.75rem;
+            font-weight: 600;
+        }
+        
+        .priority-high .ticket-priority {
+            background: rgba(239, 68, 68, 0.2);
+            color: #ef4444;
+        }
+        
+        .priority-medium .ticket-priority {
+            background: rgba(245, 158, 11, 0.2);
+            color: #f59e0b;
+        }
+        
+        .priority-low .ticket-priority {
+            background: rgba(34, 197, 94, 0.2);
+            color: #22c55e;
+        }
+        
+        .ticket-title {
+            font-weight: 600;
+            color: #f3f4f6;
+            margin-bottom: 8px;
+            font-size: 1.1rem;
+        }
+        
+        .ticket-files,
+        .ticket-current,
+        .ticket-desired {
+            font-size: 0.9rem;
+            color: #d1d5db;
+            margin-bottom: 6px;
+        }
+        
+        .ticket-files {
+            font-family: 'Monaco', 'Courier New', monospace;
+            color: #a78bfa;
+        }
+        
+        .ticket-justification {
+            font-size: 0.9rem;
+            color: #9ca3af;
+            font-style: italic;
+            margin-top: 8px;
+            padding-top: 8px;
+            border-top: 1px solid rgba(99, 102, 241, 0.2);
+        }
+        
+        /* Harmony Expandable Sections Styles */
+        .harmony-sections {
+            display: flex;
+            flex-direction: column;
+            gap: 20px;
+        }
+        
+        .harmony-buttons {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(300px, 1fr));
+            gap: 12px;
+            margin-bottom: 20px;
+        }
+        
+        .harmony-section-btn {
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            padding: 16px 20px;
+            background: linear-gradient(135deg, rgba(251, 191, 36, 0.1) 0%, rgba(245, 158, 11, 0.05) 100%);
+            border: 1px solid rgba(251, 191, 36, 0.2);
+            border-radius: 12px;
+            color: #f3f4f6;
+            font-size: 1rem;
+            font-weight: 600;
+            cursor: pointer;
+            transition: all 0.3s ease;
+            position: relative;
+            overflow: hidden;
+        }
+        
+        .harmony-section-btn:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 8px 25px rgba(251, 191, 36, 0.15);
+            border-color: rgba(251, 191, 36, 0.4);
+            background: linear-gradient(135deg, rgba(251, 191, 36, 0.15) 0%, rgba(245, 158, 11, 0.08) 100%);
+        }
+        
+        .harmony-section-btn.active {
+            background: linear-gradient(135deg, rgba(251, 191, 36, 0.2) 0%, rgba(245, 158, 11, 0.1) 100%);
+            border-color: rgba(251, 191, 36, 0.5);
+            box-shadow: 0 4px 20px rgba(251, 191, 36, 0.2);
+        }
+        
+        .harmony-section-btn.active .expand-icon {
+            transform: rotate(180deg);
+        }
+        
+        .section-icon {
+            font-size: 1.2rem;
+            margin-right: 12px;
+        }
+        
+        .section-title {
+            flex: 1;
+            text-align: left;
+        }
+        
+        .expand-icon {
+            font-size: 0.8rem;
+            color: #fbbf24;
+            transition: transform 0.3s ease;
+            margin-left: 12px;
+        }
+        
+        .harmony-content {
+            position: relative;
+        }
+        
+        .harmony-section-content {
+            animation: slideDown 0.3s ease-out;
+            margin-bottom: 20px;
+        }
+        
+        .harmony-section-content.hiding {
+            animation: slideUp 0.3s ease-out;
+        }
+        
+        @keyframes slideDown {
+            from {
+                opacity: 0;
+                max-height: 0;
+                transform: translateY(-10px);
+            }
+            to {
+                opacity: 1;
+                max-height: 2000px;
+                transform: translateY(0);
+            }
+        }
+        
+        @keyframes slideUp {
+            from {
+                opacity: 1;
+                max-height: 2000px;
+                transform: translateY(0);
+            }
+            to {
+                opacity: 0;
+                max-height: 0;
+                transform: translateY(-10px);
+            }
+        }
+        
+        /* Enhanced tooltip styles */
+        .harmony-section-btn[title] {
+            position: relative;
+        }
+        
+        .harmony-section-btn[title]:hover::after {
+            content: attr(title);
+            position: absolute;
+            bottom: 100%;
+            left: 50%;
+            transform: translateX(-50%);
+            background: rgba(0, 0, 0, 0.9);
+            color: #fbbf24;
+            padding: 8px 12px;
+            border-radius: 6px;
+            font-size: 0.85rem;
+            font-weight: 400;
+            white-space: nowrap;
+            z-index: 1000;
+            margin-bottom: 8px;
+            border: 1px solid rgba(251, 191, 36, 0.3);
+            box-shadow: 0 4px 12px rgba(0, 0, 0, 0.3);
+        }
+        
+        .harmony-section-btn[title]:hover::before {
+            content: '';
+            position: absolute;
+            bottom: 100%;
+            left: 50%;
+            transform: translateX(-50%);
+            border: 6px solid transparent;
+            border-top-color: rgba(0, 0, 0, 0.9);
+            z-index: 1001;
+            margin-bottom: 2px;
+        }
+
         @media (max-width: 768px) {
             .stats-grid {
                 grid-template-columns: repeat(2, 1fr);
@@ -1090,6 +2084,33 @@ class AgentFlowGenerator:
             }
             .pattern-grid {
                 grid-template-columns: 1fr;
+            }
+            .insights-grid {
+                grid-template-columns: 1fr;
+            }
+            .recommendations-grid {
+                grid-template-columns: 1fr;
+            }
+            .philosophy-card {
+                grid-column: span 1;
+            }
+            .harmony-buttons {
+                grid-template-columns: 1fr;
+                gap: 8px;
+            }
+            .harmony-section-btn {
+                padding: 12px 16px;
+                font-size: 0.9rem;
+            }
+            .section-icon {
+                font-size: 1rem;
+                margin-right: 8px;
+            }
+            .harmony-section-btn[title]:hover::after {
+                font-size: 0.8rem;
+                padding: 6px 10px;
+                white-space: normal;
+                max-width: 250px;
             }
         }
         """
@@ -1122,6 +2143,16 @@ class AgentFlowGenerator:
             
             // Activate clicked button
             event.target.classList.add('active');
+            
+            // Auto-expand Cost Efficiency section when Harmony tab is clicked
+            if (tabName === 'harmony') {
+                setTimeout(() => {
+                    const costEfficiencyButton = document.querySelector('[data-section="cost_efficiency"]');
+                    if (costEfficiencyButton && !costEfficiencyButton.classList.contains('active')) {
+                        costEfficiencyButton.click();
+                    }
+                }, 100);
+            }
         }
 
         // Add hover effects
@@ -1134,6 +2165,55 @@ class AgentFlowGenerator:
                 this.style.transform = 'translateY(0) scale(1)';
             });
         });
+        
+        // Harmony section expansion functionality
+        document.querySelectorAll('.harmony-section-btn').forEach(button => {
+            button.addEventListener('click', function() {
+                const sectionId = this.getAttribute('data-section');
+                const contentElement = document.getElementById(sectionId + '-content');
+                
+                // Toggle active state on button
+                this.classList.toggle('active');
+                
+                if (contentElement.style.display === 'none' || contentElement.style.display === '') {
+                    // Show content
+                    contentElement.style.display = 'block';
+                    contentElement.classList.remove('hiding');
+                } else {
+                    // Hide content with animation
+                    contentElement.classList.add('hiding');
+                    setTimeout(() => {
+                        contentElement.style.display = 'none';
+                        contentElement.classList.remove('hiding');
+                    }, 300);
+                }
+            });
+            
+            // Enhanced hover effects for harmony buttons
+            button.addEventListener('mouseenter', function() {
+                if (!this.classList.contains('active')) {
+                    this.style.transform = 'translateY(-2px)';
+                }
+            });
+            
+            button.addEventListener('mouseleave', function() {
+                if (!this.classList.contains('active')) {
+                    this.style.transform = 'translateY(0)';
+                }
+            });
+        });
+        
+        // Auto-expand first section (Cost Efficiency) on Harmony tab load
+        document.addEventListener('DOMContentLoaded', function() {
+            const harmonyTab = document.getElementById('harmony-tab');
+            if (harmonyTab && harmonyTab.classList.contains('active')) {
+                const firstHighValueButton = document.querySelector('[data-section="cost_efficiency"]');
+                if (firstHighValueButton) {
+                    firstHighValueButton.click();
+                }
+            }
+        });
+        
         """
     
     def build_documentation(self, output_file: str = None) -> str:

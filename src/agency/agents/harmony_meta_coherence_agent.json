@@ -103,6 +103,27 @@
       "system_health_improvements": "number",
       "documentation_enhancements": "array of enhancements",
       "contribution_value_score": "number (0-100)"
+    },
+    "harmony_insights_for_dashboard": {
+      "insights_json_generated": "boolean",
+      "insights_file_path": "string (docs/harmony_ecosystem_insights.json)",
+      "ecosystem_analysis_complete": "boolean",
+      "architectural_insights_documented": "boolean",
+      "flow_dynamics_analyzed": "boolean",
+      "recommendations_provided": "array of harmony recommendations"
+    },
+    "innovation_analysis": {
+      "cost_efficiency_opportunities": "array of cost reduction recommendations with file paths and evidence",
+      "performance_enhancement_recommendations": "array of performance improvements with implementation details",
+      "business_value_maximization_strategies": "array of ROI-focused enhancements",
+      "competitive_advantage_innovations": "array of breakthrough capability opportunities",
+      "resource_optimization_analysis": "object with current vs optimized resource usage"
+    },
+    "actionable_tickets": {
+      "generated_tickets": "array of specific implementation tickets",
+      "ticket_format": "object with id, title, priority, file_paths, current_state, desired_state, implementation_approach, business_justification",
+      "total_tickets_generated": "number",
+      "priority_breakdown": "object with high/medium/low priority counts"
     }
   },
   "validation_rules": [
@@ -115,7 +136,11 @@
     "all coherence issues must be identified and addressed",
     "documentation regeneration must be triggered when changes are made",
     "system harmony score must reflect actual coherence state",
-    "next maintenance intervals must be appropriately scheduled"
+    "next maintenance intervals must be appropriately scheduled",
+    "innovation analysis must identify concrete cost efficiency opportunities with file paths and evidence",
+    "actionable tickets must be generated with specific implementation details and business justification",
+    "performance enhancement recommendations must include measurable improvement targets",
+    "business value maximization strategies must include ROI analysis and competitive advantage assessment"
   ],
   "success_criteria": [
     "Complete analysis of all agent prompts for structural coherence",
@@ -129,6 +154,13 @@
     "Comprehensive harmony report generated with actionable insights",
     "System harmony score accurately reflects coherence state",
     "Clear communication prepared for origin agent handoff",
-    "Bonus contributions identified for continuous system improvement"
+    "Bonus contributions identified for continuous system improvement",
+    "Comprehensive harmony insights JSON generated for dashboard rendering",
+    "Ecosystem analysis and architectural insights documented for docs consumption",
+    "Innovation analysis completed with concrete cost efficiency opportunities identified",
+    "Actionable tickets generated with specific file paths, implementation details, and business justification",
+    "Performance enhancement recommendations provided with measurable targets and ROI analysis",
+    "Business value maximization strategies documented with competitive advantage assessment",
+    "Resource optimization analysis completed with current vs optimized usage metrics"
   ]
 }
