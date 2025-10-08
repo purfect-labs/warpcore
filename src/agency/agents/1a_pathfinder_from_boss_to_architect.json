@@ -1,7 +1,7 @@
 {
   "agent_id": "pathfinder",
   "agent_version": "1.0.0",
-  "workflow_position": 1,
+  "workflow_position": "1a",
   "dependencies": [],
   "outputs_to": [
     "architect"

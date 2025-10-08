@@ -1,12 +1,12 @@
 {
   "agent_id": "oracle",
   "agent_version": "2.0.0",
-  "workflow_position": 2,
+  "workflow_position": "1b",
   "dependencies": [
     "USER_INPUT"
   ],
   "outputs_to": [
-    "enforcer"
+    "architect"
   ],
   "cache_pattern": "{workflow_id}_{trace_id}_oracle_user_coherence_analysis.json",
   "input_cache_pattern": "{workflow_id}_{trace_id}_user_input_specifications.json",

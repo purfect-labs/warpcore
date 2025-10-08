@@ -2,7 +2,7 @@
   "agent_id": "origin",
   "agent_version": "1.0.0",
   "starting_directory": "AGENCY_CACHE_DIR",
-  "workflow_position": -1,
+  "workflow_position": "0a",
   "dependencies": [],
   "outputs_to": [
     "boss"

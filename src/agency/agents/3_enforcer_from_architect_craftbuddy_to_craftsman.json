@@ -2,7 +2,7 @@
   "agent_id": "enforcer",
   "agent_version": "2.1.0",
   "starting_directory": "AGENCY_CACHE_DIR",
-  "workflow_position": 3,
+  "workflow_position": "3",
   "dependencies": [
     "architect|oracle|craftbuddy"
   ],

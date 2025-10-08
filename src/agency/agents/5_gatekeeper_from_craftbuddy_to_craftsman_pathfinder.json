@@ -1,7 +1,7 @@
 {
   "agent_id": "gatekeeper",
   "agent_version": "1.0.0",
-  "workflow_position": 5,
+  "workflow_position": "5",
   "dependencies": [
     "craftbuddy"
   ],
