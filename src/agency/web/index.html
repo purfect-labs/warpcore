@@ -2536,7 +2536,7 @@
             }
         }
         
-        function executeAgent() {
+        async function executeAgent() {
             if (!selectedAgent) {
                 alert('Please select an agent first');
                 return;
@@ -2550,7 +2550,7 @@
             document.getElementById('stop-btn').style.display = 'inline-block';
             
             // Get execution parameters (simplified)
-            const workflowId = document.getElementById('workflow-id').value.trim();
+            const workflowId = document.getElementById('workflow-id').value.trim() || `auto-${selectedAgent.id}-${Date.now()}`;
             let contextDir = '/Users/shawn_meredith/code/pets/warpcore'; // Smart default
             let customPrompt = '';
             
@@ -2562,80 +2562,104 @@
             
             currentWorkflowId = workflowId;
             
-            // Close any existing event source
-            if (currentEventSource) {
-                currentEventSource.close();
-            }
-            
-            // Start streaming execution
-            currentEventSource = new EventSource(`http://localhost:8081/api/execute-agent-stream?agent=${selectedAgent.id}`);
-            
-            // Set up event handlers
-            currentEventSource.onmessage = function(event) {
-                const data = JSON.parse(event.data);
+            try {
+                // Start the execution via regular API (no streaming for now)
+                const response = await fetch('http://localhost:8081/api/execute-agent', {
+                    method: 'POST',
+                    headers: {
+                        'Content-Type': 'application/json',
+                    },
+                    body: JSON.stringify({
+                        agent_id: selectedAgent.id,
+                        workflow_id: workflowId,
+                        custom_prompt: customPrompt,
+                        src_dir: contextDir
+                    }),
+                });
+                
+                const result = await response.json();
                 const terminal = document.getElementById('terminal-output');
                 
-                if (data.type === 'start') {
-                    terminal.innerHTML += `Executing command: ${data.command}\n\n`;
-                } else if (data.type === 'output') {
-                    terminal.innerHTML += `${data.line}\n`;
-                    terminal.scrollTop = terminal.scrollHeight;
-                } else if (data.type === 'complete') {
-                    terminal.innerHTML += `\nExecution ${data.success ? 'completed successfully' : 'failed'} with exit code ${data.exit_code}\n`;
-                    terminal.scrollTop = terminal.scrollHeight;
-                    
-                    // Update UI state
-                    document.getElementById('agent-status').textContent = data.success ? 'Completed' : 'Failed';
-                    document.getElementById('agent-status').className = `status-badge ${data.success ? 'status-completed' : 'status-failed'}`;
-                    document.getElementById('execute-btn').disabled = false;
-                    document.getElementById('stop-btn').style.display = 'none';
-                    
-                    // Close event source
-                    currentEventSource.close();
-                    currentEventSource = null;
-                    
-                    // Refresh running processes
-                    loadRunningProcesses();
-                } else if (data.type === 'error') {
-                    terminal.innerHTML += `\nError: ${data.message}\n`;
+                if (result.status === 'success') {
+                    terminal.innerHTML += `✅ Started successfully!\n`;
+                    terminal.innerHTML += `📋 Command: ${result.command}\n`;
+                    terminal.innerHTML += `🆔 Process ID: ${result.process_id}\n`;
+                    terminal.innerHTML += `🏷️  Workflow ID: ${result.workflow_id}\n\n`;
+                    terminal.innerHTML += `⏳ Agent is running in background...\n`;
+                    terminal.innerHTML += `💡 Use the Process Manager to monitor progress\n\n`;
                     terminal.scrollTop = terminal.scrollHeight;
                     
-                    // Update UI state
-                    document.getElementById('agent-status').textContent = 'Error';
+                    // Update current workflow ID
+                    currentWorkflowId = result.workflow_id;
+                    
+                    // Poll for completion
+                    pollForCompletion(result.workflow_id);
+                    
+                } else {
+                    terminal.innerHTML += `❌ Failed to start: ${result.message}\n`;
+                    document.getElementById('agent-status').textContent = 'Failed';
                     document.getElementById('agent-status').className = 'status-badge status-failed';
                     document.getElementById('execute-btn').disabled = false;
                     document.getElementById('stop-btn').style.display = 'none';
-                    
-                    // Close event source
-                    currentEventSource.close();
-                    currentEventSource = null;
                 }
-            };
-            
-            currentEventSource.onerror = function() {
-                document.getElementById('terminal-output').innerHTML += '\nConnection to server lost.\n';
-                document.getElementById('agent-status').textContent = 'Connection Lost';
+                
+            } catch (error) {
+                const terminal = document.getElementById('terminal-output');
+                terminal.innerHTML += `❌ Error: ${error.message}\n`;
+                document.getElementById('agent-status').textContent = 'Error';
                 document.getElementById('agent-status').className = 'status-badge status-failed';
                 document.getElementById('execute-btn').disabled = false;
                 document.getElementById('stop-btn').style.display = 'none';
-                
-                currentEventSource.close();
-                currentEventSource = null;
-            };
+            }
             
-            // Start the execution via regular API
-            fetch('http://localhost:8081/api/execute-agent', {
-                method: 'POST',
-                headers: {
-                    'Content-Type': 'application/json',
-                },
-                body: JSON.stringify({
-                    agent_id: selectedAgent.id,
-                    workflow_id: workflowId,
-                    custom_prompt: customPrompt,
-                    src_dir: contextDir
-                }),
-            });
+            // Refresh processes
+            await refreshProcesses();
+        }
+        
+        // Poll for process completion
+        async function pollForCompletion(workflowId) {
+            const maxPolls = 60; // 5 minutes max (5 second intervals)
+            let pollCount = 0;
+            
+            const pollInterval = setInterval(async () => {
+                try {
+                    const response = await fetch('http://localhost:8081/api/running-processes');
+                    const data = await response.json();
+                    
+                    if (data.status === 'success') {
+                        const runningProcess = data.running_processes.find(p => p.workflow_id === workflowId);
+                        
+                        if (!runningProcess) {
+                            // Process completed
+                            clearInterval(pollInterval);
+                            const terminal = document.getElementById('terminal-output');
+                            terminal.innerHTML += `✅ Agent execution completed!\n`;
+                            terminal.innerHTML += `📊 Check the .data/ directory for results\n`;
+                            terminal.scrollTop = terminal.scrollHeight;
+                            
+                            document.getElementById('agent-status').textContent = 'Completed';
+                            document.getElementById('agent-status').className = 'status-badge status-completed';
+                            document.getElementById('execute-btn').disabled = false;
+                            document.getElementById('stop-btn').style.display = 'none';
+                            
+                            // Refresh processes
+                            await refreshProcesses();
+                            return;
+                        }
+                    }
+                    
+                    pollCount++;
+                    if (pollCount >= maxPolls) {
+                        clearInterval(pollInterval);
+                        const terminal = document.getElementById('terminal-output');
+                        terminal.innerHTML += `⚠️  Polling timeout - process may still be running\n`;
+                        document.getElementById('execute-btn').disabled = false;
+                    }
+                    
+                } catch (error) {
+                    console.error('Polling error:', error);
+                }
+            }, 5000); // Poll every 5 seconds
         }
         
         async function stopAgent() {

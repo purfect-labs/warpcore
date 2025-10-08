@@ -224,7 +224,7 @@
       "client_integration_points": "number",
       "critical_path_duration": "string"
     },
-    "next_agent": "enforcer",
+    "next_agent": "architect",
     "next_agent_input": {
       "workflow_id": "string (from user input)",
       "total_requirements": "number",
