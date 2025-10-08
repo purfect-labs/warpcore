@@ -511,6 +511,26 @@ def execute_agent_stream():
     
     return Response(generate_stream(), mimetype='text/event-stream')
 
+@app.route('/api/workflow-ids', methods=['GET'])
+def get_workflow_ids():
+    """Get list of all unique workflow IDs from execution logs"""
+    try:
+        logs = load_execution_logs()
+        workflow_ids = sorted(list(set(log['workflow_id'] for log in logs if log['workflow_id'] != 'unknown')))
+        
+        return jsonify({
+            'status': 'success',
+            'workflow_ids': workflow_ids,
+            'count': len(workflow_ids),
+            'data_source': 'REAL WORKFLOW EXECUTION DATA'
+        })
+    except Exception as e:
+        return jsonify({
+            'status': 'error',
+            'message': str(e),
+            'workflow_ids': []
+        }), 500
+
 @app.route('/api/running-processes', methods=['GET'])
 def get_running_processes():
     """Get list of currently running agent processes"""
