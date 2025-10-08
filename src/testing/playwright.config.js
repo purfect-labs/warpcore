@@ -13,10 +13,9 @@ module.exports = defineConfig({
   /* Retry on CI only */
   retries: process.env.CI ? 2 : 0,
   /* Opt out of parallel tests on CI. */
-  workers: process.env.CI ? 1 : undefined,
+  workers: process.env.CI ? 1 : 1, // Force single worker for stability
   /* Reporter to use. See https://playwright.dev/docs/test-reporters */
   reporter: [
-    ['html'],
     ['line'],
     ['json', { outputFile: 'test-results.json' }]
   ],
@@ -36,34 +35,37 @@ module.exports = defineConfig({
     
     /* Viewport size */
     viewport: { width: 1280, height: 720 },
+    
+    /* Ignore HTTPS errors for local dev */
+    ignoreHTTPSErrors: true,
+    
+    /* Increase timeout for license operations */
+    actionTimeout: 10000,
+    navigationTimeout: 15000,
   },
+
+  /* Global timeout */
+  timeout: 30000,
 
   /* Configure projects for major browsers */
   projects: [
     {
       name: 'chromium',
-      use: { ...devices['Desktop Chrome'] },
+      use: { 
+        ...devices['Desktop Chrome'],
+        // Use system Chrome if available for better compatibility
+        channel: 'chrome'
+      },
     },
-
-    // Uncomment to test on Firefox and WebKit
-    // {
-    //   name: 'firefox',
-    //   use: { ...devices['Desktop Firefox'] },
-    // },
-
-    // {
-    //   name: 'webkit',
-    //   use: { ...devices['Desktop Safari'] },
-    // },
   ],
 
-  /* Run your local dev server before starting the tests */
-  webServer: {
-    command: 'python3 waRPCORe.py --web',
-    url: 'http://127.0.0.1:8000',
-    reuseExistingServer: !process.env.CI,
-    timeout: 60 * 1000, // 60 seconds for full startup
-    stdout: 'pipe',
-    stderr: 'pipe',
-  },
+  /* Don't start web server - assume it's already running */
+  // webServer: {
+  //   command: 'python3 start_warpcore.py',
+  //   url: 'http://127.0.0.1:8000',
+  //   reuseExistingServer: true,
+  //   timeout: 60 * 1000,
+  //   stdout: 'pipe',
+  //   stderr: 'pipe',
+  // },
 });

@@ -1,0 +1,16 @@
+{
+  "name": "warpcore-testing",
+  "version": "1.0.0",
+  "description": "WARPCORE License UI Integration Tests",
+  "scripts": {
+    "test": "playwright test",
+    "test:license": "playwright test license_ui_integration.spec.js --reporter=line",
+    "test:license:headed": "playwright test license_ui_integration.spec.js --headed --reporter=line",
+    "test:license:debug": "playwright test license_ui_integration.spec.js --debug",
+    "test:ui": "playwright test --ui",
+    "test:headed": "playwright test --headed"
+  },
+  "devDependencies": {
+    "@playwright/test": "^1.45.0"
+  }
+}

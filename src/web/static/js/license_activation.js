@@ -1,7 +1,173 @@
 /**
- * WARP License Activation - POC Demo
+ * WARPCORE License Activation - Complete License Management
  * JavaScript functionality for license activation flow
+ * Adapted from apex codebase for WARPCORE PAP architecture
  */
+
+// License Modal Functions (adapted from apex)
+function showLicenseModal() {
+    console.log('🔑 WARPCORE: Opening license modal');
+    const modal = document.getElementById('license-modal');
+    if (modal) {
+        modal.style.display = 'flex';
+    } else {
+        console.error('❌ License modal not found');
+    }
+}
+
+function closeLicenseModal() {
+    console.log('🔑 WARPCORE: Closing license modal');
+    const modal = document.getElementById('license-modal');
+    if (modal) {
+        modal.style.display = 'none';
+    }
+}
+
+function showLicenseTab(tabName) {
+    console.log(`🔑 WARPCORE: Switching to ${tabName} tab`);
+    
+    // Update tab buttons
+    document.querySelectorAll('.license-tab').forEach(tab => {
+        tab.classList.remove('active');
+    });
+    
+    const activeTab = document.querySelector(`button[onclick="showLicenseTab('${tabName}')"]`);
+    if (activeTab) {
+        activeTab.classList.add('active');
+    }
+    
+    // Update tab content
+    document.querySelectorAll('.license-tab-content').forEach(content => {
+        content.classList.remove('active');
+    });
+    
+    const activeContent = document.getElementById(`license-tab-${tabName}`);
+    if (activeContent) {
+        activeContent.classList.add('active');
+    }
+}
+
+async function validateLicenseKey() {
+    console.log('🔑 WARPCORE: Validating license key');
+    
+    const licenseKey = document.getElementById('license-key').value;
+    const resultDiv = document.getElementById('license-validation-result');
+    
+    if (!resultDiv) {
+        console.warn('⚠️ License validation result div not found');
+        return;
+    }
+    
+    if (!licenseKey) {
+        resultDiv.innerHTML = '<div class="error">Please enter a license key</div>';
+        return;
+    }
+    
+    // Show loading state
+    resultDiv.innerHTML = '<div class="loading">🔄 Validating...</div>';
+    
+    try {
+        const response = await fetch('/api/license/validate', {
+            method: 'POST',
+            headers: { 'Content-Type': 'application/json' },
+            body: JSON.stringify({ license_key: licenseKey })
+        });
+        
+        const result = await response.json();
+        
+        if (result.valid) {
+            resultDiv.innerHTML = '<div class="success">✅ License key is valid!</div>';
+        } else {
+            resultDiv.innerHTML = `<div class="error">❌ ${result.error || 'Invalid license key'}</div>`;
+        }
+    } catch (error) {
+        console.error('❌ License validation error:', error);
+        resultDiv.innerHTML = '<div class="error">❌ Validation failed - network error</div>';
+    }
+}
+
+async function refreshLicenseStatus() {
+    console.log('🔑 WARPCORE: Refreshing license status');
+    
+    try {
+        const response = await fetch('/api/license/status');
+        const result = await response.json();
+        
+        if (result.success) {
+            console.log('✅ License status refreshed');
+            // Reload page to update UI with new status
+            location.reload();
+        } else {
+            alert('Failed to refresh license status');
+        }
+    } catch (error) {
+        console.error('❌ Refresh error:', error);
+        alert('Failed to refresh license status: ' + error.message);
+    }
+}
+
+async function deactivateLicense() {
+    if (!confirm('Are you sure you want to deactivate your license? This will revert to the basic tier.')) {
+        return;
+    }
+    
+    console.log('🔑 WARPCORE: Deactivating license');
+    
+    try {
+        const response = await fetch('/api/license/deactivate', {
+            method: 'POST'
+        });
+        
+        const result = await response.json();
+        
+        if (result.success) {
+            console.log('✅ License deactivated');
+            alert('License deactivated. Page will reload.');
+            location.reload();
+        } else {
+            alert('Failed to deactivate license: ' + (result.error || 'Unknown error'));
+        }
+    } catch (error) {
+        console.error('❌ Deactivation error:', error);
+        alert('Failed to deactivate license: ' + error.message);
+    }
+}
+
+function selectUpgrade(tier) {
+    console.log(`🔑 WARPCORE: Upgrade to ${tier} selected`);
+    alert(`Upgrade to ${tier} selected. Contact sales for licensing options.`);
+}
+
+// Hardware fingerprinting for license binding (from WARPCORE template)
+function getHardwareSignature() {
+    console.log('🔑 WARPCORE: Generating hardware signature');
+    
+    // Generate hardware fingerprint for license binding
+    const canvas = document.createElement('canvas');
+    const ctx = canvas.getContext('2d');
+    ctx.textBaseline = 'top';
+    ctx.font = '14px Arial';
+    ctx.fillText('WARPCORE hardware fingerprint', 2, 2);
+    
+    const signature = [
+        navigator.userAgent,
+        navigator.language,
+        screen.width + 'x' + screen.height,
+        screen.colorDepth,
+        new Date().getTimezoneOffset(),
+        canvas.toDataURL()
+    ].join('|');
+    
+    // Simple hash function
+    let hash = 0;
+    for (let i = 0; i < signature.length; i++) {
+        const char = signature.charCodeAt(i);
+        hash = ((hash << 5) - hash) + char;
+        hash = hash & hash; // Convert to 32-bit integer
+    }
+    
+    return Math.abs(hash).toString(16);
+}
 
 // License activation state management
 const LicenseActivation = {
