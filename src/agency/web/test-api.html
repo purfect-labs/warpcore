@@ -1,0 +1,105 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <title>API Test - WARPCORE Agency</title>
+    <style>
+        body { font-family: Arial, sans-serif; background: #0a0a0a; color: white; padding: 20px; }
+        .test-section { margin: 20px 0; padding: 15px; background: #1a1a1a; border-radius: 8px; }
+        button { background: #8b5cf6; color: white; border: none; padding: 10px 20px; margin: 5px; border-radius: 5px; cursor: pointer; }
+        button:hover { background: #7c3aed; }
+        .result { background: #000; padding: 10px; margin: 10px 0; border-radius: 5px; font-family: monospace; white-space: pre-wrap; }
+    </style>
+</head>
+<body>
+    <h1>🧪 WARPCORE Agency API Test</h1>
+    
+    <div class="test-section">
+        <h3>1️⃣ Health Check</h3>
+        <button onclick="testHealth()">Test Health</button>
+        <div id="health-result" class="result"></div>
+    </div>
+    
+    <div class="test-section">
+        <h3>2️⃣ Running Processes</h3>
+        <button onclick="testProcesses()">Test Running Processes</button>
+        <div id="processes-result" class="result"></div>
+    </div>
+    
+    <div class="test-section">
+        <h3>3️⃣ Agents List</h3>
+        <button onclick="testAgents()">Test Agents</button>
+        <div id="agents-result" class="result"></div>
+    </div>
+    
+    <div class="test-section">
+        <h3>4️⃣ Execute Agent</h3>
+        <button onclick="testExecute()">Test Execute Pathfinder</button>
+        <div id="execute-result" class="result"></div>
+    </div>
+    
+    <script>
+        async function testHealth() {
+            const result = document.getElementById('health-result');
+            result.textContent = 'Testing...';
+            
+            try {
+                const response = await fetch('http://localhost:8081/health');
+                const data = await response.json();
+                result.textContent = `✅ SUCCESS\nStatus: ${data.status}\nAgents Found: ${data.agents_found}`;
+            } catch (error) {
+                result.textContent = `❌ ERROR: ${error.message}`;
+            }
+        }
+        
+        async function testProcesses() {
+            const result = document.getElementById('processes-result');
+            result.textContent = 'Testing...';
+            
+            try {
+                const response = await fetch('http://localhost:8081/api/running-processes');
+                const data = await response.json();
+                result.textContent = `✅ SUCCESS\nStatus: ${data.status}\nProcesses: ${data.running_processes.length}`;
+            } catch (error) {
+                result.textContent = `❌ ERROR: ${error.message}`;
+            }
+        }
+        
+        async function testAgents() {
+            const result = document.getElementById('agents-result');
+            result.textContent = 'Testing...';
+            
+            try {
+                const response = await fetch('http://localhost:8081/api/agents');
+                const data = await response.json();
+                result.textContent = `✅ SUCCESS\nStatus: ${data.status}\nAgents: ${data.agents.length}`;
+            } catch (error) {
+                result.textContent = `❌ ERROR: ${error.message}`;
+            }
+        }
+        
+        async function testExecute() {
+            const result = document.getElementById('execute-result');
+            result.textContent = 'Testing...';
+            
+            try {
+                const response = await fetch('http://localhost:8081/api/execute-agent', {
+                    method: 'POST',
+                    headers: {
+                        'Content-Type': 'application/json',
+                    },
+                    body: JSON.stringify({
+                        agent_id: 'pathfinder',
+                        workflow_id: 'test-simple-' + Date.now(),
+                        custom_prompt: '',
+                        src_dir: '/Users/shawn_meredith/code/pets/warpcore'
+                    }),
+                });
+                const data = await response.json();
+                result.textContent = `✅ SUCCESS\nStatus: ${data.status}\nProcess ID: ${data.process_id}\nWorkflow: ${data.workflow_id}`;
+            } catch (error) {
+                result.textContent = `❌ ERROR: ${error.message}`;
+            }
+        }
+    </script>
+</body>
+</html>

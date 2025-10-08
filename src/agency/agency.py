@@ -23,13 +23,14 @@ class WARPCOREAgency:
         self.agent_aliases = {
             # CLI-friendly aliases -> actual file names
             'origin': '0a_origin_from_none_to_boss',
-            'boss': '0b_boss_from_origin_to_pathfinder_oracle', 
-            'pathfinder': '1_pathfinder_from_boss_to_architect',
-            'architect': '2a_architect_from_pathfinder_oracle_to_enforcer',
-            'oracle': '2b_oracle_from_user_spec_to_architect',
+            'boss': '0b_boss_from_origin_to_pathfinder', 
+            'pathfinder': '1a_pathfinder_from_boss_to_architect',
+            'architect': '2_architect_from_pathfinder_oracle_to_enforcer',
+            'oracle': '1b_oracle_from_user_to_architect',
             'enforcer': '3_enforcer_from_architect_craftbuddy_to_craftsman',
-            'craftsman': '4a_craftsman_from_enforcer_to_craftbuddy',
-            'gatekeeper': '5_gatekeeper_from_craftbuddy_to_complete'
+            'craftsman': '4a_craftsman_from_enforcer_gatekeeper_to_craftbuddy',
+            'craftbuddy': '4b_craftbuddy_from_craftsman_to_enforcer_gatekeeper',
+            'gatekeeper': '5_gatekeeper_from_craftbuddy_to_craftsman_pathfinder'
         }
         
         # Rich emoji descriptions for CLI help
@@ -41,6 +42,7 @@ class WARPCOREAgency:
             'oracle': '🔮 User Input Translator - Interprets human desires',
             'enforcer': '💪 Requirements Validator - Enforces quality standards',
             'craftsman': '🔨 Implementor - Builds with precision and skill',
+            'craftbuddy': '🎨 Creative Enhancement Agent - Adds creative improvements',
             'gatekeeper': '🛡️ Gate Promoter - Guards the final passage'
         }
         
@@ -1027,7 +1029,7 @@ def show_help():
    🎼 Takes ORIGIN's data & sequences agent execution order
    🎯 Manages workflow state & tracks completion status
    💼 Handles failures & decides restart/continue strategies!
-   ➡️ Launches PATHFINDER for analysis or ORACLE for user input
+   ➡️ Launches PATHFINDER for codebase analysis
 
 🗺️ PATHFINDER SKILL - The Code Detective
    python agency.py pathfinder wf_12345
@@ -1050,7 +1052,7 @@ def show_help():
    💬 Converts user text/files into structured requirement specs
    🌟 Analyzes codebase context & maps to implementation points
    🎯 Creates identical output format as ARCHITECT!
-   ➡️ Bypasses PATHFINDER, sends requirements directly to ENFORCER
+   ➡️ Sends user requirements directly to ARCHITECT for synthesis
 
 💪 ENFORCER SKILL - The Quality Guardian
    python agency.py enforcer wf_12345
@@ -1065,13 +1067,20 @@ def show_help():
    🏭 Runs tests, validates implementations & checks acceptance criteria
    💾 Runs git commit with detailed commit messages for all changes!
    ✨ Creates before/after LLM-collector comparison report!
-   ➡️ Delivers finished implementation to GATEKEEPER for final analysis
+   ➡️ Delivers finished implementation to CRAFTBUDDY for enhancement review
+
+🎨 CRAFTBUDDY SKILL - The Creative Enhancer
+   python agency.py craftbuddy wf_12345
+   💡 Reviews CRAFTSMAN's work for creative improvement opportunities
+   ⚡ Identifies quick wins, bonus features & UX enhancements
+   🔧 Makes intelligent routing decisions for quality vs completion
+   ➡️ Routes to ENFORCER for improvements OR GATEKEEPER for final validation
 
 🛡️ GATEKEEPER SKILL - The Final Sentinel
    python agency.py gatekeeper wf_12345
-   🚪 Cross-validates all agent results & analyzes CRAFTSMAN's work
+   🚪 Cross-validates all agent results & analyzes CRAFTBUDDY's recommendations
    🔒 Reviews git commits & decides if quality standards are met
-   ⭐ Makes final judgment: cycle complete, back to CRAFTSMAN, or new cycle!
+   ⭐ Makes final judgment: cycle complete, back for fixes, or new cycle!
    ➡️ Completes cycle OR sends to CRAFTSMAN for fixes OR loops to PATHFINDER
    🔄 Can run forever - always discovering new improvements to make!
 
