@@ -55,23 +55,13 @@
   "suites": [],
   "errors": [
     {
-      "message": "Error: Playwright Test did not expect test.describe() to be called here.\nMost common reasons include:\n- You are calling test.describe() in a configuration file.\n- You are calling test.describe() in a file that is imported by the configuration file.\n- You have two different versions of @playwright/test. This usually happens\n  when one of the dependencies in your package.json depends on @playwright/test.",
-      "stack": "Error: Playwright Test did not expect test.describe() to be called here.\nMost common reasons include:\n- You are calling test.describe() in a configuration file.\n- You are calling test.describe() in a file that is imported by the configuration file.\n- You have two different versions of @playwright/test. This usually happens\n  when one of the dependencies in your package.json depends on @playwright/test.\n    at TestTypeImpl._currentSuite (/Users/shawn_meredith/code/pets/warpcore/src/testing/node_modules/playwright/lib/common/testType.js:74:13)\n    at TestTypeImpl._describe (/Users/shawn_meredith/code/pets/warpcore/src/testing/node_modules/playwright/lib/common/testType.js:114:24)\n    at Function.describe (/Users/shawn_meredith/code/pets/warpcore/src/testing/node_modules/playwright/lib/transform/transform.js:275:12)\n    at Object.<anonymous> (/Users/shawn_meredith/code/pets/warpcore/src/testing/tests/e2e/license-user-flow.spec.js:3:6)",
-      "location": {
-        "file": "/Users/shawn_meredith/code/pets/warpcore/src/testing/tests/e2e/license-user-flow.spec.js",
-        "column": 6,
-        "line": 3
-      },
-      "snippet": "\u001b[90m   at \u001b[39me2e/license-user-flow.spec.js:3\n\n\u001b[0m \u001b[90m 1 |\u001b[39m \u001b[36mconst\u001b[39m { test\u001b[33m,\u001b[39m expect } \u001b[33m=\u001b[39m require(\u001b[32m'@playwright/test'\u001b[39m)\u001b[33m;\u001b[39m\n \u001b[90m 2 |\u001b[39m\n\u001b[31m\u001b[1m>\u001b[22m\u001b[39m\u001b[90m 3 |\u001b[39m test\u001b[33m.\u001b[39mdescribe(\u001b[32m'License Management User Flow - E2E Tests'\u001b[39m\u001b[33m,\u001b[39m () \u001b[33m=>\u001b[39m {\n \u001b[90m   |\u001b[39m      \u001b[31m\u001b[1m^\u001b[22m\u001b[39m\n \u001b[90m 4 |\u001b[39m   test\u001b[33m.\u001b[39mbeforeEach(\u001b[36masync\u001b[39m ({ page }) \u001b[33m=>\u001b[39m {\n \u001b[90m 5 |\u001b[39m     \u001b[36mawait\u001b[39m page\u001b[33m.\u001b[39mgoto(\u001b[32m'/'\u001b[39m)\u001b[33m;\u001b[39m\n \u001b[90m 6 |\u001b[39m     \u001b[36mawait\u001b[39m page\u001b[33m.\u001b[39mwaitForLoadState(\u001b[32m'networkidle'\u001b[39m)\u001b[33m;\u001b[39m\u001b[0m"
-    },
-    {
       "message": "Error: No tests found.\nMake sure that arguments are regular expressions matching test files.\nYou may need to escape symbols like \"$\" or \"*\" and quote the arguments.",
       "stack": "Error: No tests found.\nMake sure that arguments are regular expressions matching test files.\nYou may need to escape symbols like \"$\" or \"*\" and quote the arguments."
     }
   ],
   "stats": {
-    "startTime": "2025-10-08T04:49:03.885Z",
-    "duration": 56.289999999999964,
+    "startTime": "2025-10-08T08:16:50.585Z",
+    "duration": 5.670999999999992,
     "expected": 0,
     "skipped": 0,
     "unexpected": 0,

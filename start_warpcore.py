@@ -48,31 +48,31 @@ def log_detail(key, value):
     """Print a detail line"""
     logger.info(f"      • {key}: {value}")
 
-def create_minimal_app():
-    """Create a minimal FastAPI app with unified documentation"""
+def create_full_warpcore_app():
+    """Create the full WARPCORE app with HTML UI + backend"""
+    import sys
+    import os
+    from pathlib import Path
     
-    app = FastAPI(
-        title="WARPCORE Auto-Discovery System", 
-        version="3.0.0",
-        docs_url=None,  # Disable default swagger
-        redoc_url=None  # Disable default redoc
-    )
+    # Add src to path and change directory for imports
+    src_path = Path(__file__).parent / "src"
+    sys.path.insert(0, str(src_path))
+    os.chdir(str(src_path))
     
-    # Add basic status endpoint
-    @app.get("/")
-    async def root():
-        return {"message": "WARPCORE Auto-Discovery System", "status": "running"}
-    
-    @app.get("/api/status")
-    async def status():
-        return {
-            "system": "WARPCORE",
-            "version": "3.0.0", 
-            "auto_discovery": "ready",
-            "timestamp": asyncio.get_event_loop().time()
-        }
-    
-    return app
+    try:
+        from api.main import WARPCOREAPIServer
+        server = WARPCOREAPIServer()
+        return server.app
+    except Exception as e:
+        log_result(False, f"Failed to create full WARPCORE app: {e}")
+        # Fallback to basic JSON app if full app fails
+        app = FastAPI(title="WARPCORE Auto-Discovery System", version="3.0.0")
+        
+        @app.get("/")
+        async def root():
+            return {"message": "WARPCORE Auto-Discovery System", "status": "running", "error": str(e)}
+        
+        return app
 
 async def test_auto_discovery():
     """Test the auto-discovery system with detailed logging"""

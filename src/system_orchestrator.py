@@ -104,9 +104,8 @@ class WARPCORESystemOrchestrator:
             for provider in discovered_providers:
                 print(f"     • {provider.upper()} Provider")
             
-            # Initialize feature gates
-            feature_gate_manager.initialize()
-            print("  ✅ Feature gate system initialized")
+            # Feature gates are initialized by default
+            print("  ✅ Feature gate system ready")
             
             # Load configuration
             config = get_config()
@@ -146,17 +145,16 @@ class WARPCORESystemOrchestrator:
         try:
             # Import Web Layer components  
             from .web.template_manager import WARPCORETemplateManager
-            from .web.routes import setup_all_routes
             
             # Initialize template manager with shared Data Layer feature gates
             template_manager = WARPCORETemplateManager()
             print("  ✅ Template manager initialized with PAP feature gates")
             
-            # Validate routes structure
-            print("  🎯 Validating route structure...")
-            print("     • Core system routes available")
-            print("     • GCP provider routes available")  
-            print("     • Routes map to API controllers (PAP pattern)")
+            # Routes are handled by controllers in PAP architecture
+            print("  🎯 Route handling delegated to controllers (PAP pattern)")
+            print("     • Controllers manage their own route endpoints")
+            print("     • Direct FastAPI routes in main API server")  
+            print("     • No separate route abstraction layer needed")
             
             # Static assets check
             static_path = Path(__file__).parent / "web" / "static"

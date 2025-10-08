@@ -2308,18 +2308,18 @@ def create_app():
 
 
 def run_server(host: str = "127.0.0.1", port: int = 8000):
-    """Run the WARPCORE API server using system orchestrator"""
-    print("🃚 Starting WARPCORE API Server...")
-    print("🌊 Using System Orchestrator for PAP architecture initialization")
-    print(f"🌐 Server will be available at: http://{host}:{port}")
+    """Run the WARPCORE web server with full UI using system orchestrator"""
+    print("🌊 Starting WARPCORE Command Center with Full UI...")
+    print("🏗️ Using System Orchestrator for complete PAP architecture initialization")
+    print(f"🌐 Web Interface will be available at: http://{host}:{port}")
     
-    # Initialize system using orchestrator
+    # Initialize complete system using orchestrator (Data + Web + API layers)
     import asyncio
-    from ..system_orchestrator import initialize_api_only
+    from ..system_orchestrator import initialize_full_system
     
     try:
-        # Use system orchestrator for elaborate logging and initialization
-        asyncio.run(initialize_api_only())
+        # Use system orchestrator for elaborate logging and full system initialization
+        asyncio.run(initialize_full_system())
     except Exception as e:
         print(f"⚠️ System orchestrator failed: {e}")
         print("🛡️ Continuing with basic server startup\n")
@@ -2327,10 +2327,11 @@ def run_server(host: str = "127.0.0.1", port: int = 8000):
     # Create app after orchestrator initialization
     warpcore_app = WARPCOREAPIServer()
     
-    print(f"✅ WARPCORE API Server ready on http://{host}:{port}")
-    print(f"📖 Main Interface: http://{host}:{port}")
+    print(f"✅ WARPCORE Command Center ready with full UI")
+    print(f"🌐 Main Interface: http://{host}:{port}")
     print(f"📋 API Documentation: http://{host}:{port}/docs")
     print(f"🏗️ Architecture Discovery: http://{host}:{port}/api/architecture")
+    print(f"🔑 License Management: Integrated UI components")
     
     uvicorn.run(warpcore_app.app, host=host, port=port, log_level="info")
 

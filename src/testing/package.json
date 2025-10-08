@@ -4,6 +4,11 @@
   "description": "WARPCORE License UI Integration Tests",
   "scripts": {
     "test": "playwright test",
+    "test:warpcore": "./run_warpcore_ui_tests.sh",
+    "test:warpcore:headed": "./run_warpcore_ui_tests.sh headed",
+    "test:warpcore:debug": "./run_warpcore_ui_tests.sh debug",
+    "test:warpcore:system": "./run_warpcore_ui_tests.sh system",
+    "test:warpcore:pap": "./run_warpcore_ui_tests.sh pap",
     "test:license": "playwright test license_ui_integration.spec.js --reporter=line",
     "test:license:headed": "playwright test license_ui_integration.spec.js --headed --reporter=line",
     "test:license:debug": "playwright test license_ui_integration.spec.js --debug",

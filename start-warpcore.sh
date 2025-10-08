@@ -13,6 +13,6 @@ echo "🌐 WARPCORE Web Interface will be available at: http://localhost:8000"
 echo "🔑 License UI with JavaScript fixes applied"
 echo ""
 
-# Start the WARPCORE server using the existing start_warpcore.py
+# Start the WARPCORE server using the full system with UI (like APEX pattern)
 cd "$SCRIPT_DIR"
-python3 start_warpcore.py
+PYTHONPATH="$SCRIPT_DIR/src:${PYTHONPATH:-}" python3 -c "from src.api.main import run_server; run_server()"
