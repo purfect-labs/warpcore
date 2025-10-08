@@ -494,22 +494,67 @@ def stop_workflow(workflow_id):
             'message': str(e)
         }), 500
 
-@app.route('/api/execute-agent-stream', methods=['GET'])
+@app.route('/api/execute-agent-stream', methods=['POST'])
 def execute_agent_stream():
     """Stream agent execution output using Server-Sent Events"""
-    agent_id = request.args.get('agent')
+    data = request.json
+    agent_id = data.get('agent_id')
+    workflow_id = data.get('workflow_id')
+    src_dir = data.get('src_dir', str(SCRIPT_DIR.parent.parent))
     
     if not agent_id:
-        return jsonify({'status': 'error', 'message': 'Agent parameter required'}), 400
+        return jsonify({'status': 'error', 'message': 'agent_id is required'}), 400
     
     def generate_stream():
-        # This is a simple implementation - for now just return a placeholder
-        # In a full implementation, you'd stream actual process output
-        yield f"data: {{\"type\": \"start\", \"command\": \"python3 agency.py {agent_id}\"}}\n\n"
-        yield f"data: {{\"type\": \"output\", \"line\": \"Streaming not fully implemented yet - use /api/execute-agent for now\"}}\n\n"
-        yield f"data: {{\"type\": \"complete\", \"success\": false, \"exit_code\": 1}}\n\n"
+        # Build command to execute agent
+        cmd = ['python3', 'agency.py', agent_id]
+        
+        if workflow_id:
+            cmd.append(workflow_id)
+        
+        if src_dir != str(SCRIPT_DIR.parent.parent):
+            cmd.extend(['--client-dir', src_dir])
+        
+        logger.info(f"Streaming execution: {' '.join(cmd)}")
+        
+        try:
+            # Start process with real-time streaming
+            process = subprocess.Popen(
+                cmd,
+                stdout=subprocess.PIPE,
+                stderr=subprocess.STDOUT,  # Merge stderr with stdout
+                text=True,
+                bufsize=1,  # Line buffered
+                universal_newlines=True,
+                cwd=str(SCRIPT_DIR.parent)
+            )
+            
+            yield f"data: {{\"type\": \"start\", \"command\": \"{' '.join(cmd)}\", \"pid\": {process.pid}}}\n\n"
+            
+            # Stream output line by line
+            while True:
+                output = process.stdout.readline()
+                if output == '' and process.poll() is not None:
+                    break
+                if output:
+                    # Escape JSON string and send as SSE
+                    escaped_output = output.strip().replace('"', '\\"').replace('\n', '\\n')
+                    yield f"data: {{\"type\": \"output\", \"line\": \"{escaped_output}\"}}\n\n"
+            
+            # Get exit code
+            exit_code = process.poll()
+            success = exit_code == 0
+            yield f"data: {{\"type\": \"complete\", \"success\": {str(success).lower()}, \"exit_code\": {exit_code}}}\n\n"
+            
+        except Exception as e:
+            logger.error(f"Streaming error: {e}")
+            yield f"data: {{\"type\": \"error\", \"message\": \"Execution error: {str(e)}\"}}\n\n"
     
-    return Response(generate_stream(), mimetype='text/event-stream')
+    return Response(generate_stream(), mimetype='text/event-stream', headers={
+        'Cache-Control': 'no-cache',
+        'Connection': 'keep-alive',
+        'X-Accel-Buffering': 'no'
+    })
 
 @app.route('/api/workflow-ids', methods=['GET'])
 def get_workflow_ids():

@@ -30,7 +30,9 @@ class WARPCOREAgency:
             'enforcer': '3_enforcer_from_architect_craftbuddy_to_craftsman',
             'craftsman': '4a_craftsman_from_enforcer_gatekeeper_to_craftbuddy',
             'craftbuddy': '4b_craftbuddy_from_craftsman_to_enforcer_gatekeeper',
-            'gatekeeper': '5_gatekeeper_from_craftbuddy_to_craftsman_pathfinder'
+            'gatekeeper': '5_gatekeeper_from_craftbuddy_to_craftsman_pathfinder',
+            'mama_bear': 'mama_bear',
+            'harmony': 'harmony_meta_coherence_agent'
         }
         
         # Rich emoji descriptions for CLI help
@@ -43,7 +45,9 @@ class WARPCOREAgency:
             'enforcer': '💪 Requirements Validator - Enforces quality standards',
             'craftsman': '🔨 Implementor - Builds with precision and skill',
             'craftbuddy': '🎨 Creative Enhancement Agent - Adds creative improvements',
-            'gatekeeper': '🛡️ Gate Promoter - Guards the final passage'
+            'gatekeeper': '🛡️ Gate Promoter - Guards the final passage',
+            'mama_bear': '🤱 QA & Production Readiness - Quality assurance guardian',
+            'harmony': '🎭 Coherence Guardian - Maintains system harmony'
         }
         
         # Reverse mapping for file lookups
@@ -210,26 +214,32 @@ class WARPCOREAgency:
         print()
         
         # Show agents in workflow order
-        workflow_order = ['origin', 'boss', 'pathfinder', 'architect', 'oracle', 'enforcer', 'craftsman', 'gatekeeper']
+        workflow_order = ['origin', 'boss', 'pathfinder', 'oracle', 'architect', 'enforcer', 'craftsman', 'craftbuddy', 'gatekeeper', 'mama_bear', 'harmony']
         
         for i, alias in enumerate(workflow_order):
             description = self.agent_descriptions.get(alias, f"{alias} - Description not available")
             if alias == 'origin':
-                position = "-1"
+                position = "0a"
             elif alias == 'boss':
-                position = "0"
+                position = "0b"
             elif alias == 'pathfinder':
-                position = "1"
-            elif alias == 'architect':
-                position = "2a"
+                position = "1a"
             elif alias == 'oracle':
-                position = "2b"
+                position = "1b"
+            elif alias == 'architect':
+                position = "2"
             elif alias == 'enforcer':
                 position = "3"
             elif alias == 'craftsman':
-                position = "4"
+                position = "4a"
+            elif alias == 'craftbuddy':
+                position = "4b"
             elif alias == 'gatekeeper':
                 position = "5"
+            elif alias == 'mama_bear':
+                position = "DEV_QA"
+            elif alias == 'harmony':
+                position = "DEV_META"
             else:
                 position = str(i)
             print(f"  {position:>2}. {description}")
@@ -239,12 +249,20 @@ class WARPCOREAgency:
         print()
         
         print("🗺️ Main Analysis Chain:")
-        print("  origin → boss → pathfinder → architect → enforcer → craftsman → gatekeeper")
-        print("   🌟      👑       🗺️         📐        💪        🔨         🛡️")
+        print("  origin → boss → pathfinder → architect → enforcer → craftsman → craftbuddy → gatekeeper")
+        print("   🌟      👑       🗺️         📐        💪        🔨         🎨          🛡️")
         
         print("\n🗣️ User Input Chain:")
-        print("  origin → boss → pathfinder → oracle → enforcer → craftsman → gatekeeper")
-        print("   🌟      👑       🗺️       🔮      💪        🔨         🛡️")
+        print("  origin → boss → oracle → architect → enforcer → craftsman → craftbuddy → gatekeeper")
+        print("   🌟      👑       🔮       📐        💪        🔨         🎨          🛡️")
+        
+        print("\n🔄 Creative Enhancement Loop:")
+        print("  craftbuddy ⇄ enforcer  |  craftbuddy → gatekeeper")
+        print("     🎨    ⇄    💪     |     🎨     →     🛡️")
+        
+        print("\n🛠️ Development Tools (Standalone):")
+        print("  🤱 MAMA BEAR - QA & Production Readiness Validation")
+        print("  🎭 HARMONY - System Coherence & Documentation Maintenance")
         
         print("\n" + "-" * 80)
         print("📝 Usage Examples:")
@@ -261,11 +279,14 @@ class WARPCOREAgency:
             'origin': '🌟 Genesis of possibilities - where all journeys begin',
             'boss': '👑 Master strategist - orchestrates the grand design', 
             'pathfinder': '🗺️ Code detective - uncovers hidden architectural secrets',
-            'architect': '📐 Blueprint master - transforms chaos into structured plans',
             'oracle': '🔮 Wisdom keeper - translates human dreams into digital reality',
+            'architect': '📐 Blueprint master - transforms chaos into structured plans',
             'enforcer': '💪 Quality guardian - ensures excellence at every step',
             'craftsman': '🔨 Master builder - brings visions to life with code',
-            'gatekeeper': '🛡️ Final sentinel - decides what passes into production'
+            'craftbuddy': '🎨 Creative enhancer - adds polish and improvements',
+            'gatekeeper': '🛡️ Final sentinel - decides what passes into production',
+            'mama_bear': '🤱 QA guardian - ensures production readiness',
+            'harmony': '🎭 Coherence guardian - maintains system harmony'
         }
         
         for alias, personality in personalities.items():
