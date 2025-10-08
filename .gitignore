@@ -140,3 +140,4 @@ src/agency/.data/*.json
 
 # LLM Collector output
 llm-collector/results.json
+.webm
