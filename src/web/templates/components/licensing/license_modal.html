@@ -13,21 +13,24 @@
                 <div class="current-license-info">
                     <div class="license-badge {{ license_status.status if license_status else 'inactive' }}" id="current-license-badge">
                         {% if license_status and license_status.status == 'active' %}
-                            ✅ {{ current_tier_info.name }} License Active
+                            ✅ {{ current_tier_info.icon }} {{ current_tier_info.name }} License Active
                         {% else %}
-                            ❌ No Active License
+                            ❌ {{ current_tier_info.icon }} No Active License
                         {% endif %}
                     </div>
                     <div class="license-details" id="current-license-details">
                         {% if license_status and license_status.status == 'active' %}
-                            <p><strong>User:</strong> {{ license_status.user_email }}</p>
-                            <p><strong>Type:</strong> {{ license_status.license_type.title() }}</p>
-                            <p><strong>Features:</strong> {{ current_tier_info.feature_count }} available</p>
+                            <p><strong>User:</strong> {{ license_status.user_email or 'Licensed User' }}</p>
+                            <p><strong>Type:</strong> {{ current_tier_info.name }} ({{ license_status.license_type }})</p>
+                            <p><strong>Features:</strong> {{ current_tier_info.feature_count }} features available</p>
+                            <p><strong>Description:</strong> {{ current_tier_info.description }}</p>
                             {% if license_status.expires_at %}
                                 <p><strong>Expires:</strong> {{ license_status.expires_at }}</p>
                             {% endif %}
                         {% else %}
-                            <p>You are using the free Basic tier with limited features.</p>
+                            <p><strong>Tier:</strong> {{ current_tier_info.name }} {{ current_tier_info.icon }}</p>
+                            <p><strong>Features:</strong> {{ current_tier_info.feature_count }} basic features available</p>
+                            <p>{{ current_tier_info.description }}</p>
                         {% endif %}
                     </div>
                 </div>

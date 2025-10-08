@@ -38,7 +38,7 @@ class WARPCORETemplateManager:
         return feature_gate_manager.has_feature(feature_name)
     
     def get_template_context(self, license_status=None) -> Dict[str, Any]:
-        """Get template context with shared Data layer feature gates"""
+        """Get template context with complete license data integration"""
         # Update feature gates with license status (same as API layer)
         if license_status:
             feature_gate_manager.update_license_status_sync(license_status)
@@ -46,23 +46,109 @@ class WARPCORETemplateManager:
         # Get feature context from shared Data layer
         feature_context = feature_gate_manager.generate_feature_context()
         
+        # Generate current tier info from license status
+        current_tier_info = self._generate_current_tier_info(license_status)
+        
+        # Generate upgrade options from FeatureGateManager tier definitions
+        upgrade_options = self._generate_upgrade_options(license_status)
+        
         # Add Web layer specific context
         context = {
             "app_name": "WARPCORE",
             "version": "3.0.0",
             "architecture": "Provider-Abstraction-Pattern",
             "license_status": license_status or {
-                "status": "active",
-                "type": "production",
-                "user_name": "Licensed User"
+                "status": "inactive",
+                "license_type": "free",
+                "user_email": None,
+                "expires_at": None,
+                "features": []
             },
+            "current_tier_info": current_tier_info,
+            "upgrade_options": upgrade_options,
             "providers": ["gcp", "license"],
-            "note": "Production template manager - feature gates from data layer"
+            "note": "Production template manager with real license data integration"
         }
         
         # Merge with shared feature context from Data layer
         context.update(feature_context)
         return context
+    
+    def _generate_current_tier_info(self, license_status: Optional[Dict[str, Any]]) -> Dict[str, Any]:
+        """Generate current tier information from license status"""
+        if not license_status or license_status.get('status') != 'active':
+            return {
+                'name': 'Free',
+                'tier': 'free',
+                'feature_count': len(feature_gate_manager.get_available_features('free')),
+                'icon': '🆓',
+                'description': 'Basic features only'
+            }
+        
+        license_type = license_status.get('license_type', 'free')
+        available_features = feature_gate_manager.get_available_features(license_type)
+        
+        tier_info = {
+            'free': {'name': 'Free', 'icon': '🆓', 'description': 'Basic features'},
+            'trial': {'name': 'Trial', 'icon': '🎁', 'description': 'Professional features for trial period'},
+            'professional': {'name': 'Professional', 'icon': '⚡', 'description': 'Full professional features'},
+            'enterprise': {'name': 'Enterprise', 'icon': '🏢', 'description': 'Enterprise-grade features'}
+        }.get(license_type, {'name': 'Unknown', 'icon': '❓', 'description': 'Unknown tier'})
+        
+        tier_info.update({
+            'tier': license_type,
+            'feature_count': len(available_features),
+            'features': available_features
+        })
+        
+        return tier_info
+    
+    def _generate_upgrade_options(self, license_status: Optional[Dict[str, Any]]) -> list:
+        """Generate upgrade options from FeatureGateManager tier definitions"""
+        current_tier = 'free'
+        if license_status and license_status.get('status') == 'active':
+            current_tier = license_status.get('license_type', 'free')
+        
+        # Define tier hierarchy and pricing
+        tier_hierarchy = ['free', 'trial', 'professional', 'enterprise']
+        current_index = tier_hierarchy.index(current_tier) if current_tier in tier_hierarchy else 0
+        
+        upgrade_options = []
+        tier_configs = {
+            'trial': {
+                'name': 'Professional Trial',
+                'icon': '🎁',
+                'price': 'Free for 14 days',
+                'features': feature_gate_manager.get_available_features('trial')
+            },
+            'professional': {
+                'name': 'Professional',
+                'icon': '⚡',
+                'price': '$99/month',
+                'features': feature_gate_manager.get_available_features('professional')
+            },
+            'enterprise': {
+                'name': 'Enterprise',
+                'icon': '🏢',
+                'price': 'Contact Sales',
+                'features': feature_gate_manager.get_available_features('enterprise')
+            }
+        }
+        
+        # Only show upgrade options for higher tiers
+        for i, tier in enumerate(tier_hierarchy):
+            if i > current_index and tier in tier_configs:
+                config = tier_configs[tier]
+                upgrade_options.append({
+                    'tier': tier,
+                    'name': config['name'],
+                    'icon': config['icon'],
+                    'price': config['price'],
+                    'features': config['features'],
+                    'feature_count': len(config['features'])
+                })
+        
+        return upgrade_options
     
     def render_template(self, template_name: str, **context) -> str:
         """Render a template with context"""
