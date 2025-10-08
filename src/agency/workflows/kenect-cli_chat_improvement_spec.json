@@ -1,0 +1,397 @@
+{
+  "project": "WARP Chat Query System Enhancement",
+  "version": "1.0.0",
+  "created": "2025-10-08T02:00:00Z",
+  "scope": "Comprehensive improvement of natural language query system for repository dashboard",
+  
+  "environment": {
+    "system": {
+      "platform": "MacOS",
+      "shell": "zsh 5.9",
+      "home_directory": "/Users/shawn_meredith",
+      "project_root": "/Users/shawn_meredith/code/github/kenect",
+      "timestamp": "2025-10-08T02:07:22Z"
+    },
+    "paths": {
+      "absolute_project_root": "/Users/shawn_meredith/code/github/kenect",
+      "dashboard_file": "/Users/shawn_meredith/code/github/kenect/simple_dashboard.html",
+      "cli_script": "/Users/shawn_meredith/code/github/kenect/kenect-cli.sh",
+      "repositories_root": "/Users/shawn_meredith/code/github/kenect/kenect-ut",
+      "analysis_tools": "/Users/shawn_meredith/code/github/kenect/analysis",
+      "team_organization": "/Users/shawn_meredith/code/github/kenect/_by_owner",
+      "documentation_files": [
+        "/Users/shawn_meredith/code/github/kenect/README.md",
+        "/Users/shawn_meredith/code/github/kenect/KENECT_USAGE.md",
+        "/Users/shawn_meredith/code/github/kenect/PROMPT.md",
+        "/Users/shawn_meredith/code/github/kenect/README_PRODUCTION.md"
+      ],
+      "ai_analysis_example": "/Users/shawn_meredith/code/github/kenect/kenect-ut/ai-pocs/.metadata/result.json",
+      "flatcode_pattern": "/Users/shawn_meredith/code/github/kenect/kenect-ut/{repo_name}/.flatcode.json"
+    },
+    "data_reality": {
+      "total_repositories": 342,
+      "total_teams": 19,
+      "flatcode_coverage": "100%",
+      "ai_analysis_coverage": "0.3% (1 repository)",
+      "largest_teams": {
+        "kenect-ut": 224,
+        "misc": 118,
+        "devops-engineers": 114,
+        "devx": 76,
+        "platform": 47
+      }
+    }
+  },
+
+  "current_state_analysis": {
+    "working_features": [
+      "Basic pattern matching for team queries",
+      "Static responses for 5 major teams (devx, platform, revenue, integration-engineering, growth)",
+      "AI-pocs analysis data queries (health, tech stack, technical debt)",
+      "Coverage statistics queries",
+      "Clean UI with chat bar and response display"
+    ],
+    "missing_features": [
+      "Documentation querying (README.md, PROMPT.md, KENECT_USAGE.md)",
+      "Flatcode JSON analysis across all 342 repositories",
+      "Dynamic data loading from actual files",
+      "Advanced query patterns and natural language processing",
+      "Repository-specific deep dive queries",
+      "Cross-repository analysis and comparisons",
+      "Team performance analytics",
+      "Historical data tracking"
+    ],
+    "data_sources": {
+      "available": {
+        "cli_stats": "342 repos, 19 teams, 100% flatcode coverage",
+        "ai_enrichment": "1 repository (ai-pocs) with full analysis",
+        "flatcode_files": "342 .flatcode.json files with code summaries",
+        "documentation": "README.md, KENECT_USAGE.md, PROMPT.md schemas"
+      },
+      "missing": {
+        "real_time_loading": "Currently hardcoded data arrays",
+        "file_content_scanning": "No direct file reading capability",
+        "git_integration": "No git history or activity data",
+        "dependency_analysis": "No cross-repository dependency mapping"
+      }
+    }
+  },
+
+  "feature_tickets": [
+    {
+      "ticket_id": "WARP-001",
+      "type": "feature",
+      "priority": "high",
+      "title": "Documentation Query Integration",
+      "description": "Enable chat queries about documentation files (README.md, PROMPT.md, KENECT_USAGE.md)",
+      "why": "Users need to ask questions about setup instructions, usage patterns, and system documentation",
+      "how": {
+        "implementation": [
+          "Add documentation content loader function",
+          "Parse markdown files into searchable text chunks",
+          "Add query patterns for documentation questions",
+          "Create response templates for doc-based answers"
+        ],
+        "example_queries": [
+          "How do I sync repositories?",
+          "What's the PROMPT.md schema?",
+          "How many workers does sync use?",
+          "What are the CLI commands available?"
+        ]
+      },
+      "acceptance_criteria": [
+        "Chat responds to 'How do I sync repos?' with KENECT_USAGE.md info",
+        "Query 'What's the analysis schema?' returns PROMPT.md schema details",
+        "Documentation responses include file source references",
+        "Error handling for missing documentation files"
+      ],
+      "test_cases": [
+        {
+          "input": "How do I run the sync script?",
+          "expected": "Response includes ./run.sh usage from KENECT_USAGE.md"
+        },
+        {
+          "input": "What's the output schema for analysis?",
+          "expected": "Response includes JSON schema from PROMPT.md"
+        }
+      ]
+    },
+
+    {
+      "ticket_id": "WARP-002", 
+      "type": "feature",
+      "priority": "high",
+      "title": "Dynamic Flatcode JSON Querying",
+      "description": "Enable queries about any repository's flatcode data, not just hardcoded team lists",
+      "why": "Users want to ask about specific repositories, their languages, file counts, etc.",
+      "how": {
+        "implementation": [
+          "Add flatcode file loader that reads .flatcode.json files on demand",
+          "Parse JSON content for languages, file types, line counts",
+          "Add repository-specific query patterns",
+          "Cache loaded flatcode data for performance"
+        ],
+        "example_queries": [
+          "What languages does ai-service use?",
+          "How many files are in platform-ui?", 
+          "Which repos use Python?",
+          "Show me the largest repositories"
+        ]
+      },
+      "acceptance_criteria": [
+        "Can query any of the 342 repositories by name",
+        "Returns language breakdown from flatcode JSON",
+        "Shows file counts and line counts",
+        "Handles missing flatcode files gracefully"
+      ],
+      "test_cases": [
+        {
+          "input": "What languages does ai-service use?",
+          "expected": "Loads /Users/shawn_meredith/code/github/kenect/kenect-ut/ai-service/.flatcode.json and returns language breakdown"
+        },
+        {
+          "input": "How big is platform-ui?",
+          "expected": "Returns file count and line count from flatcode data"
+        }
+      ]
+    },
+
+    {
+      "ticket_id": "WARP-003",
+      "type": "feature", 
+      "priority": "medium",
+      "title": "Cross-Repository Analysis Queries",
+      "description": "Enable queries that analyze patterns across multiple repositories",
+      "why": "Users need insights about technology adoption, team patterns, and ecosystem health",
+      "how": {
+        "implementation": [
+          "Add batch flatcode analysis function",
+          "Create aggregation functions for cross-repo stats",
+          "Add query patterns for comparative analysis",
+          "Implement caching for expensive cross-repo queries"
+        ],
+        "example_queries": [
+          "Which teams use the most Java?",
+          "What's the average repository size?",
+          "Which repositories need the most attention?",
+          "Show me technology adoption across teams"
+        ]
+      },
+      "acceptance_criteria": [
+        "Can analyze language usage across all teams",
+        "Calculates repository size distributions",
+        "Identifies outliers (very large/small repos)",
+        "Performance acceptable for 342 repositories"
+      ],
+      "test_cases": [
+        {
+          "input": "Which teams use the most Python?",
+          "expected": "Scans all flatcode files, aggregates Python usage by team"
+        },
+        {
+          "input": "What's the average lines of code per repository?",
+          "expected": "Calculates mean LOC across all repositories with data"
+        }
+      ]
+    },
+
+    {
+      "ticket_id": "WARP-004",
+      "type": "feature",
+      "priority": "medium", 
+      "title": "Enhanced Natural Language Processing",
+      "description": "Improve query understanding with better pattern matching and synonyms",
+      "why": "Current system only handles exact phrase matches, users need flexible query language",
+      "how": {
+        "implementation": [
+          "Add synonym mapping for common terms",
+          "Implement fuzzy matching for repository names",
+          "Add query intent classification",
+          "Create response personalization based on query context"
+        ],
+        "example_improvements": [
+          "'repos' = 'repositories' = 'projects'",
+          "'devx' = 'dev-x' = 'developer experience'", 
+          "'how big' = 'size' = 'lines of code'",
+          "'health' = 'quality' = 'score'"
+        ]
+      },
+      "acceptance_criteria": [
+        "Handles common synonyms and variations",
+        "Fuzzy matches repository names with typos",
+        "Suggests corrections for unrecognized queries",
+        "Maintains fast response times"
+      ],
+      "test_cases": [
+        {
+          "input": "How many projects does devx team have?",
+          "expected": "Recognizes 'projects' as 'repositories' and answers correctly"
+        },
+        {
+          "input": "What's the quality of ai-poc?", 
+          "expected": "Fuzzy matches 'ai-poc' to 'ai-pocs' and returns health data"
+        }
+      ]
+    },
+
+    {
+      "ticket_id": "WARP-005",
+      "type": "improvement",
+      "priority": "low",
+      "title": "Query History and Suggestions",
+      "description": "Add query history and smart suggestions for common questions",
+      "why": "Improve user experience with query suggestions and quick access to previous results",
+      "how": {
+        "implementation": [
+          "Store query history in localStorage",
+          "Add dropdown with recent queries",
+          "Create suggested queries based on current dashboard section",
+          "Add quick action buttons for common queries"
+        ]
+      },
+      "acceptance_criteria": [
+        "Shows last 10 queries in dropdown",
+        "Context-aware suggestions based on current dashboard section",
+        "Quick action buttons for top 5 most common queries",
+        "History persists across browser sessions"
+      ]
+    },
+
+    {
+      "ticket_id": "WARP-006",
+      "type": "fix",
+      "priority": "medium",
+      "title": "Performance Optimization for Large Queries",
+      "description": "Optimize performance for queries that need to scan many repositories",
+      "why": "Cross-repository queries may be slow with 342 repositories",
+      "how": {
+        "implementation": [
+          "Add loading indicators for slow queries",
+          "Implement query result caching",
+          "Add progressive loading for large result sets",
+          "Create worker thread for heavy computations"
+        ]
+      },
+      "acceptance_criteria": [
+        "Queries complete within 3 seconds or show loading indicator",
+        "Cached results for identical queries",
+        "Progressive display of results as they're computed",
+        "No browser freezing during heavy operations"
+      ]
+    }
+  ],
+
+  "technical_implementation": {
+    "data_loading_architecture": {
+      "documentation_loader": {
+        "function_name": "loadDocumentationData()",
+        "files_to_load": [
+          "/Users/shawn_meredith/code/github/kenect/README.md",
+          "/Users/shawn_meredith/code/github/kenect/KENECT_USAGE.md",
+          "/Users/shawn_meredith/code/github/kenect/PROMPT.md",
+          "/Users/shawn_meredith/code/github/kenect/README_PRODUCTION.md"
+        ],
+        "parsing_strategy": "Split into searchable sections by headers"
+      },
+      "flatcode_loader": {
+        "function_name": "loadFlatcodeData(repoName)",
+        "file_path_pattern": "/Users/shawn_meredith/code/github/kenect/kenect-ut/{repoName}/.flatcode.json",
+        "base_directory": "/Users/shawn_meredith/code/github/kenect/kenect-ut",
+        "caching_strategy": "LRU cache with 50 entry limit",
+        "error_handling": "Graceful fallback for missing files"
+      },
+      "batch_analyzer": {
+        "function_name": "analyzeBatchRepositories(teamFilter)",
+        "processing_strategy": "Chunked processing to avoid browser freeze",
+        "result_aggregation": "Real-time aggregation during processing"
+      }
+    },
+    
+    "query_processing_engine": {
+      "intent_classifier": {
+        "patterns": {
+          "repository_specific": ["what languages does {repo} use", "how big is {repo}"],
+          "team_analysis": ["how many repos does {team} have", "{team} repository count"],
+          "cross_repository": ["which teams use {language}", "average repository size"],
+          "documentation": ["how do I {action}", "what is {concept}"],
+          "comparison": ["compare {repo1} and {repo2}", "{team1} vs {team2}"]
+        }
+      },
+      "entity_extraction": {
+        "repository_names": "Extract from known 342 repository list",
+        "team_names": "Extract from known 19 team list", 
+        "technologies": "Extract from common language/framework list",
+        "actions": "Extract from documentation command patterns"
+      },
+      "response_generation": {
+        "template_system": "Template-based responses with data injection",
+        "formatting": "Rich formatting with emojis and structure",
+        "source_attribution": "Include data source references"
+      }
+    }
+  },
+
+  "integration_points": {
+    "existing_dashboard": {
+      "data_sharing": "Share loaded data between dashboard sections and chat",
+      "ui_integration": "Chat results can update dashboard visualizations",
+      "navigation": "Chat responses can link to specific dashboard sections"
+    },
+    "cli_integration": {
+      "stats_commands": "Leverage existing kenect-cli.sh stats output",
+      "team_commands": "Use kenect-cli.sh list-teams and list-repos data",
+      "future_expansion": "Potential for chat to trigger CLI commands"
+    }
+  },
+
+  "success_metrics": {
+    "user_experience": [
+      "Query response time < 3 seconds for 95% of queries",
+      "Query success rate > 90% for documented query types", 
+      "User satisfaction with response accuracy and completeness"
+    ],
+    "technical_performance": [
+      "Memory usage stays under 100MB for cached data",
+      "No browser freezing during complex queries",
+      "Progressive enhancement works on all modern browsers"
+    ],
+    "feature_adoption": [
+      "Documentation queries represent >20% of total queries",
+      "Repository-specific queries represent >40% of total queries",
+      "Cross-repository analysis queries represent >15% of total queries"
+    ]
+  },
+
+  "implementation_phases": {
+    "phase_1": {
+      "tickets": ["WARP-001", "WARP-002"],
+      "duration": "1-2 development cycles",
+      "deliverable": "Documentation and repository-specific queries working"
+    },
+    "phase_2": {
+      "tickets": ["WARP-003", "WARP-006"],
+      "duration": "2-3 development cycles", 
+      "deliverable": "Cross-repository analysis with performance optimization"
+    },
+    "phase_3": {
+      "tickets": ["WARP-004", "WARP-005"],
+      "duration": "1-2 development cycles",
+      "deliverable": "Enhanced UX with NLP improvements and history"
+    }
+  },
+
+  "risk_mitigation": {
+    "performance_risks": {
+      "risk": "Scanning 342 repositories may be slow",
+      "mitigation": "Implement progressive loading and caching"
+    },
+    "data_accuracy_risks": {
+      "risk": "Flatcode files may be stale or missing",
+      "mitigation": "Graceful error handling and fallback responses"
+    },
+    "complexity_risks": {
+      "risk": "Natural language processing may become too complex",
+      "mitigation": "Start with pattern matching, iterate based on usage"
+    }
+  }
+}

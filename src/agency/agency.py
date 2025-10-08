@@ -51,6 +51,10 @@ class WARPCOREAgency:
         self.systems_path = self.base_path / "systems"
         self.data_path = Path(".data")  # Relative to agency system
         
+        # DUAL CACHE ENFORCEMENT - Both primary and secondary cache required
+        self.primary_cache = Path(".data")  # Main .data directory
+        self.secondary_cache = Path("src/agency/.data")  # Local agency .data directory
+        
         # Client directory is where analysis happens
         if client_dir_absolute:
             self.client_dir_absolute = Path(client_dir_absolute).resolve()
@@ -131,6 +135,68 @@ class WARPCOREAgency:
                     else:
                         agent_display.append(file_stem)
         return sorted(agent_display)
+    
+    def enforce_dual_cache_write(self, workflow_id: str, trace_id: str, agent_name: str, output_data: Dict[str, Any]) -> bool:
+        """Enforce that all agent outputs are written to BOTH primary and secondary cache"""
+        cache_filename = f"{workflow_id}_{trace_id}_{agent_name}_output.json"
+        
+        # Primary cache location (main .data)
+        primary_path = self.primary_cache / cache_filename
+        # Secondary cache location (local agency .data)
+        secondary_path = self.secondary_cache / cache_filename
+        
+        success = True
+        
+        try:
+            # Ensure directories exist
+            primary_path.parent.mkdir(parents=True, exist_ok=True)
+            secondary_path.parent.mkdir(parents=True, exist_ok=True)
+            
+            # Write to PRIMARY cache
+            with open(primary_path, 'w') as f:
+                json.dump(output_data, f, indent=2)
+            print(f"✅ PRIMARY CACHE: {primary_path}")
+            
+            # Write to SECONDARY cache
+            with open(secondary_path, 'w') as f:
+                json.dump(output_data, f, indent=2)
+            print(f"✅ SECONDARY CACHE: {secondary_path}")
+            
+            print(f"🔄 DUAL CACHE WRITE COMPLETED for {agent_name}")
+            
+        except Exception as e:
+            print(f"❌ DUAL CACHE WRITE FAILED: {e}")
+            success = False
+            
+        return success
+    
+    def validate_agent_dual_cache_compliance(self, agent_name: str) -> bool:
+        """Validate that an agent has dual cache directives in its prompt"""
+        agent_spec = self.load_agent_spec(agent_name)
+        if not agent_spec:
+            print(f"❌ Could not load agent spec for {agent_name}")
+            return False
+            
+        prompt = agent_spec.get('prompt', '')
+        
+        # Check for dual cache keywords in prompt
+        dual_cache_indicators = [
+            'PRIMARY CACHE',
+            'SECONDARY CACHE', 
+            'DUAL CACHE',
+            'BOTH LOCATIONS',
+            'PRIMARY_OUTPUT',
+            'SECONDARY_OUTPUT'
+        ]
+        
+        has_dual_cache = any(indicator in prompt for indicator in dual_cache_indicators)
+        
+        if has_dual_cache:
+            print(f"✅ {agent_name}: Dual cache directives PRESENT")
+        else:
+            print(f"⚠️  {agent_name}: Dual cache directives MISSING - needs update")
+            
+        return has_dual_cache
     
     def show_agent_help(self) -> None:
         """Display rich emoji-driven help for all agents"""
@@ -538,7 +604,8 @@ class WARPCOREAgency:
             "3": "Validate all agent specifications", 
             "4": "Create new agent from template",
             "5": "Inject environment context to all agents",
-            "6": "Generate agent flow documentation"
+            "6": "Generate agent flow documentation",
+            "7": "🔄 Audit all agents for dual cache compliance"
         }
         
         print("Available operations:")
@@ -559,8 +626,32 @@ class WARPCOREAgency:
                 return False
         
         elif selection == "2":
-            print("🗜️ Running data compression...")
+            print("🗇️ Running data compression...")
             # TODO: Implement compression
+            return True
+            
+        elif selection == "7":
+            print("🔄 Auditing all agents for dual cache compliance...")
+            print("=" * 60)
+            
+            agents_to_check = ['origin', 'boss', 'pathfinder', 'architect', 'oracle', 'enforcer', 'craftsman', 'gatekeeper']
+            compliant_count = 0
+            total_count = len(agents_to_check)
+            
+            for agent_name in agents_to_check:
+                if self.validate_agent_dual_cache_compliance(agent_name):
+                    compliant_count += 1
+                    
+            print("\n" + "=" * 60)
+            print(f"📊 DUAL CACHE COMPLIANCE REPORT:")
+            print(f"✅ Compliant: {compliant_count}/{total_count} agents")
+            print(f"⚠️  Non-compliant: {total_count - compliant_count}/{total_count} agents")
+            
+            if compliant_count == total_count:
+                print("🎉 ALL AGENTS ARE DUAL CACHE COMPLIANT!")
+            else:
+                print("⚠️  Some agents need dual cache directive updates")
+                
             return True
             
         elif selection == "5":

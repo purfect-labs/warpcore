@@ -283,83 +283,121 @@ class RealDataDashboard {
         setTimeout(() => this.createActionTypesChart(), 100);
     }
 
-    renderWorkflowsTab(panel) {
-        const workflows = Object.values(this.workflowSummary);
-        
-        panel.innerHTML = `
-            <div class="workflows-header">
-                <h3>🔄 Active Workflows (${workflows.length})</h3>
-                <div class="workflow-filters">
-                    <button class="filter-btn active" data-filter="all">All</button>
-                    <button class="filter-btn" data-filter="active">Active</button>
-                    <button class="filter-btn" data-filter="completed">Completed</button>
-                </div>
-            </div>
+    async renderWorkflowsTab(panel) {
+        try {
+            // Fetch workflow files from the new API
+            const response = await fetch('/api/workflow-files');
+            const data = await response.json();
+            const workflowFiles = data.workflow_files || [];
             
-            <div class="workflows-list">
-                ${workflows.map(workflow => `
-                    <div class="workflow-card" data-workflow-id="${workflow.id}">
-                        <div class="workflow-header" onclick="this.parentElement.classList.toggle('expanded')">
-                            <div class="workflow-info">
-                                <div class="workflow-id">${workflow.id}</div>
-                                <div class="workflow-meta">
-                                    ${workflow.agents.length} agents • ${workflow.totalActions} actions • ${this.formatDuration(workflow.duration)}
+            panel.innerHTML = `
+                <div class="workflows-header">
+                    <h3>📁 Workflow Cache Files (${workflowFiles.length} workflows)</h3>
+                    <div class="workflow-meta-stats">
+                        <span class="meta-stat">${data.total_files || 0} total files</span>
+                        <span class="meta-stat">${this.formatFileSize(workflowFiles.reduce((sum, wf) => sum + wf.total_size, 0))}</span>
+                        <span class="meta-badge">WARP REAL CACHE DATA</span>
+                    </div>
+                    <div class="workflow-filters">
+                        <button class="filter-btn active" data-filter="all">All Workflows</button>
+                        <button class="filter-btn" data-filter="recent">Recent (24h)</button>
+                        <button class="filter-btn" data-filter="large">Large Files</button>
+                    </div>
+                </div>
+                
+                <div class="workflows-tree-container">
+                    ${workflowFiles.map(workflow => `
+                        <div class="workflow-tree-node" data-workflow-id="${workflow.workflow_id}">
+                            <div class="workflow-node-header" onclick="this.parentElement.classList.toggle('expanded')">
+                                <div class="workflow-expand-icon">▶</div>
+                                <div class="workflow-icon">📊</div>
+                                <div class="workflow-node-info">
+                                    <div class="workflow-node-title">${workflow.workflow_id}</div>
+                                    <div class="workflow-node-meta">
+                                        ${workflow.total_files} files • ${workflow.agents.length} agents • ${this.formatFileSize(workflow.total_size)}
+                                        <span class="workflow-last-modified">${this.formatTimeAgo(workflow.last_modified_iso)}</span>
+                                    </div>
+                                </div>
+                                <div class="workflow-node-badges">
+                                    <span class="cache-badge">CACHE</span>
+                                    ${workflow.agents.includes('PATHFINDER') ? '<span class="agent-badge pathfinder">🔍</span>' : ''}
+                                    ${workflow.agents.includes('ARCHITECT') ? '<span class="agent-badge architect">🏗️</span>' : ''}
+                                    ${workflow.agents.includes('ENFORCER') ? '<span class="agent-badge enforcer">⚡</span>' : ''}
                                 </div>
                             </div>
-                            <div class="workflow-status">
-                                <span class="status-badge ${this.getWorkflowStatus(workflow)}">
-                                    ${this.getWorkflowStatus(workflow).toUpperCase()}
-                                </span>
-                                <span class="expand-icon">▼</span>
-                            </div>
-                        </div>
-                        
-                        <div class="workflow-details">
-                            <div class="workflow-timeline">
-                                <h4>Timeline</h4>
-                                <div class="timeline-items">
-                                    ${workflow.actions.map(action => `
-                                        <div class="timeline-item">
-                                            <div class="timeline-time">${new Date(action.timestamp).toLocaleTimeString()}</div>
-                                            <div class="timeline-content">
-                                                <strong>${action.agent_name}</strong>: ${action.action_type}
-                                                ${action.motive ? `<div class="timeline-motive">${action.motive}</div>` : ''}
+                            
+                            <div class="workflow-node-children">
+                                ${workflow.files.map(file => `
+                                    <div class="file-tree-node" data-filename="${file.filename}">
+                                        <div class="file-node-content">
+                                            <div class="file-icon">${this.getFileTypeIcon(file.file_type)}</div>
+                                            <div class="file-node-info">
+                                            <div class="file-node-title">
+                                                    ${file.file_type}
+                                                    <span class="file-node-filename">${file.filename}</span>
+                                                    ${file.mission_status === 'COMPLETED SUCCESSFULLY' ? '<span class="status-success">✅ COMPLETE</span>' : ''}
+                                                    ${file.dual_cache_confirmed ? '<span class="cache-confirmed">🔄 DUAL CACHE</span>' : ''}
+                                                </div>
+                                                <div class="file-node-meta">
+                                                    <span class="file-agent-type">${file.agent_type || file.agent_name}</span>
+                                                    <span class="file-agent-display">${file.agent_display_name || file.agent_name}</span>
+                                                    <span class="file-size">${this.formatFileSize(file.size)}</span>
+                                                    <span class="file-time">${new Date(file.modified_iso).toLocaleString()}</span>
+                                                    ${file.trace_id !== 'N/A' ? `<span class="file-trace">${file.trace_id}</span>` : ''}
+                                                    ${file.next_agent ? `<span class="next-agent">→ ${file.next_agent.toUpperCase()}</span>` : ''}
+                                                </div>
+                                                ${file.summary && Object.keys(file.summary).length > 0 ? `
+                                                    <div class="file-summary">
+                                                        ${this.renderFileSummary(file.summary)}
+                                                    </div>
+                                                ` : ''}
+                                            </div>
+                                            <div class="file-actions">
+                                                <button class="file-action-btn" onclick="this.viewFileContent('${file.filename}')" title="View Content">
+                                                    👁️
+                                                </button>
+                                                <button class="file-action-btn" onclick="this.downloadFile('${file.filename}')" title="Download">
+                                                    💾
+                                                </button>
                                             </div>
                                         </div>
-                                    `).join('')}
-                                </div>
-                            </div>
-                            
-                            <div class="workflow-agents">
-                                <h4>Agents Involved</h4>
-                                <div class="agents-grid">
-                                    ${workflow.agents.map(agent => `
-                                        <div class="agent-chip">
-                                            <div class="agent-name">${agent}</div>
-                                            <div class="agent-actions">${workflow.actions.filter(a => a.agent_name === agent).length} actions</div>
-                                        </div>
-                                    `).join('')}
-                                </div>
-                            </div>
-                            
-                            <div class="workflow-metrics">
-                                <h4>Performance Metrics</h4>
-                                <div class="metrics-row">
-                                    <div class="metric">
-                                        <span class="metric-label">Duration:</span>
-                                        <span class="metric-value">${this.formatDuration(workflow.duration)}</span>
                                     </div>
-                                    <div class="metric">
-                                        <span class="metric-label">Actions/min:</span>
-                                        <span class="metric-value">${(workflow.totalActions / (workflow.duration / 60000)).toFixed(1)}</span>
-                                    </div>
-                                </div>
+                                `).join('')}
                             </div>
                         </div>
+                    `).join('')}
+                </div>
+                
+                <div class="workflows-footer">
+                    <div class="footer-info">
+                        <span class="footer-source">${data.data_source || 'WARP CACHE DATA'}</span>
+                        <span class="footer-updated">Last updated: ${new Date(data.last_updated).toLocaleString()}</span>
                     </div>
-                `).join('')}
-            </div>
-        `;
+                </div>
+            `;
+            
+            // Add event listeners for filter buttons
+            panel.querySelectorAll('.filter-btn').forEach(btn => {
+                btn.addEventListener('click', (e) => {
+                    // Remove active from all buttons
+                    panel.querySelectorAll('.filter-btn').forEach(b => b.classList.remove('active'));
+                    e.target.classList.add('active');
+                    
+                    const filter = e.target.dataset.filter;
+                    this.filterWorkflows(panel, filter, workflowFiles);
+                });
+            });
+            
+        } catch (error) {
+            console.error('Error loading workflow files:', error);
+            panel.innerHTML = `
+                <div class="error-container">
+                    <h3>⚠️ Error Loading Workflow Files</h3>
+                    <p>Could not load workflow cache files: ${error.message}</p>
+                    <div class="error-note">WARP DEMO ERROR DISPLAY</div>
+                </div>
+            `;
+        }
     }
 
     async renderAgentsTab(panel) {
@@ -1038,6 +1076,380 @@ class RealDataDashboard {
                     border-radius: 8px;
                     padding: 0.5rem 1rem;
                 }
+                
+                /* Workflow Tree Styles */
+                .workflows-header {
+                    background: var(--glass-bg);
+                    padding: 1.5rem;
+                    border-radius: 15px;
+                    margin-bottom: 1rem;
+                    border: 1px solid rgba(255, 255, 255, 0.1);
+                }
+                
+                .workflow-meta-stats {
+                    display: flex;
+                    gap: 1rem;
+                    margin: 1rem 0;
+                    flex-wrap: wrap;
+                }
+                
+                .meta-stat {
+                    background: rgba(0, 212, 255, 0.1);
+                    padding: 0.5rem 1rem;
+                    border-radius: 8px;
+                    color: var(--neon-blue);
+                    font-size: 0.9rem;
+                }
+                
+                .meta-badge {
+                    background: rgba(57, 255, 20, 0.2);
+                    color: var(--neon-green);
+                    padding: 0.5rem 1rem;
+                    border-radius: 8px;
+                    font-size: 0.8rem;
+                    font-weight: 600;
+                }
+                
+                .workflow-filters {
+                    display: flex;
+                    gap: 0.5rem;
+                    margin-top: 1rem;
+                }
+                
+                .filter-btn {
+                    background: rgba(255, 255, 255, 0.1);
+                    border: 1px solid rgba(255, 255, 255, 0.2);
+                    color: var(--text-secondary);
+                    padding: 0.5rem 1rem;
+                    border-radius: 8px;
+                    cursor: pointer;
+                    transition: all 0.3s ease;
+                    font-size: 0.9rem;
+                }
+                
+                .filter-btn:hover {
+                    background: rgba(0, 212, 255, 0.1);
+                    color: var(--neon-blue);
+                }
+                
+                .filter-btn.active {
+                    background: rgba(0, 212, 255, 0.2);
+                    color: var(--neon-blue);
+                    border-color: var(--neon-blue);
+                }
+                
+                .workflows-tree-container {
+                    max-height: 600px;
+                    overflow-y: auto;
+                    padding-right: 0.5rem;
+                }
+                
+                .workflow-tree-node {
+                    background: var(--glass-bg);
+                    border: 1px solid rgba(255, 255, 255, 0.1);
+                    border-radius: 15px;
+                    margin-bottom: 1rem;
+                    overflow: hidden;
+                }
+                
+                .workflow-node-header {
+                    display: flex;
+                    align-items: center;
+                    padding: 1rem;
+                    cursor: pointer;
+                    transition: background 0.3s ease;
+                    gap: 0.75rem;
+                }
+                
+                .workflow-node-header:hover {
+                    background: rgba(255, 255, 255, 0.05);
+                }
+                
+                .workflow-expand-icon {
+                    color: var(--neon-blue);
+                    transition: transform 0.3s ease;
+                    font-size: 1.2rem;
+                }
+                
+                .workflow-tree-node.expanded .workflow-expand-icon {
+                    transform: rotate(90deg);
+                }
+                
+                .workflow-icon {
+                    font-size: 1.5rem;
+                }
+                
+                .workflow-node-info {
+                    flex: 1;
+                }
+                
+                .workflow-node-title {
+                    font-weight: 600;
+                    color: var(--text-primary);
+                    font-size: 1.1rem;
+                    margin-bottom: 0.25rem;
+                }
+                
+                .workflow-node-meta {
+                    color: var(--text-secondary);
+                    font-size: 0.85rem;
+                    display: flex;
+                    gap: 0.75rem;
+                    flex-wrap: wrap;
+                    align-items: center;
+                }
+                
+                .workflow-last-modified {
+                    color: var(--neon-green);
+                    font-weight: 500;
+                }
+                
+                .workflow-node-badges {
+                    display: flex;
+                    gap: 0.5rem;
+                    align-items: center;
+                }
+                
+                .cache-badge {
+                    background: rgba(255, 102, 0, 0.2);
+                    color: var(--neon-orange);
+                    padding: 0.25rem 0.6rem;
+                    border-radius: 6px;
+                    font-size: 0.7rem;
+                    font-weight: 600;
+                }
+                
+                .agent-badge {
+                    font-size: 1.2rem;
+                    padding: 0.2rem;
+                }
+                
+                .agent-badge.pathfinder { background: rgba(0, 255, 255, 0.1); border-radius: 4px; }
+                .agent-badge.architect { background: rgba(255, 165, 0, 0.1); border-radius: 4px; }
+                .agent-badge.enforcer { background: rgba(255, 255, 0, 0.1); border-radius: 4px; }
+                
+                .workflow-node-children {
+                    display: none;
+                    border-top: 1px solid rgba(255, 255, 255, 0.1);
+                    background: rgba(0, 0, 0, 0.2);
+                }
+                
+                .workflow-tree-node.expanded .workflow-node-children {
+                    display: block;
+                }
+                
+                .file-tree-node {
+                    border-bottom: 1px solid rgba(255, 255, 255, 0.05);
+                    transition: background 0.3s ease;
+                }
+                
+                .file-tree-node:hover {
+                    background: rgba(255, 255, 255, 0.03);
+                }
+                
+                .file-tree-node:last-child {
+                    border-bottom: none;
+                }
+                
+                .file-node-content {
+                    display: flex;
+                    align-items: center;
+                    padding: 0.75rem 1rem;
+                    gap: 0.75rem;
+                }
+                
+                .file-icon {
+                    font-size: 1.2rem;
+                    min-width: 1.5rem;
+                }
+                
+                .file-node-info {
+                    flex: 1;
+                    min-width: 0;
+                }
+                
+                .file-node-title {
+                    font-weight: 500;
+                    color: var(--text-primary);
+                    margin-bottom: 0.25rem;
+                    display: flex;
+                    gap: 0.5rem;
+                    align-items: center;
+                    flex-wrap: wrap;
+                }
+                
+                .file-node-filename {
+                    color: var(--text-secondary);
+                    font-size: 0.8rem;
+                    font-weight: 400;
+                    background: rgba(255, 255, 255, 0.05);
+                    padding: 0.2rem 0.5rem;
+                    border-radius: 4px;
+                }
+                
+                .file-node-meta {
+                    display: flex;
+                    gap: 0.75rem;
+                    font-size: 0.75rem;
+                    color: var(--text-secondary);
+                    flex-wrap: wrap;
+                    align-items: center;
+                }
+                
+                .file-agent {
+                    background: rgba(0, 212, 255, 0.15);
+                    color: var(--neon-blue);
+                    padding: 0.2rem 0.5rem;
+                    border-radius: 4px;
+                    font-weight: 500;
+                }
+                
+                .file-agent-type {
+                    background: rgba(255, 102, 0, 0.2);
+                    color: var(--neon-orange);
+                    padding: 0.2rem 0.5rem;
+                    border-radius: 4px;
+                    font-weight: 600;
+                    font-size: 0.7rem;
+                }
+                
+                .file-agent-display {
+                    background: rgba(0, 212, 255, 0.1);
+                    color: var(--neon-blue);
+                    padding: 0.2rem 0.5rem;
+                    border-radius: 4px;
+                    font-weight: 400;
+                }
+                
+                .status-success {
+                    background: rgba(57, 255, 20, 0.2);
+                    color: var(--neon-green);
+                    padding: 0.2rem 0.5rem;
+                    border-radius: 4px;
+                    font-size: 0.7rem;
+                    font-weight: 600;
+                }
+                
+                .cache-confirmed {
+                    background: rgba(0, 255, 255, 0.15);
+                    color: #00ffff;
+                    padding: 0.2rem 0.5rem;
+                    border-radius: 4px;
+                    font-size: 0.7rem;
+                    font-weight: 500;
+                }
+                
+                .next-agent {
+                    background: rgba(255, 165, 0, 0.2);
+                    color: #ffa500;
+                    padding: 0.2rem 0.5rem;
+                    border-radius: 4px;
+                    font-size: 0.7rem;
+                    font-weight: 600;
+                }
+                
+                .file-size {
+                    background: rgba(57, 255, 20, 0.1);
+                    color: var(--neon-green);
+                    padding: 0.2rem 0.5rem;
+                    border-radius: 4px;
+                }
+                
+                .file-time {
+                    color: var(--text-secondary);
+                }
+                
+                .file-trace {
+                    background: rgba(255, 102, 0, 0.15);
+                    color: var(--neon-orange);
+                    padding: 0.2rem 0.5rem;
+                    border-radius: 4px;
+                    font-family: monospace;
+                }
+                
+                .file-summary {
+                    margin-top: 0.5rem;
+                    padding: 0.5rem;
+                    background: rgba(0, 212, 255, 0.05);
+                    border-radius: 6px;
+                    border-left: 3px solid var(--neon-blue);
+                    font-size: 0.8rem;
+                    color: var(--text-secondary);
+                }
+                
+                .file-actions {
+                    display: flex;
+                    gap: 0.5rem;
+                }
+                
+                .file-action-btn {
+                    background: rgba(255, 255, 255, 0.1);
+                    border: none;
+                    color: var(--text-secondary);
+                    padding: 0.5rem;
+                    border-radius: 6px;
+                    cursor: pointer;
+                    transition: all 0.3s ease;
+                    font-size: 1rem;
+                }
+                
+                .file-action-btn:hover {
+                    background: rgba(0, 212, 255, 0.2);
+                    color: var(--neon-blue);
+                    transform: scale(1.1);
+                }
+                
+                .workflows-footer {
+                    background: var(--glass-bg);
+                    padding: 1rem;
+                    border-radius: 10px;
+                    margin-top: 1rem;
+                    text-align: center;
+                    border: 1px solid rgba(255, 255, 255, 0.1);
+                }
+                
+                .footer-info {
+                    display: flex;
+                    justify-content: space-between;
+                    align-items: center;
+                    font-size: 0.8rem;
+                    color: var(--text-secondary);
+                    flex-wrap: wrap;
+                    gap: 1rem;
+                }
+                
+                .footer-source {
+                    background: rgba(57, 255, 20, 0.1);
+                    color: var(--neon-green);
+                    padding: 0.3rem 0.6rem;
+                    border-radius: 4px;
+                    font-weight: 500;
+                }
+                
+                .error-container {
+                    background: rgba(255, 107, 107, 0.1);
+                    border: 1px solid rgba(255, 107, 107, 0.3);
+                    border-radius: 15px;
+                    padding: 2rem;
+                    text-align: center;
+                    margin: 2rem 0;
+                }
+                
+                .error-container h3 {
+                    color: #ff6b6b;
+                    margin-bottom: 1rem;
+                }
+                
+                .error-note {
+                    background: rgba(255, 102, 0, 0.1);
+                    color: var(--neon-orange);
+                    padding: 0.5rem 1rem;
+                    border-radius: 6px;
+                    display: inline-block;
+                    margin-top: 1rem;
+                    font-size: 0.8rem;
+                    font-weight: 600;
+                }
             </style>
         `;
         document.head.insertAdjacentHTML('beforeend', styles);
@@ -1058,6 +1470,133 @@ class RealDataDashboard {
         setInterval(async () => {
             await this.loadRealWorkflowData();
         }, 30000);
+    }
+    
+    // Helper methods for workflow files display
+    formatFileSize(bytes) {
+        if (bytes === 0) return '0 B';
+        const k = 1024;
+        const sizes = ['B', 'KB', 'MB', 'GB'];
+        const i = Math.floor(Math.log(bytes) / Math.log(k));
+        return parseFloat((bytes / Math.pow(k, i)).toFixed(2)) + ' ' + sizes[i];
+    }
+    
+    formatTimeAgo(isoTime) {
+        const now = new Date();
+        const time = new Date(isoTime);
+        const diffMs = now - time;
+        const diffMins = Math.floor(diffMs / (1000 * 60));
+        const diffHours = Math.floor(diffMs / (1000 * 60 * 60));
+        const diffDays = Math.floor(diffMs / (1000 * 60 * 60 * 24));
+        
+        if (diffMins < 60) return `${diffMins}m ago`;
+        if (diffHours < 24) return `${diffHours}h ago`;
+        if (diffDays < 7) return `${diffDays}d ago`;
+        return time.toLocaleDateString();
+    }
+    
+    getFileTypeIcon(fileType) {
+        const iconMap = {
+            'Pathfinder Analysis': '🔍',
+            'Architect Requirements': '🏗️',
+            'Enforcer Validation': '⚡',
+            'Bootstrap State': '🚀',
+            'Requirements Analysis': '📋',
+            'Requirements Validation': '✅',
+            'Schema Coherence': '📊',
+            'Implementation Results': '🎯',
+            'Unknown': '📄'
+        };
+        return iconMap[fileType] || '📄';
+    }
+    
+    renderFileSummary(summary) {
+        if (!summary || Object.keys(summary).length === 0) return '';
+        
+        const summaryItems = [];
+        
+        // Requirements data (Architect)
+        if (summary.total_requirements) {
+            summaryItems.push(`📝 ${summary.total_requirements} requirements`);
+        }
+        if (summary.critical_count) {
+            summaryItems.push(`🔴 ${summary.critical_count} critical`);
+        }
+        if (summary.total_subtasks) {
+            summaryItems.push(`📚 ${summary.total_subtasks} subtasks`);
+        }
+        if (summary.estimated_effort && summary.estimated_effort !== 'Unknown') {
+            summaryItems.push(`⏳ ${summary.estimated_effort}`);
+        }
+        
+        // Analysis data (Pathfinder)
+        if (summary.files_analyzed) {
+            summaryItems.push(`📁 ${summary.files_analyzed} files analyzed`);
+        }
+        if (summary.pap_compliance && summary.pap_compliance !== 'N/A') {
+            summaryItems.push(`📈 PAP: ${summary.pap_compliance}`);
+        }
+        if (summary.issues_found) {
+            summaryItems.push(`⚠️ ${summary.issues_found} issues`);
+        }
+        if (summary.fake_markers) {
+            summaryItems.push(`🏷️ ${summary.fake_markers} fake markers`);
+        }
+        
+        // Performance data (General)
+        if (summary.quality_score) {
+            summaryItems.push(`🎯 Quality: ${summary.quality_score}%`);
+        }
+        if (summary.efficiency && summary.efficiency !== 'Unknown') {
+            summaryItems.push(`⚡ ${summary.efficiency}`);
+        }
+        if (summary.compliance_score) {
+            summaryItems.push(`🔒 Compliance: ${summary.compliance_score}%`);
+        }
+        
+        return summaryItems.join(' • ');
+    }
+    
+    filterWorkflows(panel, filter, workflowFiles) {
+        const container = panel.querySelector('.workflows-tree-container');
+        const workflows = container.querySelectorAll('.workflow-tree-node');
+        
+        const now = new Date();
+        const oneDayAgo = new Date(now.getTime() - 24 * 60 * 60 * 1000);
+        
+        workflows.forEach(workflowNode => {
+            const workflowId = workflowNode.dataset.workflowId;
+            const workflowData = workflowFiles.find(wf => wf.workflow_id === workflowId);
+            
+            let show = true;
+            
+            switch (filter) {
+                case 'recent':
+                    show = new Date(workflowData.last_modified_iso) > oneDayAgo;
+                    break;
+                case 'large':
+                    show = workflowData.total_size > 10000; // Files larger than 10KB
+                    break;
+                case 'all':
+                default:
+                    show = true;
+                    break;
+            }
+            
+            workflowNode.style.display = show ? 'block' : 'none';
+        });
+    }
+    
+    viewFileContent(filename) {
+        // WARP DEMO - File content viewer would open here
+        alert(`WARP DEMO: Would show content of ${filename}`);
+        console.log(`WARP DEMO: Viewing file content for ${filename}`);
+    }
+    
+    downloadFile(filename) {
+        // WARP DEMO - File download would happen here
+        alert(`WARP DEMO: Would download ${filename}`);
+        console.log(`WARP DEMO: Downloading file ${filename}`);
     }
 }
 

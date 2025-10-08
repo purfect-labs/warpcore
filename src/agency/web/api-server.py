@@ -19,7 +19,7 @@ CORS(app)
 logging.basicConfig(level=logging.INFO)
 logger = logging.getLogger(__name__)
 
-DATA_DIR = '.data'
+DATA_DIR = '/Users/shawn_meredith/code/pets/warpcore/src/agency/.data'
 
 def load_execution_logs():
     """Load and parse execution logs from .data directory"""
@@ -324,6 +324,197 @@ def get_real_metrics():
             'message': str(e)
         }), 500
 
+@app.route('/api/workflow-files', methods=['GET'])
+def get_workflow_files():
+    """Return organized workflow files from .data directory"""
+    try:
+        workflow_files = {}
+        json_files = glob.glob(os.path.join(DATA_DIR, '*.json'))
+        
+        for file_path in json_files:
+            try:
+                filename = os.path.basename(file_path)
+                file_stats = os.stat(file_path)
+                
+                # Parse workflow info from filename
+                parts = filename.split('_')
+                if len(parts) >= 3:
+                    # Extract workflow ID (handle different patterns)
+                    workflow_id = None
+                    if filename.startswith('wf_'):
+                        if len(parts) >= 4 and parts[1].startswith('2025'):
+                            # Pattern: wf_20251007_181411_1cfce7ce_...
+                            workflow_id = f"{parts[1]}_{parts[2]}_{parts[3]}"
+                        elif len(parts) >= 2:
+                            # Pattern: wf_a30a6bd0e971_...
+                            workflow_id = parts[1]
+                    
+                    if not workflow_id:
+                        workflow_id = 'unknown'
+                    
+                    # Load file data for metadata
+                    file_data = {}
+                    try:
+                        with open(file_path, 'r') as f:
+                            file_data = json.load(f)
+                    except:
+                        pass
+                    
+                    # Extract rich agent name and metadata from JSON content
+                    agent_name = file_data.get('agent_name', 'Unknown')
+                    
+                    # Enrich agent name with more descriptive info
+                    agent_type = 'Unknown'
+                    agent_display_name = agent_name
+                    
+                    if 'pathfinder' in agent_name.lower():
+                        agent_type = 'PATHFINDER'
+                        agent_display_name = 'Pathfinder Schema Coherence'
+                    elif 'architect' in agent_name.lower() or 'requirements_analysis' in agent_name.lower():
+                        agent_type = 'ARCHITECT' 
+                        agent_display_name = 'Requirements Analysis Architect'
+                    elif 'enforcer' in agent_name.lower():
+                        agent_type = 'ENFORCER'
+                        agent_display_name = 'Requirements Validation Enforcer'
+                    elif 'craftsman' in agent_name.lower():
+                        agent_type = 'CRAFTSMAN'
+                        agent_display_name = 'Implementation Craftsman'
+                    elif 'gatekeeper' in agent_name.lower():
+                        agent_type = 'GATEKEEPER'
+                        agent_display_name = 'Quality Gatekeeper'
+                    elif 'origin' in agent_name.lower():
+                        agent_type = 'ORIGIN'
+                        agent_display_name = 'Bootstrap Origin'
+                    
+                    # Extract trace info
+                    trace_id = 'N/A'
+                    if 'tr_' in filename:
+                        tr_parts = filename.split('tr_')
+                        if len(tr_parts) > 1:
+                            trace_parts = tr_parts[1].split('_')
+                            if len(trace_parts) >= 4:
+                                trace_id = f"tr_{trace_parts[0]}_{trace_parts[1]}_{trace_parts[2]}_{trace_parts[3]}"
+                    
+                    # Determine file type
+                    file_type = 'Unknown'
+                    if 'pathfinder' in filename:
+                        file_type = 'Pathfinder Analysis'
+                    elif 'architect' in filename:
+                        file_type = 'Architect Requirements'
+                    elif 'enforcer' in filename:
+                        file_type = 'Enforcer Validation'
+                    elif 'bootstrap' in filename:
+                        file_type = 'Bootstrap State'
+                    elif 'requirements_analysis' in filename:
+                        file_type = 'Requirements Analysis'
+                    elif 'requirements_validation' in filename:
+                        file_type = 'Requirements Validation'
+                    elif 'schema_coherence' in filename:
+                        file_type = 'Schema Coherence'
+                    elif 'implementation_results' in filename:
+                        file_type = 'Implementation Results'
+                    
+                    if workflow_id not in workflow_files:
+                        workflow_files[workflow_id] = {
+                            'workflow_id': workflow_id,
+                            'files': [],
+                            'total_files': 0,
+                            'total_size': 0,
+                            'agents': set(),
+                            'last_modified': file_stats.st_mtime
+                        }
+                    
+                    # Create rich summary data from JSON content
+                    summary_data = {}
+                    if 'requirements_summary' in file_data:
+                        req_sum = file_data['requirements_summary']
+                        summary_data = {
+                            'total_requirements': req_sum.get('total_requirements', 0),
+                            'critical_count': req_sum.get('critical_count', 0),
+                            'total_subtasks': req_sum.get('total_subtasks', 0),
+                            'estimated_effort': req_sum.get('estimated_total_effort', 'Unknown')
+                        }
+                    elif 'analysis_summary' in file_data:
+                        analysis = file_data['analysis_summary']
+                        summary_data = {
+                            'files_analyzed': analysis.get('total_files_analyzed', 0),
+                            'pap_compliance': analysis.get('pap_compliance_score', 'N/A'),
+                            'issues_found': analysis.get('coherence_issues_found', 0),
+                            'fake_markers': analysis.get('fake_demo_markers_total', 0)
+                        }
+                    elif 'performance_metrics' in file_data:
+                        perf = file_data['performance_metrics']
+                        summary_data = {
+                            'quality_score': perf.get('output_quality_score', 0),
+                            'efficiency': perf.get('efficiency_rating', 'Unknown'),
+                            'issues_identified': perf.get('issues_identified', 0),
+                            'compliance_score': perf.get('compliance_score', 0)
+                        }
+                    
+                    # Get next agent info if available
+                    next_agent = file_data.get('next_agent', '')
+                    mission_status = ''
+                    if 'pathfinder_completion_summary' in file_data:
+                        mission_status = file_data['pathfinder_completion_summary'].get('mission_status', '')
+                    elif 'architect_completion_summary' in file_data:
+                        mission_status = file_data['architect_completion_summary'].get('mission_status', '')
+                    
+                    workflow_files[workflow_id]['files'].append({
+                        'filename': filename,
+                        'file_type': file_type,
+                        'agent_name': agent_name,
+                        'agent_type': agent_type,
+                        'agent_display_name': agent_display_name,
+                        'trace_id': trace_id,
+                        'size': file_stats.st_size,
+                        'modified_time': file_stats.st_mtime,
+                        'modified_iso': datetime.fromtimestamp(file_stats.st_mtime).isoformat(),
+                        'path': file_path,
+                        'has_data': bool(file_data),
+                        'summary': summary_data,
+                        'next_agent': next_agent,
+                        'mission_status': mission_status,
+                        'dual_cache_confirmed': file_data.get('dual_cache_confirmation', {}).get('dual_cache_write_completed', False)
+                    })
+                    
+                    workflow_files[workflow_id]['agents'].add(agent_name)
+                    workflow_files[workflow_id]['total_size'] += file_stats.st_size
+                    workflow_files[workflow_id]['last_modified'] = max(
+                        workflow_files[workflow_id]['last_modified'], file_stats.st_mtime
+                    )
+                    
+            except Exception as e:
+                logger.warning(f"Error processing workflow file {file_path}: {e}")
+                continue
+        
+        # Convert sets to lists and calculate totals
+        for workflow in workflow_files.values():
+            workflow['agents'] = list(workflow['agents'])
+            workflow['total_files'] = len(workflow['files'])
+            workflow['last_modified_iso'] = datetime.fromtimestamp(workflow['last_modified']).isoformat()
+            # Sort files by modification time (newest first)
+            workflow['files'].sort(key=lambda x: x['modified_time'], reverse=True)
+        
+        # Sort workflows by last modified (newest first)
+        sorted_workflows = sorted(workflow_files.values(), key=lambda x: x['last_modified'], reverse=True)
+        
+        return jsonify({
+            'status': 'success',
+            'workflow_files': sorted_workflows,
+            'total_workflows': len(workflow_files),
+            'total_files': sum(wf['total_files'] for wf in workflow_files.values()),
+            'data_source': 'WARP REAL WORKFLOW FILES - Live .data cache',
+            'last_updated': datetime.now().isoformat()
+        })
+        
+    except Exception as e:
+        logger.error(f"Error loading workflow files: {e}")
+        return jsonify({
+            'status': 'error',
+            'message': str(e),
+            'workflow_files': []
+        }), 500
+
 @app.route('/api/workflow-analytics', methods=['GET'])
 def get_workflow_analytics():
     """Return workflow analytics data matching agent schema structure"""
@@ -571,5 +762,13 @@ if __name__ == '__main__':
         
         logger.info("Created demo data file for testing")
     
+
+@app.route('/')
+def dashboard():
+    """Serve the main dashboard"""
+    return send_from_directory('.', 'real-data-dashboard.html')
+
+
+if __name__ == '__main__':
     logger.info("Starting WARPCORE Real Data API Server...")
     app.run(host='0.0.0.0', port=8081, debug=False)

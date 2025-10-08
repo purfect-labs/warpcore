@@ -21,6 +21,9 @@ if ! python3 -c "import flask" &> /dev/null; then
     pip3 install flask flask-cors
 fi
 
+# Change to the warpcore root directory to find .data
+cd /Users/shawn_meredith/code/pets/warpcore
+
 # Check if .data directory exists
 if [ ! -d ".data" ]; then
     echo "📁 Creating .data directory..."
@@ -31,6 +34,9 @@ else
     echo "📊 Found $JSON_COUNT JSON data files in .data/"
 fi
 
+# Go back to web directory for server
+cd src/agency/web
+
 # Start the API server in background
 echo "🔧 Starting WARPCORE Real Data API server..."
 python3 api-server.py &
@@ -40,32 +46,31 @@ API_PID=$!
 sleep 2
 
 # Check if server started successfully
-if curl -s http://localhost:8080/health > /dev/null; then
-    echo "✅ API server running at http://localhost:8080"
+if curl -s http://localhost:8081/health > /dev/null; then
+    echo "✅ API server running at http://localhost:8081"
     
     # Open the dashboard in default browser
     if command -v open &> /dev/null; then
         # macOS
         echo "🌐 Opening dashboard in browser..."
-        open http://localhost:8080
+        open http://localhost:8081
     elif command -v xdg-open &> /dev/null; then
         # Linux
         echo "🌐 Opening dashboard in browser..."
-        xdg-open http://localhost:8080
+        xdg-open http://localhost:8081
     else
-        echo "🌐 Dashboard available at: http://localhost:8080"
-        echo "   Real Data Dashboard: http://localhost:8080/real-data-dashboard.html"
-        echo "   Live Dashboard: http://localhost:8080/index.html"
+        echo "🌐 Dashboard available at: http://localhost:8081"
+        echo "   WARPCORE Dashboard: http://localhost:8081/index.html"
     fi
     
     echo ""
-    echo "✨ WARPCORE Real Data Dashboard is now running!"
-    echo "📊 Real Data Dashboard: http://localhost:8080/real-data-dashboard.html"
-    echo "⚡ Live Dashboard: http://localhost:8080/index.html"
+    echo "✨ WARPCORE Dashboard is now running!"
+    echo "📊 WARPCORE Dashboard: http://localhost:8081/index.html"
     echo "🔍 API Endpoints:"
-    echo "   • Execution Logs: http://localhost:8080/api/execution-logs"
-    echo "   • Statistics: http://localhost:8080/api/stats"
-    echo "   • Health Check: http://localhost:8080/health"
+    echo "   • Execution Logs: http://localhost:8081/api/execution-logs"
+    echo "   • Workflow Files: http://localhost:8081/api/workflow-files"
+    echo "   • Statistics: http://localhost:8081/api/stats"
+    echo "   • Health Check: http://localhost:8081/health"
     echo ""
     echo "💡 Features:"
     echo "   • Interactive tabbed interface (Overview, Workflows, Agents, Analytics, Timeline)"
