@@ -519,17 +519,24 @@ def execute_agent_stream():
         
         try:
             # Start process with real-time streaming
+            import os
+            env = os.environ.copy()
+            env['PYTHONUNBUFFERED'] = '1'  # Force unbuffered output
+            
             process = subprocess.Popen(
                 cmd,
                 stdout=subprocess.PIPE,
                 stderr=subprocess.STDOUT,  # Merge stderr with stdout
                 text=True,
-                bufsize=1,  # Line buffered
+                bufsize=0,  # Unbuffered
                 universal_newlines=True,
+                env=env,
                 cwd=str(SCRIPT_DIR.parent)
             )
             
             yield f"data: {{\"type\": \"start\", \"command\": \"{' '.join(cmd)}\", \"pid\": {process.pid}}}\n\n"
+            import sys
+            sys.stdout.flush()
             
             # Stream output line by line
             while True:
@@ -540,6 +547,7 @@ def execute_agent_stream():
                     # Escape JSON string and send as SSE
                     escaped_output = output.strip().replace('"', '\\"').replace('\n', '\\n')
                     yield f"data: {{\"type\": \"output\", \"line\": \"{escaped_output}\"}}\n\n"
+                    sys.stdout.flush()
             
             # Get exit code
             exit_code = process.poll()

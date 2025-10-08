@@ -13,6 +13,21 @@ import uuid
 import argparse
 import os
 from datetime import datetime
+import logging
+
+# Setup CLI call logging
+logging.basicConfig(
+    level=logging.INFO,
+    format='%(asctime)s - CLI_CALL - %(message)s',
+    handlers=[
+        logging.FileHandler('/tmp/agency_cli_calls.log'),
+        logging.StreamHandler()
+    ]
+)
+logger = logging.getLogger(__name__)
+
+# Log the CLI call immediately
+logger.info(f"CLI CALLED: {' '.join(sys.argv)} | CWD: {os.getcwd()} | PID: {os.getpid()}")
 
 class WARPCOREAgency:
     def __init__(self, client_dir_absolute: Optional[str] = None):
@@ -52,36 +67,26 @@ class WARPCOREAgency:
         
         # Reverse mapping for file lookups
         self.file_to_alias = {v: k for k, v in self.agent_aliases.items()}
-        self.agents_path = self.base_path / "agents"
-        self.workflows_path = self.base_path / "workflows"
-        self.systems_path = self.base_path / "systems"
-        self.data_path = Path(".data")  # Relative to agency system
-        
-        # DUAL CACHE ENFORCEMENT - Both primary and secondary cache required
-        self.primary_cache = Path(".data")  # Main .data directory
-        self.secondary_cache = Path("src/agency/.data")  # Local agency .data directory
-        
-        # Client directory is where analysis happens
+        # Client directory is where analysis happens - initialize this first
         if client_dir_absolute:
             self.client_dir_absolute = Path(client_dir_absolute).resolve()
             print(f"🎯 Client Directory (Analysis Target): {self.client_dir_absolute}")
         else:
             self.client_dir_absolute = self.base_path.parent  # Default to warpcore root
             
+        self.agents_path = self.base_path / "agents"
+        self.workflows_path = self.base_path / "workflows"
+        self.systems_path = self.base_path / "systems"
+        self.data_path = self.base_path / ".data"  # Absolute path to agency data
+        
+        # DUAL CACHE ENFORCEMENT - Both primary and secondary cache required
+        self.primary_cache = self.client_dir_absolute.parent / ".data"  # Main .data directory (absolute)
+        self.secondary_cache = self.base_path / ".data"  # Local agency .data directory (absolute)
+            
         # Working directory stays at agency for caching
         self.working_dir = self.base_path
         
         self.show_configuration()
-            
-        self.agents_path = self.base_path / "agents"
-        self.workflows_path = self.base_path / "workflows"
-        self.systems_path = self.base_path / "systems"
-        self.data_path = Path(".data")
-        
-        print(f"📁 Agents: {self.agents_path}")
-        print(f"📁 Workflows: {self.workflows_path}")
-        print(f"📁 Systems: {self.systems_path}")
-        print(f"📁 Data: {self.data_path}")
     
     def show_configuration(self):
         """Display current agency configuration"""
@@ -219,27 +224,27 @@ class WARPCOREAgency:
         for i, alias in enumerate(workflow_order):
             description = self.agent_descriptions.get(alias, f"{alias} - Description not available")
             if alias == 'origin':
-                position = "0a"
+                position = "ORIGIN"
             elif alias == 'boss':
-                position = "0b"
+                position = "BOSS"
             elif alias == 'pathfinder':
-                position = "1a"
+                position = "PATHFINDER"
             elif alias == 'oracle':
-                position = "1b"
+                position = "ORACLE"
             elif alias == 'architect':
-                position = "2"
+                position = "ARCHITECT"
             elif alias == 'enforcer':
-                position = "3"
+                position = "ENFORCER"
             elif alias == 'craftsman':
-                position = "4a"
+                position = "CRAFTSMAN"
             elif alias == 'craftbuddy':
-                position = "4b"
+                position = "CRAFTBUDDY"
             elif alias == 'gatekeeper':
-                position = "5"
+                position = "GATEKEEPER"
             elif alias == 'mama_bear':
-                position = "DEV_QA"
+                position = "MAMA_BEAR"
             elif alias == 'harmony':
-                position = "DEV_META"
+                position = "HARMONY"
             else:
                 position = str(i)
             print(f"  {position:>2}. {description}")
@@ -362,14 +367,69 @@ class WARPCOREAgency:
 **CLIENT_DIR_ABSOLUTE**: {client_dir_str}
 **ANALYSIS_TARGET**: {client_dir_str}
 **AGENCY_CACHE_DIR**: {agency_dir_str}
-**TARGET_AGENCY_CACHE**: {client_dir_str}/.agency/.data
-**SYSTEM_AGENCY_CACHE**: {agency_dir_str}/.data
+**TARGET_AGENCY_CACHE**: {str(self.primary_cache)}
+**SYSTEM_AGENCY_CACHE**: {str(self.secondary_cache)}
 **TRACE_ID**: {trace_id} (timestamp-based step ordering)
 **CACHE_WITH_TRACE**: {{workflow_id}}_{{trace_id}}_{{agent_name}}_{{output_type}}.json
 **LLM_COLLECTOR**: {llm_collector_path} (run this to understand codebase)
 **WORK_AGAINST**: {client_dir_str} (analyze this directory)
 **CACHE_RESULTS_TO_PRIMARY**: {client_dir_str}/.agency/.data (target cache)
 **CACHE_RESULTS_TO_SECONDARY**: {agency_dir_str}/.data (system cache)
+
+### 🚀 IMMEDIATE CACHE INITIALIZATION (CRITICAL - DO THIS FIRST!)
+**BEFORE ANY OTHER WORK**, immediately create cache acknowledgment files to track your work:
+
+```bash
+# Create immediate cache acknowledgment with work plan
+WORK_PLAN_FILE="{str(self.primary_cache)}/{{workflow_id}}_{{trace_id}}_${{AGENT_NAME}}_work_acknowledgment.json"
+SYSTEM_PLAN_FILE="{str(self.secondary_cache)}/{{workflow_id}}_{{trace_id}}_${{AGENT_NAME}}_work_acknowledgment.json"
+
+# Ensure cache directories exist
+mkdir -p "{str(self.primary_cache)}" 2>/dev/null || python3 -c "import pathlib; pathlib.Path('{str(self.primary_cache)}').mkdir(parents=True, exist_ok=True)"
+mkdir -p "{str(self.secondary_cache)}" 2>/dev/null || python3 -c "import pathlib; pathlib.Path('{str(self.secondary_cache)}').mkdir(parents=True, exist_ok=True)"
+
+# Create immediate work acknowledgment in BOTH caches
+cat > "$WORK_PLAN_FILE" << EOF
+{{
+  "agent_name": "$AGENT_NAME",
+  "workflow_id": "{{workflow_id}}",
+  "trace_id": "{trace_id}",
+  "work_acknowledged_at": "$(date -u +%Y-%m-%dT%H:%M:%S.%3NZ)",
+  "work_status": "ACKNOWLEDGED_AND_STARTING",
+  "work_intention": "[FILL IN YOUR SPECIFIC WORK INTENTION]",
+  "planned_approach": [
+    "[STEP 1: Brief description]",
+    "[STEP 2: Brief description]", 
+    "[STEP 3: Brief description]"
+  ],
+  "expected_outputs": [
+    "Primary analysis results",
+    "Detailed findings", 
+    "Handoff data for next agent"
+  ],
+  "estimated_duration_minutes": 15,
+  "cache_locations": [
+    "{str(self.primary_cache)}",
+    "{str(self.secondary_cache)}"
+  ]
+}}
+EOF
+
+# Copy to system cache
+cp "$WORK_PLAN_FILE" "$SYSTEM_PLAN_FILE"
+
+echo "✅ Work acknowledged and cached to both locations"
+echo "📋 Work plan: $WORK_PLAN_FILE"
+echo "🔄 System copy: $SYSTEM_PLAN_FILE"
+```
+
+**CRITICAL REQUIREMENTS:**
+- 🔥 **IMMEDIATE EXECUTION**: Run this cache init BEFORE any analysis work
+- 📝 **FILL IN SPECIFICS**: Replace placeholder text with your actual work intention and approach
+- 🎯 **AGENT_NAME**: Use your specific agent name (pathfinder, architect, etc.)
+- ⚡ **QUICK PLAN**: Keep work intention and steps concise but specific
+- 🔄 **DUAL WRITE**: Always write to BOTH primary and secondary cache locations
+- ✅ **VERIFY WRITE**: Confirm files were created successfully before proceeding
 
 ### DIRECTORY OPERATION DIRECTIVES:
 - **ANALYZE**: All file operations, code analysis, and discovery work against CLIENT_DIR_ABSOLUTE
@@ -912,6 +972,12 @@ class WARPCOREAgency:
         
         # Use the agent's actual prompt from the JSON specification
         agent_prompt = agent_spec.get('prompt', f'Execute {agent_alias} agent')
+        
+        # If user input is provided (like custom message), inject it into the prompt
+        if user_input_or_spec and agent_alias != 'oracle':
+            # For non-oracle agents, append user input as additional context
+            agent_prompt = f"{agent_prompt}\n\nUSER REQUEST: {user_input_or_spec}\n\nPlease address this user request while executing your core responsibilities."
+            print(f"💬 Injected user input: {user_input_or_spec[:50]}...")
         
         # Build the warp command to execute the agent with its prompt
         warp_cmd = ['warp', 'agent', 'run', '--prompt', agent_prompt]

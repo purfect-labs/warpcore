@@ -1,7 +1,7 @@
 {
   "config": {
-    "configFile": "/Users/shawn_meredith/code/pets/warpcore/.workflows/warp/dev/web/tests/playwright.config.js",
-    "rootDir": "/Users/shawn_meredith/code/pets/warpcore/.workflows/warp/dev/web/tests/playwright",
+    "configFile": "/Users/shawn_meredith/code/pets/warpcore/src/agency/web/tests/playwright.config.js",
+    "rootDir": "/Users/shawn_meredith/code/pets/warpcore/src/agency/web/tests/playwright",
     "forbidOnly": false,
     "fullyParallel": true,
     "globalSetup": null,
@@ -11,7 +11,7 @@
     "grepInvert": null,
     "maxFailures": 1,
     "metadata": {
-      "actualWorkers": 4
+      "actualWorkers": 1
     },
     "preserveOutput": "always",
     "reporter": [
@@ -45,15 +45,15 @@
     "quiet": false,
     "projects": [
       {
-        "outputDir": "/Users/shawn_meredith/code/pets/warpcore/.workflows/warp/dev/web/tests/test-results",
+        "outputDir": "/Users/shawn_meredith/code/pets/warpcore/src/agency/web/tests/test-results",
         "repeatEach": 1,
         "retries": 0,
         "metadata": {
-          "actualWorkers": 4
+          "actualWorkers": 1
         },
         "id": "setup",
         "name": "setup",
-        "testDir": "/Users/shawn_meredith/code/pets/warpcore/.workflows/warp/dev/web/tests/playwright",
+        "testDir": "/Users/shawn_meredith/code/pets/warpcore/src/agency/web/tests/playwright",
         "testIgnore": [],
         "testMatch": [
           "**/setup/*.spec.js"
@@ -61,15 +61,15 @@
         "timeout": 30000
       },
       {
-        "outputDir": "/Users/shawn_meredith/code/pets/warpcore/.workflows/warp/dev/web/tests/test-results",
+        "outputDir": "/Users/shawn_meredith/code/pets/warpcore/src/agency/web/tests/test-results",
         "repeatEach": 1,
         "retries": 0,
         "metadata": {
-          "actualWorkers": 4
+          "actualWorkers": 1
         },
         "id": "chrome-desktop",
         "name": "chrome-desktop",
-        "testDir": "/Users/shawn_meredith/code/pets/warpcore/.workflows/warp/dev/web/tests/playwright",
+        "testDir": "/Users/shawn_meredith/code/pets/warpcore/src/agency/web/tests/playwright",
         "testIgnore": [],
         "testMatch": [
           "**/*.@(spec|test).?(c|m)[jt]s?(x)"
@@ -77,15 +77,15 @@
         "timeout": 30000
       },
       {
-        "outputDir": "/Users/shawn_meredith/code/pets/warpcore/.workflows/warp/dev/web/tests/test-results",
+        "outputDir": "/Users/shawn_meredith/code/pets/warpcore/src/agency/web/tests/test-results",
         "repeatEach": 1,
         "retries": 0,
         "metadata": {
-          "actualWorkers": 4
+          "actualWorkers": 1
         },
         "id": "firefox-desktop",
         "name": "firefox-desktop",
-        "testDir": "/Users/shawn_meredith/code/pets/warpcore/.workflows/warp/dev/web/tests/playwright",
+        "testDir": "/Users/shawn_meredith/code/pets/warpcore/src/agency/web/tests/playwright",
         "testIgnore": [],
         "testMatch": [
           "**/*.@(spec|test).?(c|m)[jt]s?(x)"
@@ -93,15 +93,15 @@
         "timeout": 30000
       },
       {
-        "outputDir": "/Users/shawn_meredith/code/pets/warpcore/.workflows/warp/dev/web/tests/test-results",
+        "outputDir": "/Users/shawn_meredith/code/pets/warpcore/src/agency/web/tests/test-results",
         "repeatEach": 1,
         "retries": 0,
         "metadata": {
-          "actualWorkers": 4
+          "actualWorkers": 1
         },
         "id": "mobile-chrome",
         "name": "mobile-chrome",
-        "testDir": "/Users/shawn_meredith/code/pets/warpcore/.workflows/warp/dev/web/tests/playwright",
+        "testDir": "/Users/shawn_meredith/code/pets/warpcore/src/agency/web/tests/playwright",
         "testIgnore": [],
         "testMatch": [
           "**/*.@(spec|test).?(c|m)[jt]s?(x)"
@@ -109,15 +109,15 @@
         "timeout": 30000
       },
       {
-        "outputDir": "/Users/shawn_meredith/code/pets/warpcore/.workflows/warp/dev/web/tests/test-results",
+        "outputDir": "/Users/shawn_meredith/code/pets/warpcore/src/agency/web/tests/test-results",
         "repeatEach": 1,
         "retries": 0,
         "metadata": {
-          "actualWorkers": 4
+          "actualWorkers": 1
         },
         "id": "api-tests",
         "name": "api-tests",
-        "testDir": "/Users/shawn_meredith/code/pets/warpcore/.workflows/warp/dev/web/tests/playwright",
+        "testDir": "/Users/shawn_meredith/code/pets/warpcore/src/agency/web/tests/playwright",
         "testIgnore": [],
         "testMatch": [
           "**/api/*.spec.js"
@@ -125,15 +125,15 @@
         "timeout": 30000
       },
       {
-        "outputDir": "/Users/shawn_meredith/code/pets/warpcore/.workflows/warp/dev/web/tests/test-results",
+        "outputDir": "/Users/shawn_meredith/code/pets/warpcore/src/agency/web/tests/test-results",
         "repeatEach": 1,
         "retries": 0,
         "metadata": {
-          "actualWorkers": 4
+          "actualWorkers": 1
         },
         "id": "user-flows",
         "name": "user-flows",
-        "testDir": "/Users/shawn_meredith/code/pets/warpcore/.workflows/warp/dev/web/tests/playwright",
+        "testDir": "/Users/shawn_meredith/code/pets/warpcore/src/agency/web/tests/playwright",
         "testIgnore": [],
         "testMatch": [
           "**/flows/*.spec.js"
@@ -147,10 +147,11 @@
     "version": "1.56.0",
     "workers": 4,
     "webServer": {
-      "command": "python3 server.py",
+      "command": "cd .. && nohup python3 server.py > /tmp/playwright_server.log 2>&1 &",
       "port": 8080,
       "reuseExistingServer": true,
-      "timeout": 30000
+      "timeout": 30000,
+      "ignoreHTTPSErrors": true
     }
   },
   "suites": [
@@ -169,7 +170,7 @@
           "specs": [
             {
               "title": "GET /api/execution-logs - should return execution logs with proper structure",
-              "ok": true,
+              "ok": false,
               "tags": [],
               "tests": [
                 {
@@ -182,333 +183,58 @@
                     {
                       "workerIndex": 0,
                       "parallelIndex": 0,
-                      "status": "interrupted",
-                      "duration": 747,
-                      "errors": [],
-                      "stdout": [],
-                      "stderr": [],
-                      "retry": 0,
-                      "startTime": "2025-10-07T02:53:54.842Z",
-                      "annotations": [],
-                      "attachments": [
-                        {
-                          "name": "screenshot",
-                          "contentType": "image/png",
-                          "path": "/Users/shawn_meredith/code/pets/warpcore/.workflows/warp/dev/web/tests/test-results/api-api-endpoints-WARPCORE-54bfe--logs-with-proper-structure-api-tests/test-failed-1.png"
-                        },
-                        {
-                          "name": "video",
-                          "contentType": "video/webm",
-                          "path": "/Users/shawn_meredith/code/pets/warpcore/.workflows/warp/dev/web/tests/test-results/api-api-endpoints-WARPCORE-54bfe--logs-with-proper-structure-api-tests/video.webm"
-                        }
-                      ]
-                    }
-                  ],
-                  "status": "skipped"
-                }
-              ],
-              "id": "a4a07d4caadfd723703d-2b32bca4e788b39f3958",
-              "file": "api/api-endpoints.spec.js",
-              "line": 13,
-              "column": 5
-            },
-            {
-              "title": "GET /api/execution-logs - should handle high volume data efficiently",
-              "ok": true,
-              "tags": [],
-              "tests": [
-                {
-                  "timeout": 30000,
-                  "annotations": [],
-                  "expectedStatus": "passed",
-                  "projectId": "api-tests",
-                  "projectName": "api-tests",
-                  "results": [
-                    {
-                      "workerIndex": 1,
-                      "parallelIndex": 1,
-                      "status": "interrupted",
-                      "duration": 769,
-                      "errors": [],
-                      "stdout": [],
-                      "stderr": [],
-                      "retry": 0,
-                      "startTime": "2025-10-07T02:53:54.841Z",
-                      "annotations": [],
-                      "attachments": [
-                        {
-                          "name": "screenshot",
-                          "contentType": "image/png",
-                          "path": "/Users/shawn_meredith/code/pets/warpcore/.workflows/warp/dev/web/tests/test-results/api-api-endpoints-WARPCORE-0dc27-igh-volume-data-efficiently-api-tests/test-failed-1.png"
-                        },
-                        {
-                          "name": "video",
-                          "contentType": "video/webm",
-                          "path": "/Users/shawn_meredith/code/pets/warpcore/.workflows/warp/dev/web/tests/test-results/api-api-endpoints-WARPCORE-0dc27-igh-volume-data-efficiently-api-tests/video.webm"
-                        }
-                      ]
-                    }
-                  ],
-                  "status": "skipped"
-                }
-              ],
-              "id": "a4a07d4caadfd723703d-0f3c525f70a6a98c319d",
-              "file": "api/api-endpoints.spec.js",
-              "line": 33,
-              "column": 5
-            },
-            {
-              "title": "GET /api/workflow-logs/:id - should return specific workflow data",
-              "ok": true,
-              "tags": [],
-              "tests": [
-                {
-                  "timeout": 30000,
-                  "annotations": [],
-                  "expectedStatus": "passed",
-                  "projectId": "api-tests",
-                  "projectName": "api-tests",
-                  "results": [
-                    {
-                      "workerIndex": 2,
-                      "parallelIndex": 2,
-                      "status": "interrupted",
-                      "duration": 794,
-                      "errors": [],
-                      "stdout": [],
-                      "stderr": [],
-                      "retry": 0,
-                      "startTime": "2025-10-07T02:53:54.842Z",
-                      "annotations": [],
-                      "attachments": [
-                        {
-                          "name": "screenshot",
-                          "contentType": "image/png",
-                          "path": "/Users/shawn_meredith/code/pets/warpcore/.workflows/warp/dev/web/tests/test-results/api-api-endpoints-WARPCORE-9193f-turn-specific-workflow-data-api-tests/test-failed-1.png"
-                        },
-                        {
-                          "name": "video",
-                          "contentType": "video/webm",
-                          "path": "/Users/shawn_meredith/code/pets/warpcore/.workflows/warp/dev/web/tests/test-results/api-api-endpoints-WARPCORE-9193f-turn-specific-workflow-data-api-tests/video.webm"
-                        }
-                      ]
-                    }
-                  ],
-                  "status": "skipped"
-                }
-              ],
-              "id": "a4a07d4caadfd723703d-f542d3e33a686b7a5e45",
-              "file": "api/api-endpoints.spec.js",
-              "line": 45,
-              "column": 5
-            },
-            {
-              "title": "API error handling - should return proper error responses",
-              "ok": false,
-              "tags": [],
-              "tests": [
-                {
-                  "timeout": 30000,
-                  "annotations": [],
-                  "expectedStatus": "passed",
-                  "projectId": "api-tests",
-                  "projectName": "api-tests",
-                  "results": [
-                    {
-                      "workerIndex": 3,
-                      "parallelIndex": 3,
                       "status": "failed",
-                      "duration": 717,
+                      "duration": 1778,
                       "error": {
                         "message": "Error: \u001b[2mexpect(\u001b[22m\u001b[31mreceived\u001b[39m\u001b[2m).\u001b[22mtoBe\u001b[2m(\u001b[22m\u001b[32mexpected\u001b[39m\u001b[2m) // Object.is equality\u001b[22m\n\nExpected: \u001b[32m200\u001b[39m\nReceived: \u001b[31m404\u001b[39m",
-                        "stack": "Error: \u001b[2mexpect(\u001b[22m\u001b[31mreceived\u001b[39m\u001b[2m).\u001b[22mtoBe\u001b[2m(\u001b[22m\u001b[32mexpected\u001b[39m\u001b[2m) // Object.is equality\u001b[22m\n\nExpected: \u001b[32m200\u001b[39m\nReceived: \u001b[31m404\u001b[39m\n    at /Users/shawn_meredith/code/pets/warpcore/.workflows/warp/dev/web/tests/playwright/api/api-endpoints.spec.js:68:35",
+                        "stack": "Error: \u001b[2mexpect(\u001b[22m\u001b[31mreceived\u001b[39m\u001b[2m).\u001b[22mtoBe\u001b[2m(\u001b[22m\u001b[32mexpected\u001b[39m\u001b[2m) // Object.is equality\u001b[22m\n\nExpected: \u001b[32m200\u001b[39m\nReceived: \u001b[31m404\u001b[39m\n    at /Users/shawn_meredith/code/pets/warpcore/src/agency/web/tests/playwright/api/api-endpoints.spec.js:22:35",
                         "location": {
-                          "file": "/Users/shawn_meredith/code/pets/warpcore/.workflows/warp/dev/web/tests/playwright/api/api-endpoints.spec.js",
+                          "file": "/Users/shawn_meredith/code/pets/warpcore/src/agency/web/tests/playwright/api/api-endpoints.spec.js",
                           "column": 35,
-                          "line": 68
+                          "line": 22
                         },
-                        "snippet": "\u001b[0m \u001b[90m 66 |\u001b[39m         \u001b[90m// Test non-existent workflow\u001b[39m\n \u001b[90m 67 |\u001b[39m         \u001b[36mconst\u001b[39m response \u001b[33m=\u001b[39m \u001b[36mawait\u001b[39m request\u001b[33m.\u001b[39m\u001b[36mget\u001b[39m(\u001b[32m'/workflow-logs/non-existent-workflow'\u001b[39m)\u001b[33m;\u001b[39m\n\u001b[31m\u001b[1m>\u001b[22m\u001b[39m\u001b[90m 68 |\u001b[39m         expect(response\u001b[33m.\u001b[39mstatus())\u001b[33m.\u001b[39mtoBe(\u001b[35m200\u001b[39m)\u001b[33m;\u001b[39m \u001b[90m// Server might return empty data instead of 404\u001b[39m\n \u001b[90m    |\u001b[39m                                   \u001b[31m\u001b[1m^\u001b[22m\u001b[39m\n \u001b[90m 69 |\u001b[39m         \n \u001b[90m 70 |\u001b[39m         \u001b[36mconst\u001b[39m data \u001b[33m=\u001b[39m \u001b[36mawait\u001b[39m response\u001b[33m.\u001b[39mjson()\u001b[33m;\u001b[39m\n \u001b[90m 71 |\u001b[39m         expect(data\u001b[33m.\u001b[39mworkflow_id)\u001b[33m.\u001b[39mtoBe(\u001b[32m'non-existent-workflow'\u001b[39m)\u001b[33m;\u001b[39m\u001b[0m"
+                        "snippet": "\u001b[0m \u001b[90m 20 |\u001b[39m         \u001b[36mconst\u001b[39m response \u001b[33m=\u001b[39m \u001b[36mawait\u001b[39m request\u001b[33m.\u001b[39m\u001b[36mget\u001b[39m(\u001b[32m'/api/execution-logs'\u001b[39m)\u001b[33m;\u001b[39m\n \u001b[90m 21 |\u001b[39m         \n\u001b[31m\u001b[1m>\u001b[22m\u001b[39m\u001b[90m 22 |\u001b[39m         expect(response\u001b[33m.\u001b[39mstatus())\u001b[33m.\u001b[39mtoBe(\u001b[35m200\u001b[39m)\u001b[33m;\u001b[39m\n \u001b[90m    |\u001b[39m                                   \u001b[31m\u001b[1m^\u001b[22m\u001b[39m\n \u001b[90m 23 |\u001b[39m         \n \u001b[90m 24 |\u001b[39m         \u001b[36mconst\u001b[39m data \u001b[33m=\u001b[39m \u001b[36mawait\u001b[39m response\u001b[33m.\u001b[39mjson()\u001b[33m;\u001b[39m\n \u001b[90m 25 |\u001b[39m         expect(data)\u001b[33m.\u001b[39mtoHaveProperty(\u001b[32m'logs'\u001b[39m)\u001b[33m;\u001b[39m\u001b[0m"
                       },
                       "errors": [
                         {
                           "location": {
-                            "file": "/Users/shawn_meredith/code/pets/warpcore/.workflows/warp/dev/web/tests/playwright/api/api-endpoints.spec.js",
+                            "file": "/Users/shawn_meredith/code/pets/warpcore/src/agency/web/tests/playwright/api/api-endpoints.spec.js",
                             "column": 35,
-                            "line": 68
+                            "line": 22
                           },
-                          "message": "Error: \u001b[2mexpect(\u001b[22m\u001b[31mreceived\u001b[39m\u001b[2m).\u001b[22mtoBe\u001b[2m(\u001b[22m\u001b[32mexpected\u001b[39m\u001b[2m) // Object.is equality\u001b[22m\n\nExpected: \u001b[32m200\u001b[39m\nReceived: \u001b[31m404\u001b[39m\n\n\u001b[0m \u001b[90m 66 |\u001b[39m         \u001b[90m// Test non-existent workflow\u001b[39m\n \u001b[90m 67 |\u001b[39m         \u001b[36mconst\u001b[39m response \u001b[33m=\u001b[39m \u001b[36mawait\u001b[39m request\u001b[33m.\u001b[39m\u001b[36mget\u001b[39m(\u001b[32m'/workflow-logs/non-existent-workflow'\u001b[39m)\u001b[33m;\u001b[39m\n\u001b[31m\u001b[1m>\u001b[22m\u001b[39m\u001b[90m 68 |\u001b[39m         expect(response\u001b[33m.\u001b[39mstatus())\u001b[33m.\u001b[39mtoBe(\u001b[35m200\u001b[39m)\u001b[33m;\u001b[39m \u001b[90m// Server might return empty data instead of 404\u001b[39m\n \u001b[90m    |\u001b[39m                                   \u001b[31m\u001b[1m^\u001b[22m\u001b[39m\n \u001b[90m 69 |\u001b[39m         \n \u001b[90m 70 |\u001b[39m         \u001b[36mconst\u001b[39m data \u001b[33m=\u001b[39m \u001b[36mawait\u001b[39m response\u001b[33m.\u001b[39mjson()\u001b[33m;\u001b[39m\n \u001b[90m 71 |\u001b[39m         expect(data\u001b[33m.\u001b[39mworkflow_id)\u001b[33m.\u001b[39mtoBe(\u001b[32m'non-existent-workflow'\u001b[39m)\u001b[33m;\u001b[39m\u001b[0m\n\u001b[2m    at /Users/shawn_meredith/code/pets/warpcore/.workflows/warp/dev/web/tests/playwright/api/api-endpoints.spec.js:68:35\u001b[22m"
+                          "message": "Error: \u001b[2mexpect(\u001b[22m\u001b[31mreceived\u001b[39m\u001b[2m).\u001b[22mtoBe\u001b[2m(\u001b[22m\u001b[32mexpected\u001b[39m\u001b[2m) // Object.is equality\u001b[22m\n\nExpected: \u001b[32m200\u001b[39m\nReceived: \u001b[31m404\u001b[39m\n\n\u001b[0m \u001b[90m 20 |\u001b[39m         \u001b[36mconst\u001b[39m response \u001b[33m=\u001b[39m \u001b[36mawait\u001b[39m request\u001b[33m.\u001b[39m\u001b[36mget\u001b[39m(\u001b[32m'/api/execution-logs'\u001b[39m)\u001b[33m;\u001b[39m\n \u001b[90m 21 |\u001b[39m         \n\u001b[31m\u001b[1m>\u001b[22m\u001b[39m\u001b[90m 22 |\u001b[39m         expect(response\u001b[33m.\u001b[39mstatus())\u001b[33m.\u001b[39mtoBe(\u001b[35m200\u001b[39m)\u001b[33m;\u001b[39m\n \u001b[90m    |\u001b[39m                                   \u001b[31m\u001b[1m^\u001b[22m\u001b[39m\n \u001b[90m 23 |\u001b[39m         \n \u001b[90m 24 |\u001b[39m         \u001b[36mconst\u001b[39m data \u001b[33m=\u001b[39m \u001b[36mawait\u001b[39m response\u001b[33m.\u001b[39mjson()\u001b[33m;\u001b[39m\n \u001b[90m 25 |\u001b[39m         expect(data)\u001b[33m.\u001b[39mtoHaveProperty(\u001b[32m'logs'\u001b[39m)\u001b[33m;\u001b[39m\u001b[0m\n\u001b[2m    at /Users/shawn_meredith/code/pets/warpcore/src/agency/web/tests/playwright/api/api-endpoints.spec.js:22:35\u001b[22m"
                         }
                       ],
                       "stdout": [],
                       "stderr": [],
                       "retry": 0,
-                      "startTime": "2025-10-07T02:53:54.852Z",
+                      "startTime": "2025-10-08T10:11:38.859Z",
                       "annotations": [],
                       "attachments": [
                         {
                           "name": "screenshot",
                           "contentType": "image/png",
-                          "path": "/Users/shawn_meredith/code/pets/warpcore/.workflows/warp/dev/web/tests/test-results/api-api-endpoints-WARPCORE-53572-turn-proper-error-responses-api-tests/test-failed-1.png"
+                          "path": "/Users/shawn_meredith/code/pets/warpcore/src/agency/web/tests/test-results/api-api-endpoints-WARPCORE-54bfe--logs-with-proper-structure-api-tests/test-failed-1.png"
                         },
                         {
                           "name": "video",
                           "contentType": "video/webm",
-                          "path": "/Users/shawn_meredith/code/pets/warpcore/.workflows/warp/dev/web/tests/test-results/api-api-endpoints-WARPCORE-53572-turn-proper-error-responses-api-tests/video.webm"
+                          "path": "/Users/shawn_meredith/code/pets/warpcore/src/agency/web/tests/test-results/api-api-endpoints-WARPCORE-54bfe--logs-with-proper-structure-api-tests/video.webm"
                         }
                       ],
                       "errorLocation": {
-                        "file": "/Users/shawn_meredith/code/pets/warpcore/.workflows/warp/dev/web/tests/playwright/api/api-endpoints.spec.js",
+                        "file": "/Users/shawn_meredith/code/pets/warpcore/src/agency/web/tests/playwright/api/api-endpoints.spec.js",
                         "column": 35,
-                        "line": 68
+                        "line": 22
                       }
                     }
                   ],
                   "status": "unexpected"
                 }
               ],
-              "id": "a4a07d4caadfd723703d-233db9c5a8ad4792a403",
+              "id": "a4a07d4caadfd723703d-2b32bca4e788b39f3958",
               "file": "api/api-endpoints.spec.js",
-              "line": 65,
-              "column": 5
-            },
-            {
-              "title": "API data consistency - should maintain data integrity across requests",
-              "ok": true,
-              "tags": [],
-              "tests": [
-                {
-                  "timeout": 30000,
-                  "annotations": [],
-                  "expectedStatus": "passed",
-                  "projectId": "api-tests",
-                  "projectName": "api-tests",
-                  "results": [],
-                  "status": "skipped"
-                }
-              ],
-              "id": "a4a07d4caadfd723703d-6fe3005be9e50a6042f1",
-              "file": "api/api-endpoints.spec.js",
-              "line": 77,
-              "column": 5
-            },
-            {
-              "title": "API performance under concurrent load",
-              "ok": true,
-              "tags": [],
-              "tests": [
-                {
-                  "timeout": 30000,
-                  "annotations": [],
-                  "expectedStatus": "passed",
-                  "projectId": "api-tests",
-                  "projectName": "api-tests",
-                  "results": [],
-                  "status": "skipped"
-                }
-              ],
-              "id": "a4a07d4caadfd723703d-b2c47987d5fe5b929340",
-              "file": "api/api-endpoints.spec.js",
-              "line": 97,
-              "column": 5
-            },
-            {
-              "title": "API data validation - should return properly formatted data",
-              "ok": true,
-              "tags": [],
-              "tests": [
-                {
-                  "timeout": 30000,
-                  "annotations": [],
-                  "expectedStatus": "passed",
-                  "projectId": "api-tests",
-                  "projectName": "api-tests",
-                  "results": [],
-                  "status": "skipped"
-                }
-              ],
-              "id": "a4a07d4caadfd723703d-ef75b691f8d74c49e805",
-              "file": "api/api-endpoints.spec.js",
-              "line": 122,
-              "column": 5
-            },
-            {
-              "title": "API content types and headers",
-              "ok": true,
-              "tags": [],
-              "tests": [
-                {
-                  "timeout": 30000,
-                  "annotations": [],
-                  "expectedStatus": "passed",
-                  "projectId": "api-tests",
-                  "projectName": "api-tests",
-                  "results": [],
-                  "status": "skipped"
-                }
-              ],
-              "id": "a4a07d4caadfd723703d-65f37bb1477a609c56a7",
-              "file": "api/api-endpoints.spec.js",
-              "line": 151,
-              "column": 5
-            },
-            {
-              "title": "API response time benchmarks",
-              "ok": true,
-              "tags": [],
-              "tests": [
-                {
-                  "timeout": 30000,
-                  "annotations": [],
-                  "expectedStatus": "passed",
-                  "projectId": "api-tests",
-                  "projectName": "api-tests",
-                  "results": [],
-                  "status": "skipped"
-                }
-              ],
-              "id": "a4a07d4caadfd723703d-c4a87a21bac8c7fa897e",
-              "file": "api/api-endpoints.spec.js",
-              "line": 166,
-              "column": 5
-            },
-            {
-              "title": "API data freshness - should reflect recent updates",
-              "ok": true,
-              "tags": [],
-              "tests": [
-                {
-                  "timeout": 30000,
-                  "annotations": [],
-                  "expectedStatus": "passed",
-                  "projectId": "api-tests",
-                  "projectName": "api-tests",
-                  "results": [],
-                  "status": "skipped"
-                }
-              ],
-              "id": "a4a07d4caadfd723703d-a0180d8ac68b748e63ac",
-              "file": "api/api-endpoints.spec.js",
-              "line": 195,
-              "column": 5
-            },
-            {
-              "title": "API integration with UI data flow",
-              "ok": true,
-              "tags": [],
-              "tests": [
-                {
-                  "timeout": 30000,
-                  "annotations": [],
-                  "expectedStatus": "passed",
-                  "projectId": "api-tests",
-                  "projectName": "api-tests",
-                  "results": [],
-                  "status": "skipped"
-                }
-              ],
-              "id": "a4a07d4caadfd723703d-e93b2ccb8db046a3a203",
-              "file": "api/api-endpoints.spec.js",
-              "line": 219,
+              "line": 19,
               "column": 5
             }
           ]
@@ -522,10 +248,10 @@
     }
   ],
   "stats": {
-    "startTime": "2025-10-07T02:53:54.431Z",
-    "duration": 2637.38,
+    "startTime": "2025-10-08T10:11:38.390Z",
+    "duration": 4729.2919999999995,
     "expected": 0,
-    "skipped": 10,
+    "skipped": 0,
     "unexpected": 1,
     "flaky": 0
   }
