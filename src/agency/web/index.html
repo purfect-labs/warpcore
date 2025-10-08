@@ -2698,7 +2698,7 @@
                 const response = await fetch('http://localhost:8081/api/running-processes');
                 const data = await response.json();
                 
-                const processList = document.getElementById('running-processes-list');
+                const processList = document.getElementById('processList');
                 
                 if (data.status === 'success') {
                     if (data.running_processes && data.running_processes.length > 0) {
@@ -2727,7 +2727,7 @@
                     processList.innerHTML = `<p>Error loading processes: ${data.message}</p>`;
                 }
             } catch (error) {
-                document.getElementById('running-processes-list').innerHTML = `<p>Failed to load processes: ${error.message}</p>`;
+                document.getElementById('processList').innerHTML = `<p>Failed to load processes: ${error.message}</p>`;
             }
         }
         
