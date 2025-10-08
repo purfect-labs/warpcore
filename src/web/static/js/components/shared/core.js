@@ -79,7 +79,7 @@ function addTerminalLine(prefix, content, type = 'normal') {
     
     const promptSpan = document.createElement('span');
     promptSpan.className = 'terminal-prompt';
-    promptSpan.textContent = `⚡ apex $`;
+    promptSpan.textContent = `🌊 warpcore $`;
     
     const contentSpan = document.createElement('span');
     contentSpan.className = `terminal-${type}`;
@@ -117,7 +117,7 @@ function clearTerminal() {
     const output = document.getElementById('terminal-output');
     output.innerHTML = `
         <div class="terminal-line">
-            <span class="terminal-prompt">⚡ apex $</span>
+            <span class="terminal-prompt">🌊 warpcore $</span>
             <span class="terminal-success">Terminal cleared</span>
         </div>
     `;
@@ -177,8 +177,13 @@ function updateSystemStatus(status) {
     }
 }
 
-// Export functions for use by other modules
-window.WARPCORE = {
+// Export functions for use by other modules - ensure WARPCORE object exists and merge
+if (!window.WARPCORE) {
+    window.WARPCORE = {};
+}
+
+// Merge core functions into WARPCORE object
+Object.assign(window.WARPCORE, {
     initWebSocket,
     addTerminalLine,
     clearTerminal,
@@ -193,4 +198,4 @@ window.WARPCORE = {
     clientId,
     lastExecutionTime: () => lastExecutionTime,
     setLastExecutionTime: (value) => lastExecutionTime = value
-};
+});

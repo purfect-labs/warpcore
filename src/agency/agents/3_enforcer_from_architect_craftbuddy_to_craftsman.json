@@ -4,7 +4,7 @@
   "starting_directory": "AGENCY_CACHE_DIR",
   "workflow_position": 3,
   "dependencies": [
-    "architect|oracle"
+    "architect|oracle|craftbuddy"
   ],
   "outputs_to": [
     "craftsman"

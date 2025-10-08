@@ -939,7 +939,7 @@
         <div class="header">
             <h1>🤖 WARPCORE Agent System</h1>
             <p>Dynamic Flow Documentation - Generated from Real Agent Schemas</p>
-            <p class="watermark">Generated: 2025-10-07T20:42:07.259924</p>
+            <p class="watermark">Generated: 2025-10-08T03:18:08.645401</p>
         </div>
 
         <div class="tab-container">
@@ -965,11 +965,11 @@
                             <span class="stat-label">Unique Positions</span>
                         </div>
                         <div class="stat-card">
-                            <span class="stat-value">0</span>
+                            <span class="stat-value">1</span>
                             <span class="stat-label">Loop Patterns</span>
                         </div>
                         <div class="stat-card">
-                            <span class="stat-value">2</span>
+                            <span class="stat-value">4</span>
                             <span class="stat-label">Parallel Flows</span>
                         </div>
         
@@ -980,9 +980,9 @@ flowchart TD
     %% WARPCORE Agent Flow Configuration
     0a["0a<br/>ORIGIN<br/>Bootstrap Agent"]
     0b["0b<br/>BOSS<br/>Workflow Orchestrator"]
-    1["1<br/>PATHFINDER<br/>Schema Coherence Reconcil..."]
-    2b["2b<br/>ORACLE<br/>User Input Requirements T..."]
-    2a["2a<br/>ARCHITECT<br/>Requirements Generator"]
+    1a["1a<br/>PATHFINDER<br/>Schema Coherence Reconcil..."]
+    1b["1b<br/>ORACLE<br/>User Input Requirements T..."]
+    2["2<br/>ARCHITECT<br/>Requirements Generator"]
     3["3<br/>ENFORCER<br/>Enhanced Requirements Val..."]
     4a["4a<br/>CRAFTSMAN<br/>Implementation Agent"]
     4b["4b<br/>CRAFTBUDDY<br/>Creative Enhancement & De..."]
@@ -995,17 +995,17 @@ flowchart TD
     MAMA_BEAR{{🤱 MAMA BEAR<br/>QA & Production Readiness}}
     HARMONY{🎭 HARMONY<br/>Coherence Guardian}
     0a -->|"bootstrap"| 0b
-    0b -->|"orchestration"| 1
-    1 -->|"analysis"| 2a
-    2b -->|"user_requirements"| 2a
-    2a -->|"requirements"| 3
+    0b -->|"orchestration"| 1a
+    1a -->|"analysis"| 2
+    1b -->|"user_requirements"| 2
+    2 -->|"requirements"| 3
     3 -->|"validation"| 4a
     4a -->|"implementation"| 4b
-    4b -->|"loop_back_for_enhancement"| 4a
+    4b -->|"generate_additional_requirements"| 3
     4b -->|"promote_for_final_validation"| 5
     5 -->|"needs_fixes_or_improvements"| 4a
-    5 -->|"complete_cycle_start_new_workflow"| 0b
-    USER -->|"user_specifications"| 2b
+    5 -->|"complete_cycle_start_new_workflow"| 1a
+    USER -->|"user_specifications"| 1b
 
     %% Styling
     classDef origin fill:#8b5cf6,stroke:#6d28d9,stroke-width:2px
@@ -1022,9 +1022,9 @@ flowchart TD
     classDef harmony fill:#ec4899,stroke:#db2777,stroke-width:2px
     class 0a origin
     class 0b boss
-    class 1 pathfinder
-    class 2b oracle
-    class 2a architect
+    class 1a pathfinder
+    class 1b oracle
+    class 2 architect
     class 3 enforcer
     class 4a craftsman
     class 4b craftbuddy
@@ -1094,23 +1094,23 @@ flowchart TD
                                 </div>
                             </div>
                             <div class="agent-details">
-                                <div><strong>File:</strong> 0b_boss_from_origin_to_pathfinder_oracle.json</div>
+                                <div><strong>File:</strong> 0b_boss_from_origin_to_pathfinder.json</div>
                                 <div><strong>Inputs:</strong> origin</div>
-                                <div><strong>Outputs:</strong> pathfinder, oracle</div>
+                                <div><strong>Outputs:</strong> pathfinder</div>
                                 <div><strong>Cache:</strong> {workflow_id}_{trace_id}_boss_orchestration_state.json</div>
                             </div>
                         </div>
             
                         <div class="agent-card">
                             <div class="agent-header">
-                                <div class="agent-position" style="background: #45b7d1;">1</div>
+                                <div class="agent-position" style="background: #45b7d1;">1a</div>
                                 <div class="agent-info">
                                     <h3>PATHFINDER</h3>
                                     <div class="role">Schema Coherence Reconciler Agent - the first agent in the WARPCORE gap analysis workflow. Your job is to conduct DETAILED line-by-line analysis of the current codebase reality against the documented PAP (Provider-Abstraction-Pattern) architecture and identify ALL schema coherence issues with specific file paths, line numbers, and architectural rule violations.</div>
                                 </div>
                             </div>
                             <div class="agent-details">
-                                <div><strong>File:</strong> 1_pathfinder_from_boss_to_architect.json</div>
+                                <div><strong>File:</strong> 1a_pathfinder_from_boss_to_architect.json</div>
                                 <div><strong>Inputs:</strong> boss</div>
                                 <div><strong>Outputs:</strong> architect</div>
                                 <div><strong>Cache:</strong> {workflow_id}_{trace_id}_pathfinder_codebase_coherence_analysis.json</div>
@@ -1119,33 +1119,33 @@ flowchart TD
             
                         <div class="agent-card">
                             <div class="agent-header">
-                                <div class="agent-position" style="background: #96ceb4;">2a</div>
-                                <div class="agent-info">
-                                    <h3>ARCHITECT</h3>
-                                    <div class="role">Requirements Generator Agent - you convert schema coherence analysis into structured implementation requirements. You analyze the CLIENT_DIRECTORY codebase reality and generate requirements to implement workflow features into that codebase.</div>
-                                </div>
-                            </div>
-                            <div class="agent-details">
-                                <div><strong>File:</strong> 2a_architect_from_pathfinder_oracle_to_enforcer.json</div>
-                                <div><strong>Inputs:</strong> pathfinder, oracle</div>
-                                <div><strong>Outputs:</strong> enforcer</div>
-                                <div><strong>Cache:</strong> {workflow_id}_{trace_id}_architect_requirements_analysis.json</div>
-                            </div>
-                        </div>
-            
-                        <div class="agent-card">
-                            <div class="agent-header">
-                                <div class="agent-position" style="background: #ffeaa7;">2b</div>
+                                <div class="agent-position" style="background: #ffeaa7;">1b</div>
                                 <div class="agent-info">
                                     <h3>ORACLE</h3>
                                     <div class="role">User Input Requirements Translator Agent - you convert raw user specifications and workflow specs into structured implementation requirements. You analyze the CLIENT_DIRECTORY codebase reality and generate requirements to implement workflow features into that codebase.</div>
                                 </div>
                             </div>
                             <div class="agent-details">
-                                <div><strong>File:</strong> 2b_oracle_from_user_spec_to_architect.json</div>
-                                <div><strong>Inputs:</strong> user, spec</div>
+                                <div><strong>File:</strong> 1b_oracle_from_user_to_architect.json</div>
+                                <div><strong>Inputs:</strong> user</div>
                                 <div><strong>Outputs:</strong> architect</div>
                                 <div><strong>Cache:</strong> {workflow_id}_{trace_id}_oracle_user_coherence_analysis.json</div>
+                            </div>
+                        </div>
+            
+                        <div class="agent-card">
+                            <div class="agent-header">
+                                <div class="agent-position" style="background: #96ceb4;">2</div>
+                                <div class="agent-info">
+                                    <h3>ARCHITECT</h3>
+                                    <div class="role">Requirements Generator Agent - you convert schema coherence analysis into structured implementation requirements. You analyze the CLIENT_DIRECTORY codebase reality and generate requirements to implement workflow features into that codebase.</div>
+                                </div>
+                            </div>
+                            <div class="agent-details">
+                                <div><strong>File:</strong> 2_architect_from_pathfinder_oracle_to_enforcer.json</div>
+                                <div><strong>Inputs:</strong> pathfinder, oracle</div>
+                                <div><strong>Outputs:</strong> enforcer</div>
+                                <div><strong>Cache:</strong> {workflow_id}_{trace_id}_architect_requirements_analysis.json</div>
                             </div>
                         </div>
             
@@ -1174,8 +1174,8 @@ flowchart TD
                                 </div>
                             </div>
                             <div class="agent-details">
-                                <div><strong>File:</strong> 4a_craftsman_from_enforcer_to_craftbuddy.json</div>
-                                <div><strong>Inputs:</strong> enforcer</div>
+                                <div><strong>File:</strong> 4a_craftsman_from_enforcer_gatekeeper_to_craftbuddy.json</div>
+                                <div><strong>Inputs:</strong> enforcer, gatekeeper</div>
                                 <div><strong>Outputs:</strong> craftbuddy</div>
                                 <div><strong>Cache:</strong> {workflow_id}_{trace_id}_craftsman_implementation_results.json</div>
                             </div>
@@ -1190,9 +1190,9 @@ flowchart TD
                                 </div>
                             </div>
                             <div class="agent-details">
-                                <div><strong>File:</strong> 4b_craftbuddy_from_craftsman_to_craftsman_gatekeeper.json</div>
+                                <div><strong>File:</strong> 4b_craftbuddy_from_craftsman_to_enforcer_gatekeeper.json</div>
                                 <div><strong>Inputs:</strong> craftsman</div>
-                                <div><strong>Outputs:</strong> craftsman, gatekeeper</div>
+                                <div><strong>Outputs:</strong> enforcer, gatekeeper</div>
                                 <div><strong>Cache:</strong> {workflow_id}_{trace_id}_craftbuddy_decision.json</div>
                             </div>
                         </div>
@@ -1206,9 +1206,9 @@ flowchart TD
                                 </div>
                             </div>
                             <div class="agent-details">
-                                <div><strong>File:</strong> 5_gatekeeper_from_craftbuddy_to_complete.json</div>
+                                <div><strong>File:</strong> 5_gatekeeper_from_craftbuddy_to_craftsman_pathfinder.json</div>
                                 <div><strong>Inputs:</strong> craftbuddy</div>
-                                <div><strong>Outputs:</strong> End</div>
+                                <div><strong>Outputs:</strong> craftsman, pathfinder</div>
                                 <div><strong>Cache:</strong> {workflow_id}_{trace_id}_gatekeeper_promotion_results.json</div>
                             </div>
                         </div>
@@ -1646,7 +1646,7 @@ flowchart TD
   "flow_pattern": "WARPCORE Agent Flow Schema Definition",
   "schema_version": "1.0.0",
   "generated_from": "Comprehensive schema definition + real agent files",
-  "timestamp": "2025-10-07T20:42:07.260311",
+  "timestamp": "2025-10-08T03:18:08.647759",
   "agent_definitions": {
     "origin": {
       "position": "0a",
@@ -1707,7 +1707,7 @@ flowchart TD
       }
     },
     "pathfinder": {
-      "position": "1",
+      "position": "1a",
       "name": "PATHFINDER",
       "role": "Schema Coherence Reconciler",
       "description": "Analyzes codebase, identifies gaps and inconsistencies",
@@ -1741,7 +1741,7 @@ flowchart TD
       }
     },
     "oracle": {
-      "position": "2b",
+      "position": "1b",
       "name": "ORACLE",
       "role": "User Input Requirements Translator",
       "description": "Converts user specs into structured requirements",
@@ -1776,7 +1776,7 @@ flowchart TD
       }
     },
     "architect": {
-      "position": "2a",
+      "position": "2",
       "name": "ARCHITECT",
       "role": "Requirements Generator",
       "description": "Converts analysis into actionable requirements",
@@ -2059,12 +2059,12 @@ flowchart TD
       {
         "from": "craftbuddy",
         "to": [
-          "craftsman",
+          "enforcer",
           "gatekeeper"
         ],
         "type": "enhancement_decision",
         "conditions": {
-          "craftsman": "loop_back_for_enhancement",
+          "enforcer": "generate_additional_requirements",
           "gatekeeper": "promote_for_final_validation"
         }
       },
@@ -2072,12 +2072,12 @@ flowchart TD
         "from": "gatekeeper",
         "to": [
           "craftsman",
-          "boss"
+          "pathfinder"
         ],
         "type": "gate_decision",
         "conditions": {
           "craftsman": "needs_fixes_or_improvements",
-          "boss": "complete_cycle_start_new_workflow"
+          "pathfinder": "complete_cycle_start_new_workflow"
         }
       }
     ],
@@ -2141,8 +2141,8 @@ flowchart TD
       "craftbuddy_loop": {
         "description": "Creative enhancement loop",
         "from": "craftbuddy",
-        "to": "craftsman",
-        "condition": "enhancement_opportunities_found"
+        "to": "enforcer",
+        "condition": "additional_requirements_needed"
       },
       "gatekeeper_fixes": {
         "description": "Quality improvement loop",
@@ -2154,7 +2154,7 @@ flowchart TD
     "cycle_restart": {
       "description": "Complete workflow cycle restart",
       "from": "gatekeeper",
-      "to": "boss",
+      "to": "pathfinder",
       "condition": "workflow_complete_start_new"
     }
   }
@@ -2169,14 +2169,14 @@ flowchart TD
                     <h3>📁 Agent Files - Current Structure</h3>
                     <div class="file-list">
                         <div class="file-item">0a_origin_from_none_to_boss.json</div>
-<div class="file-item">0b_boss_from_origin_to_pathfinder_oracle.json</div>
-<div class="file-item">1_pathfinder_from_boss_to_architect.json</div>
-<div class="file-item">2a_architect_from_pathfinder_oracle_to_enforcer.json</div>
-<div class="file-item">2b_oracle_from_user_spec_to_architect.json</div>
+<div class="file-item">0b_boss_from_origin_to_pathfinder.json</div>
+<div class="file-item">1a_pathfinder_from_boss_to_architect.json</div>
+<div class="file-item">1b_oracle_from_user_to_architect.json</div>
+<div class="file-item">2_architect_from_pathfinder_oracle_to_enforcer.json</div>
 <div class="file-item">3_enforcer_from_architect_craftbuddy_to_craftsman.json</div>
-<div class="file-item">4a_craftsman_from_enforcer_to_craftbuddy.json</div>
-<div class="file-item">4b_craftbuddy_from_craftsman_to_craftsman_gatekeeper.json</div>
-<div class="file-item">5_gatekeeper_from_craftbuddy_to_complete.json</div>
+<div class="file-item">4a_craftsman_from_enforcer_gatekeeper_to_craftbuddy.json</div>
+<div class="file-item">4b_craftbuddy_from_craftsman_to_enforcer_gatekeeper.json</div>
+<div class="file-item">5_gatekeeper_from_craftbuddy_to_craftsman_pathfinder.json</div>
 <div class="file-item">harmony_meta_coherence_agent.json</div>
 <div class="file-item">mama_bear.json</div>
 

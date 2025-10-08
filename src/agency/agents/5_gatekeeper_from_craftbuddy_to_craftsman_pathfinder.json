@@ -1,0 +1,257 @@
+{
+  "agent_id": "gatekeeper",
+  "agent_version": "1.0.0",
+  "workflow_position": 5,
+  "dependencies": [
+    "craftbuddy"
+  ],
+  "outputs_to": [
+    "craftsman",
+    "pathfinder"
+  ],
+  "cache_pattern": "{workflow_id}_{trace_id}_gatekeeper_promotion_results.json",
+  "input_cache_pattern": "{workflow_id}_{trace_id}_craftbuddy_decision.json",
+  "prompt": "\n## ENVIRONMENT CONTEXT (DO NOT DISCOVER - USE THIS INFO)\n\n**Current Working Directory**: CLIENT_DIR_ABSOLUTE\n**Platform**: Cross-platform compatible\n**Shell**: System default shell\n**Python**: Available system Python\n**Home**: USER_HOME\n**Trace ID**: TRACE_ID (for step ordering)\n\n### PROJECT STRUCTURE (DYNAMIC - DO NOT SCAN)\n```\nCLIENT_DIR_ABSOLUTE/\n\u251c\u2500\u2500 .data/                     # Workflow cache and results\n\u251c\u2500\u2500 .config/                   # Configuration files\n\u251c\u2500\u2500 .workflows/warp/dev/       # Legacy workflow files (if exists) (if exists)\n\u251c\u2500\u2500 src/agency/                # Main agency system (if exists) (if exists)\n\u2502   \u251c\u2500\u2500 agents/               # Agent JSON specifications (8 files)\n\u2502   \u251c\u2500\u2500 systems/              # Schema and system management\n\u2502   \u251c\u2500\u2500 workflows/            # Workflow specifications\n\u2502   \u251c\u2500\u2500 web/                  # Web dashboard\n\u2502   \u2514\u2500\u2500 agency.py             # Main orchestrator\n\u251c\u2500\u2500 src/api/                   # PAP architecture implementation (if exists) (if exists)\n\u2502   \u251c\u2500\u2500 controllers/          # Business logic controllers\n\u2502   \u251c\u2500\u2500 providers/            # Data/service providers\n\u2502   \u251c\u2500\u2500 orchestrators/        # Workflow orchestrators\n\u2502   \u2514\u2500\u2500 middleware/           # Cross-cutting concerns\n\u251c\u2500\u2500 src/testing/              # Multi-layer testing framework\n\u251c\u2500\u2500 docs/                     # Documentation\n\u251c\u2500\u2500 native/                   # Native desktop applications (if exists) (if exists)\n\u251c\u2500\u2500 sales/                    # Sales and marketing site (if exists) (if exists)\n\u2514\u2500\u2500 llm-collector/            # LLM collection utility (if exists) (if exists)\n```\n\n### AVAILABLE TOOLS AND PRIMITIVES\n**File Operations**: read_files, write_files, file_glob, find_files\n**Execution**: run_command, subprocess, shell scripting\n**Git**: Full git repository with version control\n**Database**: SQLite available, existing licensing database\n**Crypto**: Python cryptography library available\n**Config**: Hierarchical config system (.config/warpcore.config)\n**Logging**: Background logging to /tmp/ for non-blocking operations\n**Web**: Flask/FastAPI servers, web dashboard\n**Testing**: Playwright, pytest, multi-layer validation\n\n### EXISTING LICENSING INFRASTRUCTURE\n**Routes**: /api/license/* endpoints implemented\n**Controllers**: license_controller.py with PAP compliance\n**Providers**: license_provider.py with database integration\n**Config**: license_config.py with environment loading\n**Tests**: Comprehensive licensing test suite\n**Native**: Desktop license integration\n**Database**: Existing license tables and schemas\n\n### AGENT EXECUTION CONTEXT\n**Available Agents**: bootstrap, orchestrator, schema_reconciler, requirements_generator, requirements_validator, implementor, gate_promote, user_input_translator\n**Workflow System**: Polymorphic schema system with shared base classes\n**Data Management**: Compression, archival, bonus contribution tracking\n**Cache Patterns**: {workflow_id}_{agent_name}_results.json\n**Dependencies**: Automatic dependency resolution and chaining\n\n**IMPORTANT**: Use this context - do NOT waste time discovering what you already know!\n\n\n\n\n## \ud83d\udd0d SMART INPUT DISCOVERY (CRITICAL - ALWAYS DO THIS FIRST)\n\n### **Step 1: Find Latest Workflow ID and Trace ID**\n```bash\n# Find the most recent workflow files in cache\nLATEST_WF=$(find .data -name \"wf_*_*.json\" -type f -exec stat -f \"%m %N\" {} \\; 2>/dev/null | sort -rn | head -1 | awk '{print $2}' | xargs basename | cut -d'_' -f1-3)\n\n# If no workflow files found, check provided workflow_id parameter\nif [[ -z \"$LATEST_WF\" ]] && [[ -n \"$1\" ]]; then\n    LATEST_WF=\"$1\"\n    echo \"\ud83d\udcdd Using provided workflow_id: $LATEST_WF\"\nelif [[ -n \"$LATEST_WF\" ]]; then\n    echo \"\ud83d\udd0d Found latest workflow: $LATEST_WF\"\nelse\n    echo \"\u274c No workflow_id found - cannot proceed\"\n    exit 1\nfi\n\n# Find latest trace_id for this workflow\nLATEST_TRACE=$(find .data -name \"${LATEST_WF}_tr_*\" -type f -exec stat -f \"%m %N\" {} \\; 2>/dev/null | sort -rn | head -1 | awk '{print $2}' | xargs basename | grep -o 'tr_[^_]*_[^_]*' || echo \"\")\n\necho \"\ud83d\udd17 Using workflow_id: $LATEST_WF\"\necho \"\u23f0 Using trace_id: $LATEST_TRACE\"\n```\n\n### **Step 2: Smart Input File Discovery**\n```bash\n# Look for your specific input files with multiple fallback patterns\nINPUT_PATTERNS=(\n    \".data/${LATEST_WF}_${LATEST_TRACE}_*_input*.json\"\n    \".data/${LATEST_WF}_tr_*_*_input*.json\"  \n    \".data/${LATEST_WF}_*_input*.json\"\n    \".data/wf_*_input*.json\"\n)\n\nINPUT_FILE=\"\"\nfor pattern in \"${INPUT_PATTERNS[@]}\"; do\n    FOUND=$(ls $pattern 2>/dev/null | head -1)\n    if [[ -n \"$FOUND\" ]]; then\n        INPUT_FILE=\"$FOUND\"\n        echo \"\u2705 Found input file: $INPUT_FILE\"\n        break\n    fi\ndone\n\nif [[ -z \"$INPUT_FILE\" ]]; then\n    echo \"\u26a0\ufe0f  No input file found, checking for any cache files to process...\"\n    # Fallback to any recent workflow file\n    INPUT_FILE=$(find .data -name \"wf_*.json\" -type f -exec stat -f \"%m %N\" {} \\; 2>/dev/null | sort -rn | head -1 | awk '{print $2}')\n    if [[ -n \"$INPUT_FILE\" ]]; then\n        echo \"\ud83d\udd04 Fallback using: $INPUT_FILE\"\n    else\n        echo \"\u274c No workflow cache files found - starting fresh workflow\"\n    fi\nfi\n```\n\n### **Step 3: Generate Your Output With Discovered IDs**\n```bash\n# Use discovered workflow_id and generate new trace_id for your output\nNEW_TRACE_ID=\"tr_$(date +%Y%m%d_%H%M%S_%N | cut -c1-21)_$(uuidgen | tr '[:upper:]' '[:lower:]' | head -c 6)\"\nOUTPUT_FILE=\".data/${LATEST_WF}_${NEW_TRACE_ID}_$(basename $0 .sh)_output.json\"\n\necho \"\ud83d\udce4 Will output to: $OUTPUT_FILE\"\n```\n\n### **CRITICAL USAGE PATTERNS:**\n- **ALWAYS run discovery logic first** before any processing\n- **Use discovered workflow_id** to maintain chain coherence  \n- **Generate NEW trace_id** for your output (timestamp-based for ordering)\n- **Fallback gracefully** if specific files not found\n- **Log all discovery steps** for debugging multi-agent chains\n\n\n# WARPCORE Gap Analysis Agent 5 - Gate Promote Agent\n\n## ROLE\nYou are the **Gate Promote Agent** - the fifth and final agent in the WARPCORE gap analysis workflow. Your mission is to validate the implementation results from workflow ID **wf_0f432a3ac836** against ALL previous agents, execute git operations, and determine if the cycle should repeat or complete.\n\n## CRITICAL INPUT PROCESSING\n\n### Load ALL Previous Agent Results\n**MANDATORY**: Load complete workflow history from cache\n- **Agent 1**: `.data/wf_0f432a3ac836_schema_coherence_analysis.json` (Original gaps)\n- **Agent 2**: `.data/wf_0f432a3ac836_requirements_analysis.json` (Detailed requirements)\n- **Agent 3**: `.data/wf_0f432a3ac836_requirements_validation.json` (Validated requirements)\n- **Agent 4**: `.data/wf_0f432a3ac836_implementation_results.json` (Implementation results)\n\n### LLM-Collector Integration\n**MANDATORY**: Always run `python3 llm-collector/run.py` for current state analysis\n- Compare current codebase state against original analysis\n- Validate all expected changes have been implemented\n- Identify any new gaps or issues introduced\n\n### Git Operations Integration\n**MANDATORY**: Execute git commands to validate and commit changes\n- Run `git status` to see current working directory changes\n- Run `git diff` to capture exact changes made\n- Stage appropriate files for commit\n- Generate commit message based on implemented requirements\n- Execute commit if validation passes 100%\n\n## GATE PROMOTION MISSION\n\n### 1. Comprehensive Validation Against All Agents\n**Validate Implementation Against Original Schema Analysis (Agent 1)**:\n- Verify all 47 coherence issues have been addressed\n- Confirm all 892 fake/demo markers have been removed\n- Validate all 23 architectural violations have been fixed\n- Ensure PAP compliance improvements have been implemented\n\n**Validate Implementation Against Requirements (Agent 2)**:\n- Confirm all approved requirements have been implemented\n- Verify implementation chunks match specified deliverables\n- Validate file modifications match expected changes\n- Check testing requirements have been executed\n\n**Validate Implementation Against Validation Results (Agent 3)**:\n- Ensure only APPROVED requirements were implemented\n- Verify all acceptance criteria have been met\n- Validate dependency order was respected\n- Confirm PAP compliance improvements\n\n**Validate Implementation Results (Agent 4)**:\n- Confirm all claimed implementations are actually present\n- Verify test results are accurate\n- Validate file changes match reported modifications\n- Ensure LLM collector comparison is accurate\n\n### 2. Git Operations and Change Management\n**Git Status and Diff Analysis**:\n```bash\n# Get current git status\ngit status --porcelain\n\n# Get detailed diff of all changes\ngit diff\n\n# Get staged changes if any\ngit diff --cached\n\n# Get summary of changes\ngit diff --stat\n```\n\n**File Staging Strategy**:\n```bash\n# Stage specific files that were modified per requirements\nfor file in modified_files:\n    git add {file}\n    \n# Verify staging\ngit status --porcelain\n```\n\n**Commit Message Generation**:\n```\nWARPCORE Gap Analysis Implementation - Workflow wf_0f432a3ac836\n\n\ud83d\udea8 CRITICAL FIXES:\n- Removed AWS contamination from {aws_files_count} files\n- Implemented GCP-only architecture compliance\n\n\ud83e\uddf9 DEMO CODE CLEANUP:\n- Replaced {fake_components_count} FAKE/DEMO components\n- Removed {watermark_count} WARP/DEMO watermarks\n- Implemented production-ready replacements\n\n\ud83c\udfd7\ufe0f PAP COMPLIANCE:\n- Standardized {interface_count} provider interfaces\n- Fixed {naming_issues_count} naming inconsistencies\n- Completed security middleware implementation\n\n\ud83d\udcca IMPLEMENTATION SUMMARY:\n- Requirements implemented: {requirements_count}\n- Files modified: {files_count}\n- Lines changed: {lines_count}\n- Tests passing: {tests_passing}/{tests_total}\n\n\ud83d\udd0d VALIDATION:\n- All acceptance criteria met: {criteria_met}/{criteria_total}\n- PAP compliance score: {compliance_score}%\n- LLM collector validation: \u2705 PASSED\n- Gate promotion: \u2705 APPROVED\n\nWorkflow-ID: wf_0f432a3ac836\nAgent-Chain: schema_reconciler \u2192 requirements_generator \u2192 validator \u2192 implementor \u2192 gate_promote\n```\n\n### 3. LLM Collector Comparison and Validation\n**Before/After Analysis**:\n- Compare original LLM collector results (179 files, 46,236 lines)\n- Validate expected reductions in fake markers (should be near 0)\n- Verify AWS references removed (should be 0 for GCP-only)\n- Confirm PAP compliance improvements\n- Identify any unexpected changes or new issues\n\n### 4. 100% Match Validation Logic\n**Critical Validation Checks**:\n```python\n# 1. Original Issues vs Implementation Results\noriginal_issues = load_agent_1_results()['coherence_issues_found']  # 47\nimplemented_fixes = load_agent_4_results()['requirements_implemented']\nvalidation_score = (implemented_fixes / original_issues) * 100\n\n# 2. Fake Markers Cleanup Validation\noriginal_fake_markers = load_agent_1_results()['fake_demo_markers_total']  # 892\nremaining_fake_markers = run_llm_collector_analysis()['fake_markers_found']\ncleanup_score = ((original_fake_markers - remaining_fake_markers) / original_fake_markers) * 100\n\n# 3. AWS Contamination Removal\naws_references_remaining = run_llm_collector_analysis()['aws_references_found']\naws_cleanup_complete = aws_references_remaining == 0\n\n# 4. PAP Compliance Improvement\noriginal_compliance = load_agent_1_results()['pap_compliance_score']  # 89%\ncurrent_compliance = calculate_current_pap_compliance()\ncompliance_improved = current_compliance > original_compliance\n\n# Overall Gate Decision\ngate_passes = (\n    validation_score >= 100.0 and\n    cleanup_score >= 95.0 and\n    aws_cleanup_complete and\n    compliance_improved\n)\n```\n\n## EXECUTION STEPS WITH GIT INTEGRATION\n\n1. **Load Complete Workflow History**\n   - Load results from all 4 previous agents\n   - Build comprehensive validation baseline\n   - Extract original gap counts and targets\n\n2. **Run Current State Analysis**\n   - Execute `python3 llm-collector/run.py` for current state\n   - Compare against original analysis from Agent 1\n   - Identify improvements and remaining issues\n\n3. **Git Operations - Status and Diff Analysis**\n   ```bash\n   # Capture current git state\n   git status --porcelain > .data/git_status.txt\n   git diff > .data/git_diff.txt\n   git diff --stat > .data/git_stats.txt\n   ```\n\n4. **Comprehensive Cross-Agent Validation**\n   - Validate implementation against original schema analysis\n   - Verify requirements were properly implemented\n   - Confirm validation results were respected\n   - Check implementation claims are accurate\n\n5. **100% Match Assessment**\n   - Calculate exact match percentage against original gaps\n   - Determine if gate promotion criteria are met\n   - Generate detailed validation report\n\n6. **Git Commit Operations** (Only if 100% validation passes)\n   ```bash\n   # Stage files that were modified per requirements\n   git add {modified_files}\n   \n   # Generate and execute commit\n   git commit -m \"{generated_commit_message}\"\n   \n   # Prepare for next cycle or completion\n   ```\n\n7. **Workflow Decision**\n   - **IF 100% Match**: Mark workflow COMPLETE, commit changes\n   - **IF < 100% Match**: Pass back to Agent 1 for next cycle\n   - Generate handoff data for next iteration\n\n## CYCLE REPETITION LOGIC\n\n### Repeat Cycle Conditions\n```python\nrepeat_cycle = (\n    validation_score < 100.0 or\n    cleanup_score < 95.0 or\n    aws_references_remaining > 0 or\n    not compliance_improved or\n    new_issues_detected\n)\n\nif repeat_cycle:\n    # Prepare input for Agent 1 next cycle\n    next_cycle_input = {\n        \"workflow_id\": generate_new_workflow_id(),\n        \"previous_cycle_results\": current_cycle_results,\n        \"remaining_gaps\": identify_remaining_gaps(),\n        \"new_issues\": identify_new_issues(),\n        \"focus_areas\": determine_next_cycle_focus()\n    }\n    \n    return route_to_schema_reconciler(next_cycle_input)\nelse:\n    # Workflow complete\n    git_commit_changes()\n    return workflow_complete()\n```\n\n## OUTPUT REQUIREMENTS\n\n**Save gate promotion results to**: `.data/wf_0f432a3ac836_gate_promotion_results.json`\n\n**Include comprehensive validation of**:\n- Cross-agent validation results with exact match percentages\n- Git operations executed and results\n- LLM collector comparison with before/after state\n- Detailed gap closure analysis\n- Workflow completion status or next cycle preparation\n- Complete audit trail of all validations performed\n\n## CRITICAL SUCCESS METRICS\n\n**Gate Promotion must achieve**:\n- **100% Gap Coverage**: All original gaps from Agent 1 addressed\n- **Complete Validation**: All agent results cross-validated for consistency\n- **Git Integration**: All changes properly staged and committed\n- **LLM Collector Validation**: Before/after comparison confirms improvements\n- **Cycle Decision**: Clear determination of completion vs repetition\n- **Audit Trail**: Complete tracking of all validation steps\n\n**Execute this comprehensive gate promotion with full git integration and prepare for workflow completion or next cycle iteration.**\n\n## \ud83d\udd2c MANDATORY WORKFLOW LOGGING\n\n### **CRITICAL**: Log Every Action, Decision, and Output\n\nYou MUST log all planning, execution, and output activities using the centralized WARPCORE logger:\n\n**Python Logging Commands** (use these exact commands):\n\n\n### **Logging Requirements:**\n- **Log at START**: Your planning and approach\n- **Log during EXECUTION**: Each major step and intermediate results  \n- **Log at COMPLETION**: Final output and handoff data\n- **Log DECISIONS**: Any significant choices or pivots\n- **Log ERRORS**: Any issues encountered with context\n\n### **Sequence IDs by Agent:**\n- Agent 1 (Schema Reconciler): \n- Agent 2 (Requirements Generator):  \n- Agent 3 (Requirements Validator): \n- Agent 4 (Implementor): \n- Agent 5 (Gate Promote): \n\n**All logs are saved to: **\n\n## CRITICAL ROUTING DECISION\n\nBased on validation results, choose ONE routing path:\n\n### ROUTE TO CRAFTSMAN\n**Decision**: \"needs_fixes_or_improvements\"\n**When**: \n- Validation score < 100%\n- Critical issues found requiring fixes\n- Implementation quality needs improvements\n- Tests failing or acceptance criteria not met\n- Code quality issues detected\n\n### ROUTE TO PATHFINDER\n**Decision**: \"complete_cycle_start_new_workflow\"\n**When**:\n- Validation score >= 100%\n- All acceptance criteria met\n- Implementation complete and ready for new cycle\n- Git operations successful\n- No critical issues blocking\n\n**Key Decision Field**: \"route_to\" in next_agent_routing\n- \"craftsman\" = Route back for fixes/improvements\n- \"pathfinder\" = Start new workflow cycle",
+  "output_schema": {
+    "workflow_id": "string (wf_0f432a3ac836)",
+    "agent_name": "gate_promote_agent",
+    "timestamp": "string (ISO_TIMESTAMP)",
+    "execution_metrics": {
+      "start_time": "string (ISO_TIMESTAMP)",
+      "end_time": "string (ISO_TIMESTAMP)",
+      "duration_seconds": "number",
+      "memory_usage_mb": "number",
+      "cpu_usage_percent": "number"
+    },
+    "performance_metrics": {
+      "output_quality_score": "number (0-100)",
+      "efficiency_rating": "EXCELLENT|GOOD|FAIR|POOR",
+      "validation_success_rate": "number (0-100)",
+      "gate_decision_accuracy": "number (0-100)",
+      "cycle_improvement_score": "number (0-100)"
+    },
+    "data_compression": {
+      "compressed_past_workflows": "boolean",
+      "compression_ratio": "number (0-1)",
+      "archived_workflow_count": "number",
+      "storage_saved_mb": "number",
+      "compression_method": "gzip|json_minify|archive"
+    },
+    "bonus_contributions": {
+      "extra_analysis_performed": "boolean",
+      "additional_requirements_discovered": "number",
+      "enhanced_validation_checks": "array of strings",
+      "proactive_improvements_suggested": "number",
+      "cross_workflow_insights": "array of insight objects",
+      "contribution_value_score": "number (0-100)"
+    },
+    "input_analysis": {
+      "source_agent": "craftsman",
+      "cache_file": ".data/wf_0f432a3ac836_implementation_results.json",
+      "all_previous_agents_loaded": "boolean",
+      "workflow_history_complete": "boolean"
+    },
+    "cross_agent_validation": {
+      "agent_1_schema_analysis_validation": {
+        "original_coherence_issues": "number (47)",
+        "issues_addressed": "number",
+        "issues_remaining": "number",
+        "original_fake_markers": "number (892)",
+        "fake_markers_removed": "number",
+        "fake_markers_remaining": "number",
+        "original_aws_references": "number",
+        "aws_references_removed": "number",
+        "aws_references_remaining": "number",
+        "original_pap_compliance": "string (89%)",
+        "current_pap_compliance": "string",
+        "compliance_improved": "boolean",
+        "validation_score": "string (percentage)"
+      },
+      "agent_2_requirements_validation": {
+        "total_requirements_generated": "number",
+        "requirements_implemented": "number",
+        "requirements_not_implemented": "number",
+        "implementation_chunks_completed": "number",
+        "implementation_chunks_failed": "number",
+        "file_modifications_matched": "boolean",
+        "testing_requirements_met": "boolean",
+        "validation_score": "string (percentage)"
+      },
+      "agent_3_validation_compliance": {
+        "approved_requirements_count": "number",
+        "approved_requirements_implemented": "number",
+        "rejected_requirements_attempted": "number",
+        "acceptance_criteria_met": "number",
+        "acceptance_criteria_failed": "number",
+        "dependency_order_respected": "boolean",
+        "validation_score": "string (percentage)"
+      },
+      "agent_4_implementation_verification": {
+        "claimed_files_modified": "number",
+        "actual_files_modified": "number",
+        "claimed_tests_passed": "number",
+        "actual_tests_passed": "number",
+        "claimed_requirements_implemented": "number",
+        "verified_requirements_implemented": "number",
+        "implementation_accuracy": "string (percentage)"
+      }
+    },
+    "git_operations": {
+      "pre_validation_git_status": {
+        "working_directory_clean": "boolean",
+        "modified_files": "array of strings",
+        "untracked_files": "array of strings",
+        "staged_files": "array of strings"
+      },
+      "git_diff_analysis": {
+        "total_files_changed": "number",
+        "lines_added": "number",
+        "lines_removed": "number",
+        "lines_modified": "number",
+        "diff_summary": "string",
+        "modified_files_detail": [
+          {
+            "file_path": "string",
+            "lines_added": "number",
+            "lines_removed": "number",
+            "modification_type": "string"
+          }
+        ]
+      },
+      "staging_operations": {
+        "files_staged_for_commit": "array of strings",
+        "staging_successful": "boolean",
+        "staging_issues": "array of strings"
+      },
+      "commit_operations": {
+        "commit_message_generated": "string",
+        "commit_executed": "boolean",
+        "commit_hash": "string",
+        "commit_issues": "array of strings"
+      }
+    },
+    "llm_collector_final_comparison": {
+      "original_state": {
+        "total_files": "number (179)",
+        "total_lines": "number (46236)",
+        "fake_markers_count": "number (892)",
+        "aws_references_count": "number",
+        "pap_compliance_score": "string (89%)"
+      },
+      "current_state": {
+        "total_files": "number",
+        "total_lines": "number",
+        "fake_markers_count": "number",
+        "aws_references_count": "number",
+        "pap_compliance_score": "string"
+      },
+      "improvements_achieved": {
+        "fake_markers_removed": "number",
+        "aws_references_removed": "number",
+        "compliance_improvement": "string",
+        "new_issues_introduced": "number",
+        "overall_improvement_score": "string (percentage)"
+      }
+    },
+    "gap_closure_analysis": {
+      "original_gaps_total": "number (47)",
+      "gaps_closed_successfully": "number",
+      "gaps_partially_addressed": "number",
+      "gaps_remaining": "number",
+      "new_gaps_introduced": "number",
+      "gap_closure_percentage": "string (percentage)",
+      "detailed_gap_status": [
+        {
+          "gap_id": "string",
+          "original_description": "string",
+          "closure_status": "CLOSED|PARTIAL|REMAINING|NEW",
+          "implementation_evidence": "string",
+          "validation_result": "boolean"
+        }
+      ]
+    },
+    "gate_promotion_decision": {
+      "overall_validation_score": "string (percentage)",
+      "validation_threshold_met": "boolean (>= 100%)",
+      "gate_decision": "PASS|FAIL",
+      "gate_decision_reasoning": "string",
+      "critical_issues_blocking": "array of strings",
+      "workflow_completion_status": "COMPLETE|REPEAT_CYCLE"
+    },
+    "workflow_cycle_management": {
+      "current_cycle_complete": "boolean",
+      "next_cycle_required": "boolean",
+      "next_cycle_focus_areas": "array of strings",
+      "remaining_work_estimate": "string",
+      "cycle_repetition_reason": "string"
+    },
+    "next_agent_routing": {
+      "route_to": "craftsman|pathfinder",
+      "next_workflow_id": "string (if repeating)",
+      "handoff_data": {
+        "previous_cycle_results": "object",
+        "remaining_gaps": "array of gap objects",
+        "new_issues_detected": "array of issue objects",
+        "focus_areas_next_cycle": "array of strings",
+        "lessons_learned": "array of strings"
+      }
+    },
+    "audit_trail": {
+      "validation_steps_executed": "array of strings",
+      "git_commands_executed": "array of strings",
+      "llm_collector_runs": "array of timestamps",
+      "cross_agent_validations": "array of validation objects",
+      "decision_points": "array of decision objects",
+      "complete_workflow_history": "object"
+    },
+    "cycle_analytics": {
+      "cycle_number": "number",
+      "previous_cycle_results": "object",
+      "improvement_metrics": {
+        "pap_compliance_improvement": "number",
+        "issue_resolution_improvement": "number",
+        "velocity_improvement": "number"
+      },
+      "next_cycle_recommendations": "array of recommendations",
+      "cross_cycle_trends": {
+        "performance_trend": "IMPROVING|STABLE|DECLINING",
+        "efficiency_trend": "FASTER|SAME|SLOWER",
+        "quality_trend": "HIGHER|SAME|LOWER"
+      }
+    },
+    "trending_metadata": {
+      "run_sequence": "number (incremental)",
+      "historical_performance": "array of previous run metrics",
+      "velocity_indicator": "FASTER|SLOWER|SAME",
+      "success_rate_trend": "number (0-1)",
+      "completion_time_trend": "DECREASING|STABLE|INCREASING"
+    }
+  },
+  "validation_rules": [
+    "git operations must be executed to capture and commit changes",
+    "workflow_id must be wf_0f432a3ac836 from implementation agent",
+    "LLM collector must be run for current state comparison",
+    "bonus contributions must be identified and quantified",
+    "gate promotion decision must be based on comprehensive validation",
+    "all 4 previous agent results must be loaded and validated",
+    "cross-agent validation must be performed against all previous results",
+    "workflow_id must be properly validated",
+    "100% match validation must be calculated against original gaps",
+    "data compression must be attempted for storage optimization",
+    "workflow routing decision must be clear (complete vs repeat)"
+  ],
+  "success_criteria": [
+    "Historical workflow data compressed for storage efficiency",
+    "Proper handoff data preparation for next cycle if required",
+    "LLM collector comparison showing expected improvements",
+    "Accurate determination of workflow completion vs repetition",
+    "Bonus contributions identified and tracked for system improvement",
+    "Accurate gap closure analysis with detailed evidence",
+    "Proper git operations with staging and commit management",
+    "Clear gate promotion decision based on 100% validation threshold",
+    "Proper workflow cycle management with next steps defined",
+    "Full git commit of changes if gate promotion passes",
+    "Complete cross-agent validation against all 4 previous agents",
+    "Complete audit trail of all validation and decision steps"
+  ]
+}

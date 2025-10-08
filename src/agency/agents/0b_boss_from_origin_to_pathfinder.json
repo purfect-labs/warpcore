@@ -93,6 +93,13 @@
       "current_active_agent": "string",
       "pending_agents": "array of agent_ids",
       "failed_agents": "array of agent_ids"
+    },
+    "next_agent_handoff": {
+      "target_agent": "pathfinder|oracle",
+      "handoff_data": "object with orchestration data",
+      "cache_file_created": "string",
+      "routing_complete": "boolean",
+      "routing_decision": "string (pathfinder for gap analysis, oracle for user input)"
     }
   },
   "validation_rules": [

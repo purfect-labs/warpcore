@@ -63,7 +63,7 @@
       }
     },
     "pathfinder": {
-      "position": "1",
+      "position": "1a",
       "name": "PATHFINDER",
       "role": "Schema Coherence Reconciler",
       "description": "Analyzes codebase, identifies gaps and inconsistencies",
@@ -97,7 +97,7 @@
       }
     },
     "oracle": {
-      "position": "2b",
+      "position": "1b",
       "name": "ORACLE",
       "role": "User Input Requirements Translator",
       "description": "Converts user specs into structured requirements",
@@ -132,7 +132,7 @@
       }
     },
     "architect": {
-      "position": "2a",
+      "position": "2",
       "name": "ARCHITECT",
       "role": "Requirements Generator",
       "description": "Converts analysis into actionable requirements",
@@ -415,12 +415,12 @@
       {
         "from": "craftbuddy",
         "to": [
-          "craftsman",
+          "enforcer",
           "gatekeeper"
         ],
         "type": "enhancement_decision",
         "conditions": {
-          "craftsman": "loop_back_for_enhancement",
+          "enforcer": "generate_additional_requirements",
           "gatekeeper": "promote_for_final_validation"
         }
       },
@@ -428,12 +428,12 @@
         "from": "gatekeeper",
         "to": [
           "craftsman",
-          "boss"
+          "pathfinder"
         ],
         "type": "gate_decision",
         "conditions": {
           "craftsman": "needs_fixes_or_improvements",
-          "boss": "complete_cycle_start_new_workflow"
+          "pathfinder": "complete_cycle_start_new_workflow"
         }
       }
     ],
@@ -497,8 +497,8 @@
       "craftbuddy_loop": {
         "description": "Creative enhancement loop",
         "from": "craftbuddy",
-        "to": "craftsman",
-        "condition": "enhancement_opportunities_found"
+        "to": "enforcer",
+        "condition": "additional_requirements_needed"
       },
       "gatekeeper_fixes": {
         "description": "Quality improvement loop",
@@ -510,7 +510,7 @@
     "cycle_restart": {
       "description": "Complete workflow cycle restart",
       "from": "gatekeeper",
-      "to": "boss",
+      "to": "pathfinder",
       "condition": "workflow_complete_start_new"
     }
   }
