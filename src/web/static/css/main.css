@@ -15,18 +15,18 @@
 @import 'components/gcp/kali.css';
 
 /* Legacy class mappings for compatibility */
-.ctl-header { @extend .apex-header; }
-.ctl-container { @extend .apex-container; }
-.ctl-title { @extend .apex-title; }
+.ctl-header { @extend .warpcore-header; }
+.ctl-container { @extend .warpcore-container; }
+.ctl-title { @extend .warpcore-title; }
 
 /* Additional responsive breakpoints */
 @media (max-width: 768px) {
-    .apex-content {
+    .warpcore-content {
         grid-template-columns: 1fr;
         padding: 0.5rem;
     }
     
-    .apex-terminal-section {
+    .warpcore-terminal-section {
         padding: 0 1rem 1rem 1rem;
     }
     

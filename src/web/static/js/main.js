@@ -1,4 +1,4 @@
-// APEX Main JavaScript Initialization
+// WARPCORE Main JavaScript Initialization
 
 // Status checking functions (throttled)
 let lastSSOCheck = 0;
@@ -14,7 +14,11 @@ async function checkAWSSSO() {
     }
     lastSSOCheck = now;
     
-    const ssoStatus = document.getElementById('sso-status');
+    const ssoStatus = document.getElementById('aws-sso-value');
+    if (!ssoStatus) {
+        console.warn('⚠️ AWS SSO status element not found');
+        return;
+    }
     ssoStatus.textContent = 'checking...';
     ssoStatus.className = 'status-value status-warning';
     
@@ -61,7 +65,11 @@ async function checkGCPAuth() {
     }
     lastGCPCheck = now;
     
-    const gcpStatus = document.getElementById('gcp-status');
+    const gcpStatus = document.getElementById('gcp-auth-value');
+    if (!gcpStatus) {
+        console.warn('⚠️ GCP auth status element not found');
+        return;
+    }
     gcpStatus.textContent = 'checking...';
     gcpStatus.className = 'status-value status-warning';
     
@@ -118,11 +126,39 @@ function toggleLogs() {
     if (btn) {
         if (btn.textContent === 'Pause') {
             btn.textContent = 'Resume';
-            window.APEX.addTerminalLine('System', '⏸️ Log monitoring paused', 'warning');
+            if (window.WARPCORE && window.WARPCORE.addTerminalLine) {
+                window.WARPCORE.addTerminalLine('System', '⏸️ Log monitoring paused', 'warning');
+            }
         } else {
             btn.textContent = 'Pause';
-            window.APEX.addTerminalLine('System', '▶️ Log monitoring resumed', 'success');
+            if (window.WARPCORE && window.WARPCORE.addTerminalLine) {
+                window.WARPCORE.addTerminalLine('System', '▶️ Log monitoring resumed', 'success');
+            }
         }
+    }
+}
+
+// Command initialization functions
+function initializeCommandButtons() {
+    console.log('⚙️ Initializing command buttons...');
+    // Initialize any command-specific button functionality here
+    const commandButtons = document.querySelectorAll('[data-command]');
+    commandButtons.forEach(btn => {
+        if (!btn.hasAttribute('data-initialized')) {
+            btn.setAttribute('data-initialized', 'true');
+            console.log(`✅ Initialized command button: ${btn.textContent.trim()}`);
+        }
+    });
+}
+
+function initializeTerminalInput() {
+    console.log('⚙️ Initializing terminal input...');
+    const terminalInput = document.getElementById('terminal-input');
+    if (terminalInput) {
+        // Add any terminal input event handlers here
+        console.log('✅ Terminal input initialized');
+    } else {
+        console.log('ℹ️ Terminal input not found - skipping initialization');
     }
 }
 
@@ -131,34 +167,48 @@ window.checkAWSSSO = checkAWSSSO;
 window.checkGCPAuth = checkGCPAuth;
 window.clearLogs = clearLogs;
 window.toggleLogs = toggleLogs;
-window.updateStopButton = window.APEX.updateStopButton || function() {};
+window.initializeCommandButtons = initializeCommandButtons;
+window.initializeTerminalInput = initializeTerminalInput;
+window.updateStopButton = window.WARPCORE?.updateStopButton || function() {};
 
 // Initialize everything when DOM is ready
 document.addEventListener('DOMContentLoaded', function() {
-    console.log('🎯 APEX Command Center initializing...');
+    console.log('🌊 WARPCORE Command Center initializing...');
     
     try {
-        // Initialize all components
-        window.APEX.initializeTabs();
+        // Initialize all components with null checks
+        if (window.WARPCORE && window.WARPCORE.initializeTabs) {
+            window.WARPCORE.initializeTabs();
+        } else {
+            console.warn('⚠️ WARPCORE.initializeTabs not available');
+        }
+        
         initializeCommandButtons();
         initializeTerminalInput();
-        window.APEX.initWebSocket();
+        
+        if (window.WARPCORE && window.WARPCORE.initWebSocket) {
+            window.WARPCORE.initWebSocket();
+        } else {
+            console.warn('⚠️ WARPCORE.initWebSocket not available');
+        }
         
         // Show welcome message and check auth status once
         setTimeout(() => {
-            window.APEX.addTerminalLine('System', '🚀 APEX Command Center ready!', 'success');
-            window.APEX.addTerminalLine('System', '📡 WebSocket connection established', 'success');
+            if (window.WARPCORE && window.WARPCORE.addTerminalLine) {
+                window.WARPCORE.addTerminalLine('System', '🌊 WARPCORE Command Center ready!', 'success');
+                window.WARPCORE.addTerminalLine('System', '📡 WebSocket connection established', 'success');
+            }
             
             // Check both AWS and GCP status on startup
             checkAWSSSO();
             checkGCPAuth();
         }, 1000);
         
-        console.log('✅ APEX Command Center initialized!');
+        console.log('✅ WARPCORE Command Center initialized!');
     } catch (error) {
         console.error('Initialization error:', error);
-        if (window.APEX && window.APEX.addTerminalLine) {
-            window.APEX.addTerminalLine('Error', `Initialization failed: ${error}`, 'error');
+        if (window.WARPCORE && window.WARPCORE.addTerminalLine) {
+            window.WARPCORE.addTerminalLine('Error', `Initialization failed: ${error}`, 'error');
         }
     }
 });

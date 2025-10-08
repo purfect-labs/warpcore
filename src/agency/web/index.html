@@ -1,0 +1,944 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>The Agency - UR Agent Execution</title>
+    <style>
+        :root {
+            /* Purfect Labs inspired colors */
+            --bg-primary: #0a0a0a;
+            --bg-secondary: #1a1a1a;
+            --bg-card: #2a2a2a;
+            --text-primary: #ffffff;
+            --text-secondary: #b0b0b0;
+            --text-muted: #808080;
+            --accent-purple: #8b5cf6;
+            --accent-blue: #3b82f6;
+            --accent-green: #10b981;
+            --accent-orange: #f59e0b;
+            --accent-red: #ef4444;
+            --border-subtle: #404040;
+            --border-focus: #8b5cf6;
+            --shadow: rgba(0, 0, 0, 0.5);
+        }
+        
+        * {
+            box-sizing: border-box;
+        }
+        
+        body {
+            font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, "Inter", sans-serif;
+            margin: 0;
+            padding: 0;
+            background: linear-gradient(135deg, var(--bg-primary) 0%, var(--bg-secondary) 100%);
+            color: var(--text-primary);
+            line-height: 1.6;
+            height: 100vh;
+            overflow: hidden;
+        }
+        
+        .app-container {
+            display: flex;
+            flex-direction: column;
+            height: 100vh;
+        }
+        
+        header {
+            background: var(--bg-secondary);
+            border-bottom: 2px solid var(--border-subtle);
+            padding: 1rem 2rem;
+            box-shadow: 0 2px 10px var(--shadow);
+            position: relative;
+            z-index: 100;
+        }
+        
+        .header-content {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+        }
+        
+        .logo {
+            display: flex;
+            align-items: center;
+            gap: 12px;
+        }
+        
+        .logo h1 {
+            font-size: 1.5rem;
+            font-weight: 700;
+            margin: 0;
+            background: linear-gradient(135deg, var(--accent-purple), var(--accent-blue));
+            -webkit-background-clip: text;
+            -webkit-text-fill-color: transparent;
+            background-clip: text;
+        }
+        
+        .logo-accent {
+            color: var(--accent-purple);
+            font-weight: 800;
+        }
+        
+        .main-content {
+            flex: 1;
+            display: grid;
+            grid-template-columns: 350px 1fr 300px;
+            gap: 1rem;
+            padding: 1rem;
+            overflow: hidden;
+        }
+        
+        .panel {
+            background: var(--bg-card);
+            border: 1px solid var(--border-subtle);
+            border-radius: 12px;
+            display: flex;
+            flex-direction: column;
+            box-shadow: 0 4px 20px var(--shadow);
+            overflow: hidden;
+        }
+        
+        .panel-header {
+            padding: 1rem 1.5rem;
+            border-bottom: 1px solid var(--border-subtle);
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            background: var(--bg-secondary);
+        }
+        
+        .panel-header h2 {
+            margin: 0;
+            font-size: 1rem;
+            font-weight: 600;
+            color: var(--text-primary);
+        }
+        
+        .panel-content {
+            flex: 1;
+            padding: 1.5rem;
+            overflow-y: auto;
+        }
+        
+        .panel-content::-webkit-scrollbar {
+            width: 6px;
+        }
+        
+        .panel-content::-webkit-scrollbar-track {
+            background: var(--bg-secondary);
+        }
+        
+        .panel-content::-webkit-scrollbar-thumb {
+            background: var(--border-subtle);
+            border-radius: 3px;
+        }
+        
+        .panel-content::-webkit-scrollbar-thumb:hover {
+            background: var(--accent-purple);
+        }
+        
+        .form-group {
+            margin-bottom: 1.5rem;
+        }
+        
+        label {
+            display: block;
+            margin-bottom: 0.5rem;
+            font-weight: 600;
+            color: var(--text-secondary);
+            font-size: 0.875rem;
+            text-transform: uppercase;
+            letter-spacing: 0.5px;
+        }
+        
+        input[type="text"], 
+        textarea {
+            width: 100%;
+            padding: 0.875rem;
+            background: var(--bg-secondary);
+            border: 2px solid var(--border-subtle);
+            border-radius: 8px;
+            color: var(--text-primary);
+            font-size: 14px;
+            transition: border-color 0.2s, box-shadow 0.2s;
+        }
+        
+        input[type="text"]:focus,
+        textarea:focus {
+            border-color: var(--border-focus);
+            outline: none;
+            box-shadow: 0 0 0 3px rgba(139, 92, 246, 0.1);
+        }
+        
+        .btn {
+            background: linear-gradient(135deg, var(--accent-purple), var(--accent-blue));
+            color: white;
+            border: none;
+            border-radius: 8px;
+            padding: 0.75rem 1.25rem;
+            font-size: 0.875rem;
+            font-weight: 600;
+            cursor: pointer;
+            transition: all 0.2s;
+            text-transform: uppercase;
+            letter-spacing: 0.5px;
+        }
+        
+        .btn:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 4px 15px rgba(139, 92, 246, 0.3);
+        }
+        
+        .btn:disabled {
+            opacity: 0.5;
+            cursor: not-allowed;
+            transform: none;
+        }
+        
+        .btn-secondary {
+            background: var(--bg-secondary);
+            border: 2px solid var(--border-subtle);
+            color: var(--text-secondary);
+        }
+        
+        .btn-secondary:hover {
+            border-color: var(--accent-purple);
+            color: var(--text-primary);
+        }
+        
+        .btn-danger {
+            background: linear-gradient(135deg, var(--accent-red), #dc2626);
+        }
+        
+        .btn-danger:hover {
+            box-shadow: 0 4px 15px rgba(239, 68, 68, 0.3);
+        }
+        
+        .agent-grid {
+            display: flex;
+            flex-direction: column;
+            gap: 0.25rem;
+        }
+        
+        .agent-button {
+            position: relative;
+            background: linear-gradient(135deg, var(--bg-secondary) 0%, var(--bg-card) 100%);
+            border: 1px solid var(--border-subtle);
+            border-radius: 6px;
+            padding: 0.375rem 0.5rem;
+            cursor: pointer;
+            transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+            overflow: hidden;
+        }
+        
+        .agent-button::before {
+            content: '';
+            position: absolute;
+            top: 0;
+            left: -100%;
+            width: 100%;
+            height: 100%;
+            background: linear-gradient(90deg, transparent, rgba(139, 92, 246, 0.3), transparent);
+            transition: left 0.6s;
+        }
+        
+        .agent-button:hover::before {
+            left: 100%;
+        }
+        
+        .agent-button:hover {
+            border-color: var(--accent-purple);
+            transform: translateY(-2px) scale(1.02);
+            box-shadow: 0 8px 25px rgba(139, 92, 246, 0.3);
+        }
+        
+        .agent-button.selected {
+            border-color: var(--accent-purple);
+            background: linear-gradient(135deg, rgba(139, 92, 246, 0.2), rgba(59, 130, 246, 0.1));
+            box-shadow: 0 0 20px rgba(139, 92, 246, 0.4), inset 0 1px 0 rgba(255, 255, 255, 0.1);
+            transform: translateY(-2px);
+        }
+        
+        .agent-button.selected::after {
+            content: '✦';
+            position: absolute;
+            top: 0.5rem;
+            right: 0.5rem;
+            color: var(--accent-purple);
+            font-size: 0.75rem;
+            animation: sparkle 2s infinite;
+        }
+        
+        .agent-header {
+            display: flex;
+            align-items: center;
+            gap: 0.375rem;
+            margin-bottom: 0;
+        }
+        
+        .agent-icon {
+            width: 16px;
+            height: 16px;
+            border-radius: 3px;
+            background: linear-gradient(135deg, var(--accent-purple), var(--accent-blue));
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 0.5rem;
+            font-weight: 700;
+            color: white;
+            flex-shrink: 0;
+        }
+        
+        .agent-name {
+            font-size: 0.75rem;
+            font-weight: 600;
+            color: var(--text-primary);
+            margin: 0;
+            flex: 1;
+            white-space: nowrap;
+            overflow: hidden;
+            text-overflow: ellipsis;
+        }
+        
+        .agent-meta {
+            display: flex;
+            align-items: center;
+            gap: 0.5rem;
+            font-size: 0.75rem;
+            color: var(--text-muted);
+            margin-top: 0.25rem;
+        }
+        
+        .agent-badge {
+            background: rgba(139, 92, 246, 0.2);
+            color: var(--accent-purple);
+            padding: 0.125rem 0.375rem;
+            border-radius: 10px;
+            font-size: 0.65rem;
+            font-weight: 600;
+            text-transform: uppercase;
+            letter-spacing: 0.5px;
+        }
+        
+        .agent-step {
+            background: rgba(59, 130, 246, 0.2);
+            color: var(--accent-blue);
+            padding: 0.125rem 0.375rem;
+            border-radius: 10px;
+            font-size: 0.65rem;
+            font-weight: 600;
+        }
+        
+        @keyframes sparkle {
+            0%, 100% { opacity: 1; transform: scale(1) rotate(0deg); }
+            50% { opacity: 0.5; transform: scale(1.2) rotate(180deg); }
+        }
+        
+        .terminal {
+            background: #000000;
+            border: 2px solid var(--border-subtle);
+            border-radius: 8px;
+            padding: 1rem;
+            font-family: 'JetBrains Mono', 'Fira Code', 'Cascadia Code', monospace;
+            font-size: 13px;
+            line-height: 1.4;
+            color: #00ff41;
+            height: 300px;
+            overflow-y: auto;
+            white-space: pre-wrap;
+        }
+        
+        .terminal::-webkit-scrollbar {
+            width: 6px;
+        }
+        
+        .terminal::-webkit-scrollbar-track {
+            background: #000;
+        }
+        
+        .terminal::-webkit-scrollbar-thumb {
+            background: #00ff41;
+            border-radius: 3px;
+        }
+        
+        .status-badge {
+            display: inline-flex;
+            align-items: center;
+            padding: 0.375rem 0.75rem;
+            border-radius: 20px;
+            font-size: 0.75rem;
+            font-weight: 700;
+            text-transform: uppercase;
+            letter-spacing: 0.5px;
+        }
+        
+        .status-running {
+            background: rgba(59, 130, 246, 0.2);
+            color: var(--accent-blue);
+            border: 1px solid var(--accent-blue);
+        }
+        
+        .status-completed {
+            background: rgba(16, 185, 129, 0.2);
+            color: var(--accent-green);
+            border: 1px solid var(--accent-green);
+        }
+        
+        .status-failed {
+            background: rgba(239, 68, 68, 0.2);
+            color: var(--accent-red);
+            border: 1px solid var(--accent-red);
+        }
+        
+        .status-ready {
+            background: rgba(139, 92, 246, 0.2);
+            color: var(--accent-purple);
+            border: 1px solid var(--accent-purple);
+        }
+        
+        .execution-controls {
+            display: flex;
+            gap: 0.75rem;
+            margin: 1.5rem 0;
+        }
+        
+        .agent-details {
+            margin: 1rem 0;
+            padding: 1rem;
+            background: var(--bg-secondary);
+            border-radius: 8px;
+            border: 1px solid var(--border-subtle);
+        }
+        
+        .agent-details p {
+            margin: 0.5rem 0;
+            font-size: 0.875rem;
+            color: var(--text-secondary);
+        }
+        
+        .agent-details strong {
+            color: var(--text-primary);
+        }
+        
+        .process-card {
+            background: var(--bg-secondary);
+            border: 2px solid var(--border-subtle);
+            border-radius: 8px;
+            padding: 1rem;
+            margin-bottom: 0.75rem;
+        }
+        
+        .process-header {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+        }
+        
+        .process-info h4 {
+            margin: 0;
+            color: var(--text-primary);
+            font-size: 0.95rem;
+        }
+        
+        .process-info p {
+            margin: 0.25rem 0 0 0;
+            font-size: 0.8rem;
+            color: var(--text-muted);
+        }
+        
+        @keyframes pulse {
+            0% { opacity: 1; }
+            50% { opacity: 0.6; }
+            100% { opacity: 1; }
+        }
+        
+        .running {
+            animation: pulse 2s infinite;
+        }
+        
+        .gradient-text {
+            background: linear-gradient(135deg, var(--accent-purple), var(--accent-blue));
+            -webkit-background-clip: text;
+            -webkit-text-fill-color: transparent;
+            background-clip: text;
+        }
+        
+        .agent-prompt-container {
+            position: relative;
+            margin-top: 0.5rem;
+        }
+        
+        .agent-prompt {
+            background: var(--bg-primary);
+            border: 2px solid var(--border-subtle);
+            border-radius: 8px;
+            padding: 1rem;
+            font-family: 'JetBrains Mono', 'Fira Code', 'Cascadia Code', monospace;
+            font-size: 0.8rem;
+            line-height: 1.4;
+            color: var(--text-secondary);
+            max-height: 120px;
+            overflow-y: auto;
+            white-space: pre-wrap;
+            word-wrap: break-word;
+            transition: max-height 0.3s ease;
+        }
+        
+        .agent-prompt.expanded {
+            max-height: 400px;
+        }
+        
+        .agent-prompt::-webkit-scrollbar {
+            width: 4px;
+        }
+        
+        .agent-prompt::-webkit-scrollbar-track {
+            background: var(--bg-primary);
+        }
+        
+        .agent-prompt::-webkit-scrollbar-thumb {
+            background: var(--accent-purple);
+            border-radius: 2px;
+        }
+        
+        #toggle-prompt {
+            position: absolute;
+            top: 0.5rem;
+            right: 0.5rem;
+            padding: 0.375rem 0.75rem;
+            font-size: 0.7rem;
+        }
+    </style>
+</head>
+<body>
+    <div class="app-container">
+        <header>
+            <div class="header-content">
+                <div class="logo">
+                    <h1>The <span class="logo-accent">Agency</span> - <span class="gradient-text">UR</span> Agent Execution</h1>
+                </div>
+            </div>
+        </header>
+        
+        <div class="main-content">
+            <!-- Left Panel: Agent Selection -->
+            <div class="panel">
+                <div class="panel-header">
+                    <h2>🤖 <span class="gradient-text">UR</span> Agents</h2>
+                    <button class="btn-secondary btn" onclick="loadAgents()">REFRESH <span class="gradient-text">UR</span> LIST</button>
+                </div>
+                <div class="panel-content">
+                    <div class="agent-grid" id="agent-grid">
+                        <div class="agent-button">
+                            <div class="agent-header">
+                                <div class="agent-name">Loading agents...</div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+            
+            <!-- Center Panel: Agent Execution -->
+            <div class="panel">
+                <div class="panel-header">
+                    <h2 id="center-title">⚡ Select <span class="gradient-text">UR</span> Agent</h2>
+                    <span class="status-badge status-ready" id="agent-status">Ready</span>
+                </div>
+                <div class="panel-content">
+                    <div class="form-group">
+                        <label for="shared-directory">Shared Directory Path</label>
+                        <input type="text" id="shared-directory" value="/Users/shawn_meredith/code/pets/warpcore" placeholder="Enter absolute path to client directory">
+                    </div>
+                    
+                    <div class="form-group">
+                        <label for="workflow-id">Workflow ID</label>
+                        <input type="text" id="workflow-id" placeholder="Optional - leave empty for new workflow">
+                    </div>
+                    
+                    <div id="agent-config" style="display: none;">
+                        <div class="agent-details" id="agent-details"></div>
+                        
+                        <div class="form-group">
+                            <label for="agent-prompt-display"><span class="gradient-text">UR</span> Agent Current Prompt</label>
+                            <div class="agent-prompt-container">
+                                <div class="agent-prompt" id="agent-prompt-display">Loading prompt...</div>
+                                <button class="btn-secondary btn" id="toggle-prompt" onclick="togglePromptView()">SHOW FULL</button>
+                            </div>
+                        </div>
+                        
+                        <div class="form-group">
+                            <label for="agent-directory">Agent Override Directory</label>
+                            <input type="text" id="agent-directory" placeholder="Optional - overrides shared directory">
+                        </div>
+                        
+                        <div class="form-group">
+                            <label for="custom-prompt">Custom Prompt Override</label>
+                            <textarea id="custom-prompt" rows="3" placeholder="Optional - custom prompt override (replaces agent's default prompt)"></textarea>
+                        </div>
+                        
+                        <div class="execution-controls">
+                            <button class="btn" id="execute-btn" onclick="executeAgent()">Execute <span class="gradient-text">UR</span> Agent</button>
+                            <button class="btn btn-danger" id="stop-btn" onclick="stopAgent()" style="display: none;">Stop <span class="gradient-text">UR</span> Execution</button>
+                        </div>
+                    </div>
+                    
+                    <div class="terminal" id="terminal-output">Welcome to The Agency UR Agent Execution Terminal
+> Select UR agent from the left panel to begin...
+> UR tools. UR way. Purfectly simple.</div>
+                </div>
+            </div>
+            
+            <!-- Right Panel: Running Processes -->
+            <div class="panel">
+                <div class="panel-header">
+                    <h2>🚀 <span class="gradient-text">UR</span> Active Processes</h2>
+                    <button class="btn-secondary btn" onclick="loadRunningProcesses()">REFRESH</button>
+                </div>
+                <div class="panel-content">
+                    <div id="running-processes-list">
+                        <p>No active processes</p>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+    
+    <script>
+        let selectedAgent = null;
+        let currentEventSource = null;
+        let currentWorkflowId = null;
+        
+        // Load available agents on page load
+        document.addEventListener('DOMContentLoaded', function() {
+            loadAgents();
+            loadRunningProcesses();
+        });
+        
+        async function loadAgents() {
+            const agentGrid = document.getElementById('agent-grid');
+            agentGrid.innerHTML = '<div class="agent-button"><div class="agent-header"><div class="agent-name">Loading agents...</div></div></div>';
+            
+            try {
+                const response = await fetch('/api/agents');
+                const data = await response.json();
+                
+                if (data.status === 'success' && data.agents && data.agents.length > 0) {
+                    agentGrid.innerHTML = '';
+                    
+                    data.agents.forEach(agent => {
+                        const agentCard = document.createElement('div');
+                        agentCard.className = 'agent-card';
+                        agentCard.setAttribute('data-agent-id', agent.id);
+                        
+                        // Extract clean name
+                        const cleanName = agent.id;
+                        const displayName = cleanName.charAt(0).toUpperCase() + cleanName.slice(1);
+                        
+                        agentCard.innerHTML = `
+                            <div class="agent-status"></div>
+                            <div class="agent-name">${displayName}</div>
+                        `;
+                        
+                        agentCard.addEventListener('click', () => selectAgent(agent));
+                        agentGrid.appendChild(agentCard);
+                    });
+                } else {
+                    agentGrid.innerHTML = `
+                        <div class="agent-button">
+                            <div class="agent-header">
+                                <div class="agent-name">No agents found</div>
+                            </div>
+                            <div class="agent-meta">
+                                <span style="color: var(--accent-red);">Error: ${data.message || 'Unknown error'}</span>
+                            </div>
+                        </div>
+                    `;
+                }
+            } catch (error) {
+                agentGrid.innerHTML = `
+                    <div class="agent-button">
+                        <div class="agent-header">
+                            <div class="agent-name">Failed to load agents</div>
+                        </div>
+                        <div class="agent-meta">
+                            <span style="color: var(--accent-red);">Error: ${error.message}</span>
+                        </div>
+                    </div>
+                `;
+            }
+        }
+        
+        async function selectAgent(agent) {
+            selectedAgent = agent;
+            
+            // Highlight the selected agent card
+            document.querySelectorAll('.agent-card').forEach(card => {
+                card.classList.remove('selected');
+                if (card.getAttribute('data-agent-id') === agent.id) {
+                    card.classList.add('selected');
+                }
+            });
+            
+            // Update center panel with clean agent name
+            const cleanName = agent.id.charAt(0).toUpperCase() + agent.id.slice(1);
+            document.getElementById('center-title').innerHTML = `⚡ <span class="gradient-text">UR</span> ${cleanName}`;
+            document.getElementById('agent-config').style.display = 'block';
+            
+            // Clear previous output and reset status
+            document.getElementById('terminal-output').innerHTML = `Welcome to The Agency UR Agent Execution Terminal\n> Selected UR agent: ${cleanName}\n> Ready for UR execution... UR tools. UR way.`;
+            document.getElementById('agent-status').textContent = 'Selected';
+            document.getElementById('agent-status').className = 'status-badge status-ready';
+            
+            // Load agent details and prompt
+            try {
+                const response = await fetch(`/api/agent-specs/${agent.id}`);
+                const data = await response.json();
+                
+                if (data.status === 'success') {
+                    const agentSpecs = data.agent_specifications;
+                    const agentDetails = document.getElementById('agent-details');
+                    
+                    agentDetails.innerHTML = `
+                        <p><strong>Agent ID:</strong> ${agentSpecs.agent_info.agent_id}</p>
+                        <p><strong>Version:</strong> ${agentSpecs.agent_info.agent_version}</p>
+                        <p><strong>Position:</strong> ${agentSpecs.agent_info.workflow_position}</p>
+                        <p><strong>Dependencies:</strong> ${agentSpecs.agent_info.dependencies.join(', ') || 'None'}</p>
+                        <p><strong>Outputs to:</strong> ${agentSpecs.agent_info.outputs_to.join(', ') || 'None'}</p>
+                        <p><strong>Rules:</strong> ${agentSpecs.validation_rules.length} validation, ${agentSpecs.success_criteria.length} success</p>
+                    `;
+                } else {
+                    document.getElementById('agent-details').innerHTML = `
+                        <p style="color: var(--accent-red);">Failed to load agent details: ${data.message}</p>
+                    `;
+                }
+                
+                // Load agent prompt
+                const promptResponse = await fetch(`/api/agents/${agent.id}/prompt`);
+                const promptData = await promptResponse.json();
+                
+                if (promptData.status === 'success') {
+                    const promptDisplay = document.getElementById('agent-prompt-display');
+                    promptDisplay.textContent = promptData.prompt;
+                    
+                    // Also display in terminal
+                    const terminal = document.getElementById('terminal-output');
+                    terminal.innerHTML = `Welcome to The Agency UR Agent Execution Terminal\n> Selected UR agent: ${cleanName}\n> Ready for UR execution... UR tools. UR way.\n\n=== AGENT PROMPT ===\n${promptData.prompt}\n\n=== END PROMPT ===\n> Ready to execute...`;
+                    terminal.scrollTop = terminal.scrollHeight;
+                } else {
+                    document.getElementById('agent-prompt-display').textContent = 'Failed to load prompt';
+                    document.getElementById('terminal-output').innerHTML = `Welcome to The Agency UR Agent Execution Terminal\n> Selected UR agent: ${cleanName}\n> Failed to load agent prompt\n> Ready for UR execution... UR tools. UR way.`;
+                }
+                
+            } catch (error) {
+                document.getElementById('agent-details').innerHTML = `
+                    <p style="color: var(--accent-red);">Error loading agent details: ${error.message}</p>
+                `;
+                document.getElementById('agent-prompt-display').textContent = 'Error loading prompt';
+            }
+        }
+        
+        function executeAgent() {
+            if (!selectedAgent) {
+                alert('Please select an agent first');
+                return;
+            }
+            
+            // Set UI state
+            document.getElementById('agent-status').textContent = 'Running';
+            document.getElementById('agent-status').className = 'status-badge status-running running';
+            document.getElementById('terminal-output').innerHTML = 'Starting execution...\n';
+            document.getElementById('execute-btn').disabled = true;
+            document.getElementById('stop-btn').style.display = 'inline-block';
+            
+            // Get execution parameters
+            const sharedDir = document.getElementById('shared-directory').value.trim();
+            const agentDir = document.getElementById('agent-directory').value.trim();
+            const workflowId = document.getElementById('workflow-id').value.trim();
+            const customPrompt = document.getElementById('custom-prompt').value.trim();
+            
+            // Use agent-specific dir if provided, otherwise use shared dir
+            const srcDir = agentDir || sharedDir;
+            currentWorkflowId = workflowId;
+            
+            // Close any existing event source
+            if (currentEventSource) {
+                currentEventSource.close();
+            }
+            
+            // Start streaming execution
+            currentEventSource = new EventSource(`/api/execute-agent-stream?agent=${selectedAgent.id}`);
+            
+            // Set up event handlers
+            currentEventSource.onmessage = function(event) {
+                const data = JSON.parse(event.data);
+                const terminal = document.getElementById('terminal-output');
+                
+                if (data.type === 'start') {
+                    terminal.innerHTML += `Executing command: ${data.command}\n\n`;
+                } else if (data.type === 'output') {
+                    terminal.innerHTML += `${data.line}\n`;
+                    terminal.scrollTop = terminal.scrollHeight;
+                } else if (data.type === 'complete') {
+                    terminal.innerHTML += `\nExecution ${data.success ? 'completed successfully' : 'failed'} with exit code ${data.exit_code}\n`;
+                    terminal.scrollTop = terminal.scrollHeight;
+                    
+                    // Update UI state
+                    document.getElementById('agent-status').textContent = data.success ? 'Completed' : 'Failed';
+                    document.getElementById('agent-status').className = `status-badge ${data.success ? 'status-completed' : 'status-failed'}`;
+                    document.getElementById('execute-btn').disabled = false;
+                    document.getElementById('stop-btn').style.display = 'none';
+                    
+                    // Close event source
+                    currentEventSource.close();
+                    currentEventSource = null;
+                    
+                    // Refresh running processes
+                    loadRunningProcesses();
+                } else if (data.type === 'error') {
+                    terminal.innerHTML += `\nError: ${data.message}\n`;
+                    terminal.scrollTop = terminal.scrollHeight;
+                    
+                    // Update UI state
+                    document.getElementById('agent-status').textContent = 'Error';
+                    document.getElementById('agent-status').className = 'status-badge status-failed';
+                    document.getElementById('execute-btn').disabled = false;
+                    document.getElementById('stop-btn').style.display = 'none';
+                    
+                    // Close event source
+                    currentEventSource.close();
+                    currentEventSource = null;
+                }
+            };
+            
+            currentEventSource.onerror = function() {
+                document.getElementById('terminal-output').innerHTML += '\nConnection to server lost.\n';
+                document.getElementById('agent-status').textContent = 'Connection Lost';
+                document.getElementById('agent-status').className = 'status-badge status-failed';
+                document.getElementById('execute-btn').disabled = false;
+                document.getElementById('stop-btn').style.display = 'none';
+                
+                currentEventSource.close();
+                currentEventSource = null;
+            };
+            
+            // Start the execution via regular API
+            fetch('/api/execute-agent', {
+                method: 'POST',
+                headers: {
+                    'Content-Type': 'application/json',
+                },
+                body: JSON.stringify({
+                    agent_id: selectedAgent.id,
+                    workflow_id: workflowId,
+                    custom_prompt: customPrompt,
+                    src_dir: srcDir
+                }),
+            });
+        }
+        
+        async function stopAgent() {
+            if (!currentWorkflowId) return;
+            
+            try {
+                const response = await fetch(`/api/stop-workflow/${currentWorkflowId}`, {
+                    method: 'POST'
+                });
+                const data = await response.json();
+                
+                if (data.status === 'success') {
+                    document.getElementById('terminal-output').innerHTML += `\nStopped workflow: ${currentWorkflowId}\n`;
+                    document.getElementById('agent-status').textContent = 'Stopped';
+                    document.getElementById('agent-status').className = 'status-badge status-failed';
+                    document.getElementById('execute-btn').disabled = false;
+                    document.getElementById('stop-btn').style.display = 'none';
+                    
+                    if (currentEventSource) {
+                        currentEventSource.close();
+                        currentEventSource = null;
+                    }
+                    
+                    // Refresh running processes
+                    loadRunningProcesses();
+                } else {
+                    document.getElementById('terminal-output').innerHTML += `\nFailed to stop workflow: ${data.message}\n`;
+                }
+            } catch (error) {
+                document.getElementById('terminal-output').innerHTML += `\nError stopping workflow: ${error.message}\n`;
+            }
+        }
+        
+        async function loadRunningProcesses() {
+            try {
+                const response = await fetch('/api/running-processes');
+                const data = await response.json();
+                
+                const processList = document.getElementById('running-processes-list');
+                
+                if (data.status === 'success') {
+                    if (data.running_processes && data.running_processes.length > 0) {
+                        processList.innerHTML = '';
+                        
+                        data.running_processes.forEach(process => {
+                            const processEl = document.createElement('div');
+                            processEl.className = 'process-card';
+                            processEl.innerHTML = `
+                                <div class="process-header">
+                                    <div class="process-info">
+                                        <h4>${process.agent_id}</h4>
+                                        <p>PID: ${process.pid}</p>
+                                        <p>Started: ${new Date(process.start_time).toLocaleTimeString()}</p>
+                                        ${process.workflow_id ? `<p>Workflow: ${process.workflow_id}</p>` : ''}
+                                    </div>
+                                    <button class="btn btn-danger" onclick="stopProcess('${process.workflow_id}')">STOP</button>
+                                </div>
+                            `;
+                            processList.appendChild(processEl);
+                        });
+                    } else {
+                        processList.innerHTML = '<p>No active processes</p>';
+                    }
+                } else {
+                    processList.innerHTML = `<p>Error loading processes: ${data.message}</p>`;
+                }
+            } catch (error) {
+                document.getElementById('running-processes-list').innerHTML = `<p>Failed to load processes: ${error.message}</p>`;
+            }
+        }
+        
+        async function stopProcess(workflowId) {
+            if (!workflowId) return;
+            
+            try {
+                const response = await fetch(`/api/stop-workflow/${workflowId}`, {
+                    method: 'POST'
+                });
+                const data = await response.json();
+                
+                if (data.status === 'success') {
+                    alert(`Stopped workflow: ${workflowId}`);
+                    loadRunningProcesses();
+                } else {
+                    alert(`Failed to stop workflow: ${data.message}`);
+                }
+            } catch (error) {
+                alert(`Error stopping workflow: ${error.message}`);
+            }
+        }
+        
+        function togglePromptView() {
+            const promptDisplay = document.getElementById('agent-prompt-display');
+            const toggleBtn = document.getElementById('toggle-prompt');
+            
+            if (promptDisplay.classList.contains('expanded')) {
+                promptDisplay.classList.remove('expanded');
+                toggleBtn.textContent = 'SHOW FULL';
+            } else {
+                promptDisplay.classList.add('expanded');
+                toggleBtn.textContent = 'SHOW LESS';
+            }
+        }
+    </script>
+</body>
+</html>

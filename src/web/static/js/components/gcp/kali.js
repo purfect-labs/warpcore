@@ -11,14 +11,14 @@ async function connectKali() {
     const selectedEnvs = getSelectedKaliEnvs();
     
     if (selectedEnvs.length === 0) {
-        window.APEX.addTerminalLine('System', '⚠️ No environments selected for Kali connection', 'warning');
+        window.WARPCORE.addTerminalLine('System', '⚠️ No environments selected for Kali connection', 'warning');
         return;
     }
     
-    window.APEX.addTerminalLine('System', `🚀 Connecting Kali for environments: ${selectedEnvs.join(', ')}`, 'success');
+    window.WARPCORE.addTerminalLine('System', `🚀 Connecting Kali for environments: ${selectedEnvs.join(', ')}`, 'success');
     
     // First, stop any existing port forwards to prevent conflicts
-    window.APEX.addTerminalLine('System', '🧠 Cleaning up existing port forwards...', 'warning');
+    window.WARPCORE.addTerminalLine('System', '🧠 Cleaning up existing port forwards...', 'warning');
     await stopKaliPortForwards();
     
     for (const env of selectedEnvs) {
@@ -39,22 +39,22 @@ async function connectKali() {
             const result = await response.json();
             
             if (result.success) {
-                window.APEX.addTerminalLine('System', `✅ Kali port forwarding initiated for ${env}`, 'success');
+                window.WARPCORE.addTerminalLine('System', `✅ Kali port forwarding initiated for ${env}`, 'success');
                 if (!kaliConnectedEnvs.includes(env)) {
                     kaliConnectedEnvs.push(env);
                 }
             } else {
-                window.APEX.addTerminalLine('System', `❌ Failed to connect Kali for ${env}: ${result.error}`, 'error');
+                window.WARPCORE.addTerminalLine('System', `❌ Failed to connect Kali for ${env}: ${result.error}`, 'error');
             }
         } catch (error) {
-            window.APEX.addTerminalLine('System', `❌ Error connecting Kali for ${env}: ${error.message}`, 'error');
+            window.WARPCORE.addTerminalLine('System', `❌ Error connecting Kali for ${env}: ${error.message}`, 'error');
         }
     }
 }
 
 function openKaliDashboards() {
     if (kaliConnectedEnvs.length === 0) {
-        window.APEX.addTerminalLine('System', '⚠️ No Kali environments connected. Please connect first.', 'warning');
+        window.WARPCORE.addTerminalLine('System', '⚠️ No Kali environments connected. Please connect first.', 'warning');
         return;
     }
     
@@ -68,19 +68,19 @@ function openKaliDashboards() {
         try {
             window.open(url, `kiali-${env}`);
             openedCount++;
-            window.APEX.addTerminalLine('System', `🔗 Opened Kali dashboard for ${env}: ${url}`, 'success');
+            window.WARPCORE.addTerminalLine('System', `🔗 Opened Kali dashboard for ${env}: ${url}`, 'success');
         } catch (error) {
-            window.APEX.addTerminalLine('System', `❌ Failed to open dashboard for ${env}: ${error.message}`, 'error');
+            window.WARPCORE.addTerminalLine('System', `❌ Failed to open dashboard for ${env}: ${error.message}`, 'error');
         }
     }
     
     if (openedCount > 0) {
-        window.APEX.addTerminalLine('System', `✅ Opened ${openedCount} Kali dashboard(s)`, 'success');
+        window.WARPCORE.addTerminalLine('System', `✅ Opened ${openedCount} Kali dashboard(s)`, 'success');
     }
 }
 
 async function stopKaliPortForwards() {
-    window.APEX.addTerminalLine('System', '🛑 Stopping all Kali port forwards...', 'warning');
+    window.WARPCORE.addTerminalLine('System', '🛑 Stopping all Kali port forwards...', 'warning');
     
     try {
         const response = await fetch('/api/gcp/kali/stop', {
@@ -93,18 +93,18 @@ async function stopKaliPortForwards() {
         const result = await response.json();
         
         if (result.success) {
-            window.APEX.addTerminalLine('System', '✅ All Kali port forwards stopped', 'success');
+            window.WARPCORE.addTerminalLine('System', '✅ All Kali port forwards stopped', 'success');
             kaliConnectedEnvs = [];
         } else {
-            window.APEX.addTerminalLine('System', `❌ Failed to stop port forwards: ${result.error}`, 'error');
+            window.WARPCORE.addTerminalLine('System', `❌ Failed to stop port forwards: ${result.error}`, 'error');
         }
     } catch (error) {
-        window.APEX.addTerminalLine('System', `❌ Error stopping port forwards: ${error.message}`, 'error');
+        window.WARPCORE.addTerminalLine('System', `❌ Error stopping port forwards: ${error.message}`, 'error');
     }
 }
 
 async function checkKaliStatus() {
-    window.APEX.addTerminalLine('System', '📊 Checking Kali pod and port forward status...', 'success');
+    window.WARPCORE.addTerminalLine('System', '📊 Checking Kali pod and port forward status...', 'success');
     
     try {
         const response = await fetch('/api/gcp/kali/status');
@@ -115,17 +115,17 @@ async function checkKaliStatus() {
                 result.status.forEach(envStatus => {
                     const statusEmoji = envStatus.connected ? '✅' : '❌';
                     const statusMsg = envStatus.connected ? 'Connected' : 'Not connected';
-                    window.APEX.addTerminalLine('System', `${statusEmoji} ${envStatus.env}: ${statusMsg} (port ${envStatus.port})`, 
+                    window.WARPCORE.addTerminalLine('System', `${statusEmoji} ${envStatus.env}: ${statusMsg} (port ${envStatus.port})`, 
                         envStatus.connected ? 'success' : 'warning');
                 });
             } else {
-                window.APEX.addTerminalLine('System', '⚠️ No Kali connections found', 'warning');
+                window.WARPCORE.addTerminalLine('System', '⚠️ No Kali connections found', 'warning');
             }
         } else {
-            window.APEX.addTerminalLine('System', `❌ Failed to check status: ${result.error}`, 'error');
+            window.WARPCORE.addTerminalLine('System', `❌ Failed to check status: ${result.error}`, 'error');
         }
     } catch (error) {
-        window.APEX.addTerminalLine('System', `❌ Error checking status: ${error.message}`, 'error');
+        window.WARPCORE.addTerminalLine('System', `❌ Error checking status: ${error.message}`, 'error');
     }
 }
 

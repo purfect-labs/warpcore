@@ -1,4 +1,4 @@
-// APEX Tab Functionality
+// WARPCORE Tab Functionality
 
 function initializeTabs() {
     document.querySelectorAll('.tab-btn').forEach(btn => {
@@ -18,5 +18,8 @@ function initializeTabs() {
     });
 }
 
-// Export for use by other modules
-window.APEX.initializeTabs = initializeTabs;
+// Export for use by other modules - ensure WARPCORE object exists
+if (!window.WARPCORE) {
+    window.WARPCORE = {};
+}
+window.WARPCORE.initializeTabs = initializeTabs;

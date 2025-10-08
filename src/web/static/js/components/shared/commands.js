@@ -1,23 +1,23 @@
-// APEX Command Execution
+// WARPCORE Command Execution System
 
 // Execute proper API command
 async function executeApiCommand(action, provider, params = {}) {
     const now = Date.now();
     
     // Prevent rapid successive executions (debounce)
-    if (now - window.APEX.lastExecutionTime() < 500) {
+    if (now - window.WARPCORE.lastExecutionTime() < 500) {
         console.log('Ignoring rapid click');
         return;
     }
     
-    if (window.APEX.isExecuting()) {
-        window.APEX.addTerminalLine('System', '⚠️ Command already executing, please wait...', 'warning');
+    if (window.WARPCORE.isExecuting()) {
+        window.WARPCORE.addTerminalLine('System', '⚠️ Command already executing, please wait...', 'warning');
         return;
     }
     
     // Set executing flag and timestamp immediately to prevent duplicates
-    window.APEX.setLastExecutionTime(now);
-    window.APEX.setExecuting(true);
+    window.WARPCORE.setLastExecutionTime(now);
+    window.WARPCORE.setExecuting(true);
     updateStopButton();
     
     // Get current UI state for environment context
@@ -28,11 +28,11 @@ async function executeApiCommand(action, provider, params = {}) {
     
     // Add to command history 
     const commandDesc = `${provider}.${action}(${environment})`;
-    window.APEX.commandHistory.push(commandDesc);
-    window.APEX.updateCommandHistory();
+    window.WARPCORE.commandHistory.push(commandDesc);
+    window.WARPCORE.updateCommandHistory();
     
     // Show command in terminal
-    window.APEX.addTerminalLine('apex', commandDesc, 'command');
+    window.WARPCORE.addTerminalLine('apex', commandDesc, 'command');
     
     try {
         // Add environment to params
@@ -53,16 +53,16 @@ async function executeApiCommand(action, provider, params = {}) {
         const result = await response.json();
         
         if (result.success) {
-            window.APEX.addTerminalLine('System', `✅ ${result.message || 'Command initiated successfully'}`, 'success');
+            window.WARPCORE.addTerminalLine('System', `✅ ${result.message || 'Command initiated successfully'}`, 'success');
         } else {
-            window.APEX.addTerminalLine('System', `❌ ${result.error || 'Command failed'}`, 'error');
+            window.WARPCORE.addTerminalLine('System', `❌ ${result.error || 'Command failed'}`, 'error');
         }
         
     } catch (error) {
         console.error('API Error:', error);
-        window.APEX.addTerminalLine('Error', `Failed to execute ${action}: ${error.message}`, 'error');
+        window.WARPCORE.addTerminalLine('Error', `Failed to execute ${action}: ${error.message}`, 'error');
     } finally {
-        window.APEX.setExecuting(false);
+        window.WARPCORE.setExecuting(false);
         updateStopButton();
     }
 }
@@ -72,18 +72,18 @@ function executeRawCommand(command) {
     const now = Date.now();
     
     // Prevent rapid successive executions (debounce)
-    if (now - window.APEX.lastExecutionTime() < 500) {
+    if (now - window.WARPCORE.lastExecutionTime() < 500) {
         console.log('Ignoring rapid click on raw command');
         return;
     }
     
-    if (window.APEX.isExecuting()) {
-        window.APEX.addTerminalLine('System', '⚠️ Command already executing, please wait...', 'warning');
+    if (window.WARPCORE.isExecuting()) {
+        window.WARPCORE.addTerminalLine('System', '⚠️ Command already executing, please wait...', 'warning');
         return;
     }
     
     // Set timestamp and executing flag
-    window.APEX.setLastExecutionTime(now);
+    window.WARPCORE.setLastExecutionTime(now);
     
     console.log(`Executing raw: ${command}`);
     
@@ -94,17 +94,17 @@ function executeRawCommand(command) {
     const cloud = activeCloudToggle ? activeCloudToggle.getAttribute('data-cloud') : 'aws';
     
     // Add command to history
-    window.APEX.commandHistory.push(command);
-    window.APEX.updateCommandHistory();
+    window.WARPCORE.commandHistory.push(command);
+    window.WARPCORE.updateCommandHistory();
     
     // Show command in terminal
-    window.APEX.addTerminalLine('apex', command, 'command');
+    window.WARPCORE.addTerminalLine('apex', command, 'command');
     
-    window.APEX.setExecuting(true);
+    window.WARPCORE.setExecuting(true);
     updateStopButton();
     
     // Send via WebSocket with UI state
-    const ws = window.APEX.ws();
+    const ws = window.WARPCORE.ws();
     if (ws && ws.readyState === WebSocket.OPEN) {
         ws.send(JSON.stringify({
             type: 'execute_command',
@@ -134,8 +134,8 @@ function executeRawCommand(command) {
         })
         .catch(error => {
             console.error('Error:', error);
-            window.APEX.addTerminalLine('Error', `Failed to execute command: ${error}`, 'error');
-            window.APEX.setExecuting(false);
+            window.WARPCORE.addTerminalLine('Error', `Failed to execute command: ${error}`, 'error');
+            window.WARPCORE.setExecuting(false);
             updateStopButton();
         });
     }
@@ -154,7 +154,7 @@ function initializeCommandButtons() {
     document.querySelectorAll('.command-btn').forEach(btn => {
         btn.addEventListener('click', function(event) {
             // Prevent multiple clicks
-            if (this.disabled || window.APEX.isExecuting()) {
+            if (this.disabled || window.WARPCORE.isExecuting()) {
                 return;
             }
             
@@ -191,8 +191,8 @@ function initializeTerminalInput() {
 
 // Environment switching functions
 function switchCloud(cloud) {
-    window.APEX.addTerminalLine('System', `Switching to ${cloud.toUpperCase()}...`, 'success');
-    window.APEX.updateSystemStatus({ cloud: cloud.toUpperCase() });
+    window.WARPCORE.addTerminalLine('System', `Switching to ${cloud.toUpperCase()}...`, 'success');
+    window.WARPCORE.updateSystemStatus({ cloud: cloud.toUpperCase() });
     
     // Update toggle buttons
     document.querySelectorAll('.cloud-toggle').forEach(btn => {
@@ -204,7 +204,7 @@ function switchCloud(cloud) {
 }
 
 function switchEnvironment(env) {
-    window.APEX.addTerminalLine('System', `Switching to ${env} environment...`, 'success');
+    window.WARPCORE.addTerminalLine('System', `Switching to ${env} environment...`, 'success');
     
     // Update toggle buttons with environment-specific colors
     document.querySelectorAll('.env-toggle').forEach(btn => {
@@ -215,7 +215,7 @@ function switchEnvironment(env) {
     });
     
     // Update status display
-    window.APEX.updateSystemStatus({ environment: env });
+    window.WARPCORE.updateSystemStatus({ environment: env });
 }
 
 // Make functions available globally

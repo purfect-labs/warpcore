@@ -3,8 +3,8 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>⚡ APEX Command Center - Cloud & CI Operations</title>
-    <meta name="description" content="Modern APEX command center for GCP, AWS, Git, and CI operations">
+    <title>🌊 WARPCORE Command Center - Cloud & CI Operations</title>
+    <meta name="description" content="Modern WARPCORE command center for GCP, AWS, Git, and CI operations">
     
     <!-- Core Styles -->
     <link rel="stylesheet" href="/static/css/main.css">
@@ -14,12 +14,12 @@
     <!-- All styles included in main.css -->
 </head>
 <body>
-    <div class="apex-container">
+    <div class="warpcore-container">
         <!-- Simplified Header -->
-        <header class="apex-header">
+        <header class="warpcore-header">
             <div class="header-left">
-                <div class="apex-title">
-                    <span class="title-main">⚡ APEX</span>
+                <div class="warpcore-title">
+                    <span class="title-main">🌊 WARPCORE</span>
                     <span class="title-sub">COMMAND CENTER</span>
                 </div>
                 
@@ -79,7 +79,7 @@
         </header>
 
         <!-- Main Layout with Hover-Expanding Side Panels -->
-        <div class="apex-layout">
+        <div class="warpcore-layout">
             <!-- Left Hover Panel -->
             <div class="side-panel left-panel" onmouseenter="expandPanel(this)" onmouseleave="collapsePanel(this)">
                 <!-- Compact view -->
@@ -288,7 +288,7 @@
     <!-- Feature Gate JavaScript -->
     <script>
         // Global feature status for JavaScript
-        window.APEX_FEATURES = {{ {
+        window.WARPCORE_FEATURES = {{ {
             'current_tier': current_tier,
             'available_features': available_features,
             'locked_features': locked_features,
@@ -297,7 +297,7 @@
         
         // Initialize feature-aware components
         document.addEventListener('DOMContentLoaded', function() {
-            console.log('🎯 APEX Command Center initializing with features:', window.APEX_FEATURES);
+            console.log('🌊 WARPCORE Command Center initializing with features:', window.WARPCORE_FEATURES);
             
             // Initialize real API status checks
             initRealAPIChecks();
@@ -370,12 +370,12 @@
             checkClusterStatus();
             
             // Check AWS status if available
-            if (window.APEX_FEATURES.available_features.includes('aws_sso')) {
+            if (window.WARPCORE_FEATURES.available_features.includes('aws_sso')) {
                 checkAWSStatus();
             }
             
             // Check GCP status if available
-            if (window.APEX_FEATURES.available_features.includes('gcp_auth')) {
+            if (window.WARPCORE_FEATURES.available_features.includes('gcp_auth')) {
                 checkGCPStatus();
             }
             
@@ -515,11 +515,11 @@
             checkClusterStatus();
             
             // Update AWS and GCP status if features are available
-            if (window.APEX_FEATURES.available_features.includes('aws_sso')) {
+            if (window.WARPCORE_FEATURES.available_features.includes('aws_sso')) {
                 checkAWSStatus();
             }
             
-            if (window.APEX_FEATURES.available_features.includes('gcp_auth')) {
+            if (window.WARPCORE_FEATURES.available_features.includes('gcp_auth')) {
                 checkGCPStatus();
             }
         }
@@ -548,7 +548,7 @@
             // Only enable environment switching if user has appropriate features
             const envToggles = document.querySelectorAll('.env-toggle');
             envToggles.forEach(toggle => {
-                if (!window.APEX_FEATURES.available_features.includes('system_status')) {
+                if (!window.WARPCORE_FEATURES.available_features.includes('system_status')) {
                     toggle.disabled = true;
                     toggle.title = 'Feature locked';
                 }

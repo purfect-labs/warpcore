@@ -22,14 +22,14 @@ class WARPCOREAgency:
         # Clever agent aliases mapping numbered files to memorable names
         self.agent_aliases = {
             # CLI-friendly aliases -> actual file names
-            'origin': '-1_origin',
-            'boss': '0_boss', 
-            'pathfinder': '1_pathfinder',
-            'architect': '2a_architect',
-            'oracle': '2b_oracle',
-            'enforcer': '3_enforcer',
-            'craftsman': '4_craftsman',
-            'gatekeeper': '5_gatekeeper'
+            'origin': '0a_origin_from_none_to_boss',
+            'boss': '0b_boss_from_origin_to_pathfinder_oracle', 
+            'pathfinder': '1_pathfinder_from_boss_to_architect',
+            'architect': '2a_architect_from_pathfinder_oracle_to_enforcer',
+            'oracle': '2b_oracle_from_user_spec_to_architect',
+            'enforcer': '3_enforcer_from_architect_craftbuddy_to_craftsman',
+            'craftsman': '4a_craftsman_from_enforcer_to_craftbuddy',
+            'gatekeeper': '5_gatekeeper_from_craftbuddy_to_complete'
         }
         
         # Rich emoji descriptions for CLI help

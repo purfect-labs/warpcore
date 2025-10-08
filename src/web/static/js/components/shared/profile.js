@@ -4,10 +4,10 @@
  * Following APEX shared component pattern
  */
 
-window.APEX = window.APEX || {};
+window.WARPCORE = window.WARPCORE || {};
 
 // Profile Management Module
-window.APEX.Profile = {
+window.WARPCORE.Profile = {
     // State management
     currentLicense: null,
     subscriptionInfo: null,
@@ -416,47 +416,47 @@ window.APEX.Profile = {
                 break;
                 
             case 'license_activation_started':
-                window.APEX.addTerminalLine('License', message.data.message, 'info');
+                window.WARPCORE.addTerminalLine('License', message.data.message, 'info');
                 break;
                 
             case 'license_activation_success':
-                window.APEX.addTerminalLine('License', message.data.message, 'success');
+                window.WARPCORE.addTerminalLine('License', message.data.message, 'success');
                 this.showSuccess('License activated successfully!');
                 setTimeout(() => this.refreshLicenseStatus(), 1000);
                 break;
                 
             case 'license_activation_failed':
-                window.APEX.addTerminalLine('License', message.data.message, 'error');
+                window.WARPCORE.addTerminalLine('License', message.data.message, 'error');
                 this.showError(message.data.error || 'License activation failed');
                 break;
                 
             case 'trial_generation_started':
-                window.APEX.addTerminalLine('License', message.data.message, 'info');
+                window.WARPCORE.addTerminalLine('License', message.data.message, 'info');
                 break;
                 
             case 'trial_generation_success':
-                window.APEX.addTerminalLine('License', message.data.message, 'success');
-                window.APEX.addTerminalLine('License', `🔑 License Key: ${message.data.license_key}`, 'license-key');
+                window.WARPCORE.addTerminalLine('License', message.data.message, 'success');
+                window.WARPCORE.addTerminalLine('License', `🔑 License Key: ${message.data.license_key}`, 'license-key');
                 this.showGeneratedLicenseKey(message.data.license_key);
                 break;
                 
             case 'trial_generation_failed':
-                window.APEX.addTerminalLine('License', message.data.message, 'error');
+                window.WARPCORE.addTerminalLine('License', message.data.message, 'error');
                 this.showError(message.data.error || 'Trial generation failed');
                 break;
                 
             case 'license_deactivation_started':
-                window.APEX.addTerminalLine('License', message.data.message, 'info');
+                window.WARPCORE.addTerminalLine('License', message.data.message, 'info');
                 break;
                 
             case 'license_deactivation_success':
-                window.APEX.addTerminalLine('License', message.data.message, 'success');
+                window.WARPCORE.addTerminalLine('License', message.data.message, 'success');
                 this.showSuccess('License deactivated successfully');
                 setTimeout(() => this.refreshLicenseStatus(), 1000);
                 break;
                 
             case 'license_deactivation_failed':
-                window.APEX.addTerminalLine('License', message.data.message, 'error');
+                window.WARPCORE.addTerminalLine('License', message.data.message, 'error');
                 this.showError(message.data.error || 'License deactivation failed');
                 break;
         }
@@ -590,7 +590,7 @@ window.APEX.Profile = {
 // Auto-initialize when DOM is ready
 document.addEventListener('DOMContentLoaded', () => {
     if (document.getElementById('profile-tab')) {
-        window.APEX.Profile.init();
+        window.WARPCORE.Profile.init();
     }
 });
 

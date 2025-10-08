@@ -1,4 +1,4 @@
-// APEX Core Functionality
+// WARPCORE Core Functionality
 
 // Global state
 let isExecuting = false;
@@ -17,7 +17,7 @@ function initWebSocket() {
     
     ws.onopen = function(event) {
         console.log('WebSocket connected');
-        addTerminalLine('System', '🔗 Connected to APEX backend', 'success');
+        addTerminalLine('System', '🔗 Connected to WARPCORE backend', 'success');
     };
     
     ws.onmessage = function(event) {
@@ -66,8 +66,8 @@ function handleWebSocketMessage(message) {
     }
     
     // License-related message handling
-    if (window.APEX && window.APEX.Profile && window.APEX.Profile.handleWebSocketMessage) {
-        window.APEX.Profile.handleWebSocketMessage(message);
+    if (window.WARPCORE && window.WARPCORE.Profile && window.WARPCORE.Profile.handleWebSocketMessage) {
+        window.WARPCORE.Profile.handleWebSocketMessage(message);
     }
 }
 
@@ -178,11 +178,12 @@ function updateSystemStatus(status) {
 }
 
 // Export functions for use by other modules
-window.APEX = {
+window.WARPCORE = {
     initWebSocket,
     addTerminalLine,
     clearTerminal,
     stopCommand,
+    updateStopButton,
     updateCommandHistory,
     updateSystemStatus,
     isExecuting: () => isExecuting,

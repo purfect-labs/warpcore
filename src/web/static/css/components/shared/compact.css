@@ -1,7 +1,7 @@
 /* Compact Layout Styles for APEX */
 
 /* Compact Header Styles */
-.apex-header.compact {
+.warpcore-header.compact {
     height: 50px;
     padding: 0 20px;
     display: flex;
@@ -13,7 +13,7 @@
     z-index: 1000;
 }
 
-.apex-header.compact .apex-title {
+.warpcore-header.compact .warpcore-title {
     font-size: 1.2rem;
     font-weight: bold;
     color: #007acc;
@@ -201,7 +201,7 @@
 }
 
 /* New Layout Styles */
-.apex-layout {
+.warpcore-layout {
     display: flex;
     height: calc(100vh - 50px);
     position: relative;
@@ -496,7 +496,7 @@
 }
 
 /* Override any conflicting styles */
-.apex-container {
+.warpcore-container {
     height: 100vh;
     display: flex;
     flex-direction: column;
@@ -553,7 +553,7 @@
 }
 
 @media (max-width: 768px) {
-    .apex-layout {
+    .warpcore-layout {
         flex-direction: column;
     }
     

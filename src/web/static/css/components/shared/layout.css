@@ -1,7 +1,7 @@
 /* APEX Layout System - Clean Header with Side Panels */
 
 /* Main Container */
-.apex-container {
+.warpcore-container {
     display: flex;
     flex-direction: column;
     height: 100vh;
@@ -11,7 +11,7 @@
 }
 
 /* Main Layout Area (Below Header) */
-.apex-layout {
+.warpcore-layout {
     display: flex;
     flex: 1;
     position: relative;
@@ -57,7 +57,7 @@
 }
 
 @media (max-width: 768px) {
-    .apex-header {
+    .warpcore-header {
         flex-direction: column;
         min-height: 80px;
         padding: 0.5rem 1rem;
@@ -80,7 +80,7 @@
 }
 
 @media (max-width: 480px) {
-    .apex-header {
+    .warpcore-header {
         min-height: 100px;
     }
     

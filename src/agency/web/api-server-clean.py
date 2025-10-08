@@ -12,7 +12,7 @@ import logging
 import subprocess
 from datetime import datetime
 from pathlib import Path
-from flask import Flask, jsonify, request, send_from_directory, Response
+from flask import Flask, jsonify, request, send_from_directory
 from flask_cors import CORS
 import re
 import signal
@@ -170,31 +170,15 @@ def load_agent_specs():
 
 @app.route('/health', methods=['GET'])
 def health_check():
-    """Health check endpoint with agent discovery sample"""
-    try:
-        agents = load_agent_specs()
-        agent_names = [agent['id'] for agent in agents[:5]]  # First 5 agent IDs
-        
-        return jsonify({
-            'status': 'healthy',
-            'service': 'WARPCORE Clean API',
-            'timestamp': datetime.now().isoformat(),
-            'data_directory': str(DATA_DIR),
-            'agents_found': len(agents),
-            'data_files_found': len(list(DATA_DIR.glob('*.json'))) if DATA_DIR.exists() else 0,
-            'sample_agents': agent_names,
-            'discovery_method': 'schema-based regex parsing'
-        })
-    except Exception as e:
-        return jsonify({
-            'status': 'healthy_with_errors',
-            'service': 'WARPCORE Clean API',
-            'timestamp': datetime.now().isoformat(),
-            'data_directory': str(DATA_DIR),
-            'agents_found': 0,
-            'data_files_found': len(list(DATA_DIR.glob('*.json'))) if DATA_DIR.exists() else 0,
-            'error': str(e)
-        })
+    """Health check endpoint"""
+    return jsonify({
+        'status': 'healthy',
+        'service': 'WARPCORE Clean API',
+        'timestamp': datetime.now().isoformat(),
+        'data_directory': str(DATA_DIR),
+        'agents_found': len(list(AGENTS_DIR.glob('*.json'))) if AGENTS_DIR.exists() else 0,
+        'data_files_found': len(list(DATA_DIR.glob('*.json'))) if DATA_DIR.exists() else 0
+    })
 
 @app.route('/api/execution-logs', methods=['GET'])
 def get_execution_logs():
@@ -494,23 +478,6 @@ def stop_workflow(workflow_id):
             'message': str(e)
         }), 500
 
-@app.route('/api/execute-agent-stream', methods=['GET'])
-def execute_agent_stream():
-    """Stream agent execution output using Server-Sent Events"""
-    agent_id = request.args.get('agent')
-    
-    if not agent_id:
-        return jsonify({'status': 'error', 'message': 'Agent parameter required'}), 400
-    
-    def generate_stream():
-        # This is a simple implementation - for now just return a placeholder
-        # In a full implementation, you'd stream actual process output
-        yield f"data: {{\"type\": \"start\", \"command\": \"python3 agency.py {agent_id}\"}}\n\n"
-        yield f"data: {{\"type\": \"output\", \"line\": \"Streaming not fully implemented yet - use /api/execute-agent for now\"}}\n\n"
-        yield f"data: {{\"type\": \"complete\", \"success\": false, \"exit_code\": 1}}\n\n"
-    
-    return Response(generate_stream(), mimetype='text/event-stream')
-
 @app.route('/api/running-processes', methods=['GET'])
 def get_running_processes():
     """Get list of currently running agent processes"""
@@ -550,7 +517,7 @@ def get_running_processes():
 @app.route('/')
 def dashboard():
     """Serve main dashboard"""
-    return send_from_directory('.', 'index.html')
+    return send_from_directory('.', 'dashboard.html')
 
 @app.route('/<path:path>')
 def serve_static(path):

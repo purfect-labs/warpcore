@@ -1,5 +1,5 @@
 /**
- * Environment Constants - Standardized environments for APEX UI
+ * Environment Constants - Standardized environments for WARPCORE UI
  * These are the only valid environments throughout the application
  */
 

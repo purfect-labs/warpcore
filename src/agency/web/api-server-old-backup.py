@@ -1,0 +1,998 @@
+#!/usr/bin/env python3
+"""
+WARPCORE Real Data API Server
+Serves actual workflow execution logs from .data/ directory
+"""
+
+import json
+import os
+import glob
+from datetime import datetime
+from flask import Flask, jsonify, send_from_directory, request
+from flask_cors import CORS
+import logging
+import subprocess
+import sys
+from pathlib import Path
+
+app = Flask(__name__)
+CORS(app)
+
+# Configure logging
+logging.basicConfig(level=logging.INFO)
+logger = logging.getLogger(__name__)
+
+# Use relative path from current script location
+DATA_DIR = os.path.join(os.path.dirname(os.path.dirname(os.path.abspath(__file__))), '.data')
+
+def load_execution_logs():
+    """Load and parse execution logs from .data directory"""
+    logs = []
+    
+    # Find all JSON files in .data directory
+    json_files = glob.glob(os.path.join(DATA_DIR, '*.json'))
+    
+    for file_path in json_files:
+        try:
+            with open(file_path, 'r') as f:
+                data = json.load(f)
+                
+                # Extract workflow info from filename
+                filename = os.path.basename(file_path)
+                parts = filename.split('_')
+                
+                if len(parts) >= 4:
+                    workflow_id = parts[1]  # Extract workflow ID from filename
+                    sequence = parts[3] if parts[2] == 'seq' else '001'
+                    
+                    # Process workflow data based on structure
+                    if isinstance(data, dict):
+                        # Handle your actual WARPCORE workflow data structure
+                        if 'workflow_id' in data and 'agent_name' in data:
+                            # Real WARPCORE workflow execution format
+                            
+                            # Determine action type from file name or agent name
+                            action_type = 'UNKNOWN'
+                            if 'requirements_analysis' in filename:
+                                action_type = 'REQUIREMENTS_ANALYSIS'
+                            elif 'requirements_validation' in filename:
+                                action_type = 'REQUIREMENTS_VALIDATION'
+                            elif 'schema_coherence_analysis' in filename:
+                                action_type = 'SCHEMA_ANALYSIS'
+                            elif 'implementation_results' in filename:
+                                action_type = 'IMPLEMENTATION'
+                            elif 'gate_promotion_results' in filename:
+                                action_type = 'GATE_PROMOTION'
+                            elif 'analytics_orchestration' in filename:
+                                action_type = 'ANALYTICS_ORCHESTRATION'
+                            else:
+                                # Try to infer from agent name
+                                agent_name = data.get('agent_name', '').lower()
+                                if 'requirements' in agent_name:
+                                    action_type = 'REQUIREMENTS_PROCESSING'
+                                elif 'schema' in agent_name:
+                                    action_type = 'SCHEMA_PROCESSING'
+                                elif 'validation' in agent_name:
+                                    action_type = 'VALIDATION'
+                                elif 'analysis' in agent_name:
+                                    action_type = 'ANALYSIS'
+                                else:
+                                    action_type = 'WORKFLOW_EXECUTION'
+                            
+                            # Extract meaningful motive from the data
+                            motive = ''
+                            if 'requirements_summary' in data:
+                                req_summary = data['requirements_summary']
+                                motive = f"Generated {req_summary.get('total_requirements', 0)} requirements, {req_summary.get('critical_count', 0)} critical"
+                            elif 'coherence_analysis' in data:
+                                analysis = data['coherence_analysis']
+                                motive = f"Found {analysis.get('total_issues', 0)} coherence issues, PAP compliance: {analysis.get('pap_compliance_score', 0)}%"
+                            elif 'performance_metrics' in data:
+                                perf = data['performance_metrics']
+                                motive = f"Quality score: {perf.get('output_quality_score', 0)}, Efficiency: {perf.get('efficiency_rating', 'UNKNOWN')}"
+                            elif 'validation_results' in data:
+                                motive = f"Validation completed with results"
+                            else:
+                                motive = f"Executed {action_type.lower()} for workflow"
+                            
+                            logs.append({
+                                'workflow_id': data['workflow_id'],
+                                'sequence': data.get('sequence_id', sequence),
+                                'agent_name': data['agent_name'],
+                                'action_type': action_type,
+                                'timestamp': data.get('timestamp', datetime.now().isoformat()),
+                                'motive': motive,
+                                'content': {
+                                    'execution_metrics': data.get('execution_metrics', {}),
+                                    'performance_metrics': data.get('performance_metrics', {}),
+                                    'progress_metrics': data.get('progress_metrics', {}),
+                                    'summary': data.get('requirements_summary', data.get('coherence_analysis', {})),
+                                    'next_agent': data.get('next_agent', ''),
+                                    'file_source': filename
+                                },
+                                'source_file': filename
+                            })
+                        
+                        elif 'workflow_execution' in data:
+                            # Legacy mock format (keep for compatibility)
+                            execution_data = data['workflow_execution']
+                            agents = execution_data.get('agents', {})
+                            
+                            for agent_name, agent_data in agents.items():
+                                actions = agent_data.get('actions', [])
+                                for action in actions:
+                                    logs.append({
+                                        'workflow_id': workflow_id,
+                                        'sequence': sequence,
+                                        'agent_name': agent_name,
+                                        'action_type': action.get('type', 'UNKNOWN'),
+                                        'timestamp': action.get('timestamp', datetime.now().isoformat()),
+                                        'motive': action.get('motive', ''),
+                                        'content': action.get('content', {}),
+                                        'source_file': filename
+                                    })
+                        
+                        else:
+                            # Fallback: treat as generic workflow data
+                            logs.append({
+                                'workflow_id': workflow_id,
+                                'sequence': sequence,
+                                'agent_name': data.get('agent_name', 'UnknownAgent'),
+                                'action_type': 'WORKFLOW_STEP',
+                                'timestamp': data.get('timestamp', datetime.now().isoformat()),
+                                'motive': f'Workflow step execution from {filename}',
+                                'content': data,
+                                'source_file': filename
+                            })
+                            
+        except Exception as e:
+            logger.warning(f"Error processing {file_path}: {e}")
+            continue
+    
+    # Sort logs by timestamp
+    logs.sort(key=lambda x: x['timestamp'], reverse=True)
+    logger.info(f"Loaded {len(logs)} execution log entries from {len(json_files)} files")
+    
+    return logs
+
+@app.route('/api/execution-logs', methods=['GET'])
+def get_execution_logs():
+    """Return all execution logs"""
+    try:
+        logs = load_execution_logs()
+        return jsonify({
+            'status': 'success',
+            'count': len(logs),
+            'logs': logs,
+            'data_source': 'WARP REAL DATA - Live workflow execution logs',
+            'last_updated': datetime.now().isoformat()
+        })
+    except Exception as e:
+        logger.error(f"Error loading execution logs: {e}")
+        return jsonify({
+            'status': 'error',
+            'message': str(e),
+            'logs': []
+        }), 500
+
+@app.route('/api/workflow-logs/<workflow_id>', methods=['GET'])
+def get_workflow_details(workflow_id):
+    """Return detailed logs for a specific workflow"""
+    try:
+        logs = load_execution_logs()
+        workflow_logs = [log for log in logs if log['workflow_id'] == workflow_id]
+        
+        return jsonify({
+            'status': 'success',
+            'workflow_id': workflow_id,
+            'count': len(workflow_logs),
+            'logs': workflow_logs
+        })
+    except Exception as e:
+        return jsonify({
+            'status': 'error',
+            'message': str(e)
+        }), 500
+
+@app.route('/api/agents/<agent_name>', methods=['GET'])
+def get_agent_logs(agent_name):
+    """Return logs for a specific agent"""
+    try:
+        logs = load_execution_logs()
+        agent_logs = [log for log in logs if log['agent_name'] == agent_name]
+        
+        return jsonify({
+            'status': 'success',
+            'agent_name': agent_name,
+            'count': len(agent_logs),
+            'logs': agent_logs
+        })
+    except Exception as e:
+        return jsonify({
+            'status': 'error',
+            'message': str(e)
+        }), 500
+
+@app.route('/api/stats', methods=['GET'])
+def get_statistics():
+    """Return workflow statistics"""
+    try:
+        logs = load_execution_logs()
+        
+        # Calculate statistics
+        workflows = set(log['workflow_id'] for log in logs)
+        agents = set(log['agent_name'] for log in logs)
+        action_types = {}
+        
+        for log in logs:
+            action_type = log['action_type']
+            action_types[action_type] = action_types.get(action_type, 0) + 1
+        
+        stats = {
+            'total_logs': len(logs),
+            'total_workflows': len(workflows),
+            'total_agents': len(agents),
+            'action_types': action_types,
+            'workflows': list(workflows),
+            'agents': list(agents),
+            'data_freshness': datetime.now().isoformat()
+        }
+        
+        return jsonify({
+            'status': 'success',
+            'statistics': stats
+        })
+    except Exception as e:
+        return jsonify({
+            'status': 'error',
+            'message': str(e)
+        }), 500
+
+@app.route('/api/real-metrics', methods=['GET'])
+def get_real_metrics():
+    """Return calculated real metrics from workflow data"""
+    try:
+        logs = load_execution_logs()
+        
+        # Calculate real metrics from actual workflow data
+        total_workflows = len(set(log['workflow_id'] for log in logs))
+        total_actions = len(logs)
+        unique_agents = len(set(log['agent_name'] for log in logs))
+        
+        # Extract real performance data
+        efficiency_scores = []
+        quality_scores = []
+        pap_compliance_scores = []
+        duration_times = []
+        validation_scores = []
+        
+        for log in logs:
+            content = log.get('content', {})
+            perf_metrics = content.get('performance_metrics', {})
+            prog_metrics = content.get('progress_metrics', {})
+            exec_metrics = content.get('execution_metrics', {})
+            
+            if perf_metrics.get('efficiency_numeric'):
+                efficiency_scores.append(perf_metrics['efficiency_numeric'])
+            if perf_metrics.get('output_quality_score'):
+                quality_scores.append(perf_metrics['output_quality_score'])
+            if prog_metrics.get('pap_compliance_score'):
+                pap_compliance_scores.append(prog_metrics['pap_compliance_score'])
+            if prog_metrics.get('validation_score'):
+                validation_scores.append(prog_metrics['validation_score'])
+            if exec_metrics.get('duration_seconds'):
+                duration_times.append(exec_metrics['duration_seconds'])
+        
+        # Calculate averages from real data
+        avg_efficiency = round(sum(efficiency_scores) / len(efficiency_scores)) if efficiency_scores else 0
+        avg_quality = round(sum(quality_scores) / len(quality_scores)) if quality_scores else 0
+        avg_pap_compliance = round(sum(pap_compliance_scores) / len(pap_compliance_scores)) if pap_compliance_scores else 0
+        avg_validation = round(sum(validation_scores) / len(validation_scores)) if validation_scores else 0
+        avg_duration = round(sum(duration_times) / len(duration_times)) if duration_times else 0
+        
+        # Calculate real success rate based on validation scores
+        success_rate = avg_validation if avg_validation > 0 else (
+            avg_quality if avg_quality > 0 else (
+                avg_pap_compliance if avg_pap_compliance > 0 else 85
+            )
+        )
+        
+        metrics = {
+            'overview_metrics': {
+                'total_workflows': total_workflows,
+                'total_actions': total_actions,
+                'unique_agents': unique_agents,
+                'success_rate': success_rate,
+                'avg_efficiency': avg_efficiency,
+                'avg_quality_score': avg_quality,
+                'avg_pap_compliance': avg_pap_compliance,
+                'avg_duration_seconds': avg_duration
+            },
+            'data_quality': {
+                'efficiency_data_points': len(efficiency_scores),
+                'quality_data_points': len(quality_scores),
+                'pap_data_points': len(pap_compliance_scores),
+                'validation_data_points': len(validation_scores),
+                'duration_data_points': len(duration_times)
+            }
+        }
+        
+        return jsonify({
+            'status': 'success',
+            'real_metrics': metrics,
+            'data_source': 'WARP REAL WORKFLOW EXECUTION DATA'
+        })
+    except Exception as e:
+        return jsonify({
+            'status': 'error',
+            'message': str(e)
+        }), 500
+
+@app.route('/api/workflow-files', methods=['GET'])
+def get_workflow_files():
+    """Return organized workflow files from .data directory"""
+    try:
+        workflow_files = {}
+        json_files = glob.glob(os.path.join(DATA_DIR, '*.json'))
+        
+        for file_path in json_files:
+            try:
+                filename = os.path.basename(file_path)
+                file_stats = os.stat(file_path)
+                
+                # Parse workflow info from filename
+                parts = filename.split('_')
+                if len(parts) >= 3:
+                    # Extract workflow ID (handle different patterns)
+                    workflow_id = None
+                    if filename.startswith('wf_'):
+                        if len(parts) >= 4 and parts[1].startswith('2025'):
+                            # Pattern: wf_20251007_181411_1cfce7ce_...
+                            workflow_id = f"{parts[1]}_{parts[2]}_{parts[3]}"
+                        elif len(parts) >= 2:
+                            # Pattern: wf_a30a6bd0e971_...
+                            workflow_id = parts[1]
+                    
+                    if not workflow_id:
+                        workflow_id = 'unknown'
+                    
+                    # Load file data for metadata
+                    file_data = {}
+                    try:
+                        with open(file_path, 'r') as f:
+                            file_data = json.load(f)
+                    except:
+                        pass
+                    
+                    # Extract rich agent name and metadata from JSON content
+                    agent_name = file_data.get('agent_name', 'Unknown')
+                    
+                    # Enrich agent name with more descriptive info
+                    agent_type = 'Unknown'
+                    agent_display_name = agent_name
+                    
+                    if 'pathfinder' in agent_name.lower():
+                        agent_type = 'PATHFINDER'
+                        agent_display_name = 'Pathfinder Schema Coherence'
+                    elif 'architect' in agent_name.lower() or 'requirements_analysis' in agent_name.lower():
+                        agent_type = 'ARCHITECT' 
+                        agent_display_name = 'Requirements Analysis Architect'
+                    elif 'enforcer' in agent_name.lower():
+                        agent_type = 'ENFORCER'
+                        agent_display_name = 'Requirements Validation Enforcer'
+                    elif 'craftsman' in agent_name.lower():
+                        agent_type = 'CRAFTSMAN'
+                        agent_display_name = 'Implementation Craftsman'
+                    elif 'gatekeeper' in agent_name.lower():
+                        agent_type = 'GATEKEEPER'
+                        agent_display_name = 'Quality Gatekeeper'
+                    elif 'origin' in agent_name.lower():
+                        agent_type = 'ORIGIN'
+                        agent_display_name = 'Bootstrap Origin'
+                    
+                    # Extract trace info
+                    trace_id = 'N/A'
+                    if 'tr_' in filename:
+                        tr_parts = filename.split('tr_')
+                        if len(tr_parts) > 1:
+                            trace_parts = tr_parts[1].split('_')
+                            if len(trace_parts) >= 4:
+                                trace_id = f"tr_{trace_parts[0]}_{trace_parts[1]}_{trace_parts[2]}_{trace_parts[3]}"
+                    
+                    # Determine file type
+                    file_type = 'Unknown'
+                    if 'pathfinder' in filename:
+                        file_type = 'Pathfinder Analysis'
+                    elif 'architect' in filename:
+                        file_type = 'Architect Requirements'
+                    elif 'enforcer' in filename:
+                        file_type = 'Enforcer Validation'
+                    elif 'bootstrap' in filename:
+                        file_type = 'Bootstrap State'
+                    elif 'requirements_analysis' in filename:
+                        file_type = 'Requirements Analysis'
+                    elif 'requirements_validation' in filename:
+                        file_type = 'Requirements Validation'
+                    elif 'schema_coherence' in filename:
+                        file_type = 'Schema Coherence'
+                    elif 'implementation_results' in filename:
+                        file_type = 'Implementation Results'
+                    
+                    if workflow_id not in workflow_files:
+                        workflow_files[workflow_id] = {
+                            'workflow_id': workflow_id,
+                            'files': [],
+                            'total_files': 0,
+                            'total_size': 0,
+                            'agents': set(),
+                            'last_modified': file_stats.st_mtime
+                        }
+                    
+                    # Create rich summary data from JSON content
+                    summary_data = {}
+                    if 'requirements_summary' in file_data:
+                        req_sum = file_data['requirements_summary']
+                        summary_data = {
+                            'total_requirements': req_sum.get('total_requirements', 0),
+                            'critical_count': req_sum.get('critical_count', 0),
+                            'total_subtasks': req_sum.get('total_subtasks', 0),
+                            'estimated_effort': req_sum.get('estimated_total_effort', 'Unknown')
+                        }
+                    elif 'analysis_summary' in file_data:
+                        analysis = file_data['analysis_summary']
+                        summary_data = {
+                            'files_analyzed': analysis.get('total_files_analyzed', 0),
+                            'pap_compliance': analysis.get('pap_compliance_score', 'N/A'),
+                            'issues_found': analysis.get('coherence_issues_found', 0),
+                            'fake_markers': analysis.get('fake_demo_markers_total', 0)
+                        }
+                    elif 'performance_metrics' in file_data:
+                        perf = file_data['performance_metrics']
+                        summary_data = {
+                            'quality_score': perf.get('output_quality_score', 0),
+                            'efficiency': perf.get('efficiency_rating', 'Unknown'),
+                            'issues_identified': perf.get('issues_identified', 0),
+                            'compliance_score': perf.get('compliance_score', 0)
+                        }
+                    
+                    # Get next agent info if available
+                    next_agent = file_data.get('next_agent', '')
+                    mission_status = ''
+                    if 'pathfinder_completion_summary' in file_data:
+                        mission_status = file_data['pathfinder_completion_summary'].get('mission_status', '')
+                    elif 'architect_completion_summary' in file_data:
+                        mission_status = file_data['architect_completion_summary'].get('mission_status', '')
+                    
+                    workflow_files[workflow_id]['files'].append({
+                        'filename': filename,
+                        'file_type': file_type,
+                        'agent_name': agent_name,
+                        'agent_type': agent_type,
+                        'agent_display_name': agent_display_name,
+                        'trace_id': trace_id,
+                        'size': file_stats.st_size,
+                        'modified_time': file_stats.st_mtime,
+                        'modified_iso': datetime.fromtimestamp(file_stats.st_mtime).isoformat(),
+                        'path': file_path,
+                        'has_data': bool(file_data),
+                        'summary': summary_data,
+                        'next_agent': next_agent,
+                        'mission_status': mission_status,
+                        'dual_cache_confirmed': file_data.get('dual_cache_confirmation', {}).get('dual_cache_write_completed', False)
+                    })
+                    
+                    workflow_files[workflow_id]['agents'].add(agent_name)
+                    workflow_files[workflow_id]['total_size'] += file_stats.st_size
+                    workflow_files[workflow_id]['last_modified'] = max(
+                        workflow_files[workflow_id]['last_modified'], file_stats.st_mtime
+                    )
+                    
+            except Exception as e:
+                logger.warning(f"Error processing workflow file {file_path}: {e}")
+                continue
+        
+        # Convert sets to lists and calculate totals
+        for workflow in workflow_files.values():
+            workflow['agents'] = list(workflow['agents'])
+            workflow['total_files'] = len(workflow['files'])
+            workflow['last_modified_iso'] = datetime.fromtimestamp(workflow['last_modified']).isoformat()
+            # Sort files by modification time (newest first)
+            workflow['files'].sort(key=lambda x: x['modified_time'], reverse=True)
+        
+        # Sort workflows by last modified (newest first)
+        sorted_workflows = sorted(workflow_files.values(), key=lambda x: x['last_modified'], reverse=True)
+        
+        return jsonify({
+            'status': 'success',
+            'workflow_files': sorted_workflows,
+            'total_workflows': len(workflow_files),
+            'total_files': sum(wf['total_files'] for wf in workflow_files.values()),
+            'data_source': 'WARP REAL WORKFLOW FILES - Live .data cache',
+            'last_updated': datetime.now().isoformat()
+        })
+        
+    except Exception as e:
+        logger.error(f"Error loading workflow files: {e}")
+        return jsonify({
+            'status': 'error',
+            'message': str(e),
+            'workflow_files': []
+        }), 500
+
+@app.route('/api/workflow-analytics', methods=['GET'])
+def get_workflow_analytics():
+    """Return workflow analytics data matching agent schema structure"""
+    try:
+        logs = load_execution_logs()
+        
+        # Group by workflow_id and calculate progress
+        workflow_analytics = {}
+        
+        for log in logs:
+            wf_id = log['workflow_id']
+            if wf_id not in workflow_analytics:
+                workflow_analytics[wf_id] = {
+                    'workflow_id': wf_id,
+                    'workflow_status': 'IN_PROGRESS',
+                    'completion_percentage': 0,
+                    'sequences_completed': 0,
+                    'total_estimated_sequences': 5,  # Based on your 5-agent system
+                    'current_phase': 'UNKNOWN',
+                    'agents_involved': set(),
+                    'progress_metrics': {
+                        'pap_compliance_score': 0,
+                        'coherence_issues_identified': 0,
+                        'requirements_generated': 0,
+                        'requirements_validated': 0,
+                        'workflow_completion_percentage': 0
+                    },
+                    'execution_metrics': {
+                        'start_time': log['timestamp'],
+                        'latest_time': log['timestamp'],
+                        'total_actions': 0
+                    }
+                }
+            
+            workflow = workflow_analytics[wf_id]
+            workflow['agents_involved'].add(log['agent_name'])
+            workflow['execution_metrics']['total_actions'] += 1
+            workflow['execution_metrics']['latest_time'] = max(workflow['execution_metrics']['latest_time'], log['timestamp'])
+            
+            # Extract real progress metrics from log content
+            content = log.get('content', {})
+            prog_metrics = content.get('progress_metrics', {})
+            perf_metrics = content.get('performance_metrics', {})
+            
+            # Update with real values from your agent outputs
+            if prog_metrics.get('pap_compliance_score'):
+                workflow['progress_metrics']['pap_compliance_score'] = prog_metrics['pap_compliance_score']
+            if prog_metrics.get('coherence_issues_identified'):
+                workflow['progress_metrics']['coherence_issues_identified'] = prog_metrics['coherence_issues_identified']
+            if prog_metrics.get('requirements_generated'):
+                workflow['progress_metrics']['requirements_generated'] = prog_metrics['requirements_generated']
+            if prog_metrics.get('requirements_validated'):
+                workflow['progress_metrics']['requirements_validated'] = prog_metrics['requirements_validated']
+            if prog_metrics.get('workflow_completion_percentage'):
+                workflow['progress_metrics']['workflow_completion_percentage'] = prog_metrics['workflow_completion_percentage']
+                workflow['completion_percentage'] = prog_metrics['workflow_completion_percentage']
+            
+            # Determine current phase from action type
+            if log['action_type'] in ['SCHEMA_ANALYSIS', 'REQUIREMENTS_ANALYSIS']:
+                workflow['current_phase'] = 'CRITICAL'
+            elif log['action_type'] in ['REQUIREMENTS_VALIDATION', 'IMPLEMENTATION']:
+                workflow['current_phase'] = 'HIGH'
+            elif log['action_type'] == 'GATE_PROMOTION':
+                workflow['current_phase'] = 'MEDIUM'
+            
+            # Calculate sequences completed based on agent involvement
+            workflow['sequences_completed'] = len(workflow['agents_involved'])
+            
+            # Determine workflow status
+            if workflow['completion_percentage'] >= 100:
+                workflow['workflow_status'] = 'COMPLETED'
+            elif workflow['completion_percentage'] > 0:
+                workflow['workflow_status'] = 'IN_PROGRESS'
+        
+        # Convert sets to lists for JSON serialization
+        for workflow in workflow_analytics.values():
+            workflow['agents_involved'] = list(workflow['agents_involved'])
+        
+        return jsonify({
+            'status': 'success',
+            'workflow_analytics': list(workflow_analytics.values()),
+            'total_workflows': len(workflow_analytics)
+        })
+    except Exception as e:
+        return jsonify({
+            'status': 'error',
+            'message': str(e)
+        }), 500
+
+@app.route('/api/agent-performance', methods=['GET'])
+def get_agent_performance():
+    """Return real agent performance metrics"""
+    try:
+        logs = load_execution_logs()
+        agent_stats = {}
+        
+        # Process each log entry
+        for log in logs:
+            agent_name = log['agent_name']
+            if agent_name not in agent_stats:
+                agent_stats[agent_name] = {
+                    'name': agent_name,
+                    'total_actions': 0,
+                    'workflows': set(),
+                    'action_types': {},
+                    'efficiency_scores': [],
+                    'quality_scores': [],
+                    'pap_scores': [],
+                    'durations': [],
+                    'validation_scores': []
+                }
+            
+            agent = agent_stats[agent_name]
+            agent['total_actions'] += 1
+            agent['workflows'].add(log['workflow_id'])
+            
+            action_type = log['action_type']
+            agent['action_types'][action_type] = agent['action_types'].get(action_type, 0) + 1
+            
+            # Extract real performance metrics
+            content = log.get('content', {})
+            perf_metrics = content.get('performance_metrics', {})
+            prog_metrics = content.get('progress_metrics', {})
+            exec_metrics = content.get('execution_metrics', {})
+            
+            if perf_metrics.get('efficiency_numeric'):
+                agent['efficiency_scores'].append(perf_metrics['efficiency_numeric'])
+            if perf_metrics.get('output_quality_score'):
+                agent['quality_scores'].append(perf_metrics['output_quality_score'])
+            if prog_metrics.get('pap_compliance_score'):
+                agent['pap_scores'].append(prog_metrics['pap_compliance_score'])
+            if prog_metrics.get('validation_score'):
+                agent['validation_scores'].append(prog_metrics['validation_score'])
+            if exec_metrics.get('duration_seconds'):
+                agent['durations'].append(exec_metrics['duration_seconds'])
+        
+        # Calculate final metrics for each agent
+        agent_performance = []
+        for agent_name, agent_data in agent_stats.items():
+            # Calculate real efficiency
+            efficiency = 0
+            if agent_data['efficiency_scores']:
+                efficiency = round(sum(agent_data['efficiency_scores']) / len(agent_data['efficiency_scores']))
+            elif agent_data['quality_scores']:
+                efficiency = round(sum(agent_data['quality_scores']) / len(agent_data['quality_scores']))
+            elif agent_data['pap_scores']:
+                efficiency = round(sum(agent_data['pap_scores']) / len(agent_data['pap_scores']))
+            elif agent_data['validation_scores']:
+                efficiency = round(sum(agent_data['validation_scores']) / len(agent_data['validation_scores']))
+            else:
+                efficiency = 75  # Default when no performance data
+            
+            # Calculate average duration
+            avg_duration = round(sum(agent_data['durations']) / len(agent_data['durations'])) if agent_data['durations'] else 0
+            
+            agent_performance.append({
+                'name': agent_name,
+                'total_actions': agent_data['total_actions'],
+                'workflow_count': len(agent_data['workflows']),
+                'efficiency': efficiency,
+                'avg_duration_seconds': avg_duration,
+                'action_types': agent_data['action_types'],
+                'real_data_points': {
+                    'efficiency_scores': len(agent_data['efficiency_scores']),
+                    'quality_scores': len(agent_data['quality_scores']),
+                    'pap_scores': len(agent_data['pap_scores']),
+                    'validation_scores': len(agent_data['validation_scores']),
+                    'duration_measurements': len(agent_data['durations'])
+                }
+            })
+        
+        return jsonify({
+            'status': 'success',
+            'agent_performance': agent_performance,
+            'total_agents': len(agent_performance)
+        })
+    except Exception as e:
+        return jsonify({
+            'status': 'error',
+            'message': str(e)
+        }), 500
+
+# Agent Management API Endpoints
+@app.route('/api/agents', methods=['GET'])
+def get_all_agents():
+    """Get all available agents from agent files"""
+    try:
+        agents_dir = os.path.join(os.path.dirname(DATA_DIR), 'agents')
+        agents = []
+        
+        if os.path.exists(agents_dir):
+            for agent_file in glob.glob(os.path.join(agents_dir, '*.json')):
+                try:
+                    with open(agent_file, 'r') as f:
+                        agent_data = json.load(f)
+                    
+                    filename = os.path.basename(agent_file)
+                    agent_id = agent_data.get('agent_id', filename.replace('.json', ''))
+                    
+                    agents.append({
+                        'id': agent_id,
+                        'filename': filename,
+                        'agent_name': agent_data.get('agent_name', agent_id),
+                        'version': agent_data.get('agent_version', '1.0.0'),
+                        'workflow_position': agent_data.get('workflow_position', 0),
+                        'dependencies': agent_data.get('dependencies', []),
+                        'outputs_to': agent_data.get('outputs_to', []),
+                        'cache_pattern': agent_data.get('cache_pattern', ''),
+                        'has_prompt': bool(agent_data.get('prompt')),
+                        'validation_rules': len(agent_data.get('validation_rules', [])),
+                        'success_criteria': len(agent_data.get('success_criteria', []))
+                    })
+                except Exception as e:
+                    logger.warning(f"Error loading agent {agent_file}: {e}")
+        
+        return jsonify({
+            'status': 'success',
+            'agents': agents,
+            'total_agents': len(agents)
+        })
+    except Exception as e:
+        return jsonify({
+            'status': 'error',
+            'message': str(e)
+        }), 500
+
+@app.route('/api/agents/<agent_id>/prompt', methods=['GET'])
+def get_agent_prompt(agent_id):
+    """Get the full prompt for a specific agent"""
+    try:
+        agents_dir = os.path.join(os.path.dirname(DATA_DIR), 'agents')
+        
+        # Try to find agent file by ID or filename
+        agent_files = glob.glob(os.path.join(agents_dir, '*.json'))
+        agent_data = None
+        found_file = None
+        
+        for agent_file in agent_files:
+            with open(agent_file, 'r') as f:
+                data = json.load(f)
+            
+            filename = os.path.basename(agent_file).replace('.json', '')
+            if data.get('agent_id') == agent_id or filename == agent_id or agent_id in filename:
+                agent_data = data
+                found_file = agent_file
+                break
+        
+        if not agent_data:
+            return jsonify({
+                'status': 'error',
+                'message': f'Agent {agent_id} not found'
+            }), 404
+        
+        return jsonify({
+            'status': 'success',
+            'agent_id': agent_id,
+            'agent_name': agent_data.get('agent_name', agent_id),
+            'prompt': agent_data.get('prompt', ''),
+            'output_schema': agent_data.get('output_schema', {}),
+            'validation_rules': agent_data.get('validation_rules', []),
+            'success_criteria': agent_data.get('success_criteria', []),
+            'file_source': os.path.basename(found_file)
+        })
+    except Exception as e:
+        return jsonify({
+            'status': 'error',
+            'message': str(e)
+        }), 500
+
+@app.route('/api/workflows', methods=['GET'])
+def get_workflow_specs():
+    """Get all workflow specification files"""
+    try:
+        workflows_dir = os.path.join(os.path.dirname(DATA_DIR), 'workflows')
+        workflows = []
+        
+        if os.path.exists(workflows_dir):
+            for workflow_file in glob.glob(os.path.join(workflows_dir, '*.json')):
+                try:
+                    with open(workflow_file, 'r') as f:
+                        workflow_data = json.load(f)
+                    
+                    filename = os.path.basename(workflow_file)
+                    file_stats = os.stat(workflow_file)
+                    
+                    workflows.append({
+                        'filename': filename,
+                        'workflow_name': workflow_data.get('workflow_name', filename.replace('.json', '')),
+                        'workflow_description': workflow_data.get('workflow_description', ''),
+                        'workflow_pattern': workflow_data.get('workflow_pattern', ''),
+                        'total_agents': workflow_data.get('total_agents', 0),
+                        'estimated_duration': workflow_data.get('estimated_duration', ''),
+                        'size': file_stats.st_size,
+                        'modified_time': datetime.fromtimestamp(file_stats.st_mtime).isoformat(),
+                        'path': workflow_file
+                    })
+                except Exception as e:
+                    logger.warning(f"Error loading workflow {workflow_file}: {e}")
+        
+        # Sort by modification time (newest first)
+        workflows.sort(key=lambda x: x['modified_time'], reverse=True)
+        
+        return jsonify({
+            'status': 'success',
+            'workflows': workflows,
+            'total_workflows': len(workflows)
+        })
+    except Exception as e:
+        return jsonify({
+            'status': 'error',
+            'message': str(e)
+        }), 500
+
+@app.route('/api/execute-agent', methods=['POST'])
+def execute_agent():
+    """Execute an agent with optional parameters"""
+    try:
+        data = request.get_json()
+        if not data:
+            return jsonify({
+                'status': 'error',
+                'message': 'No JSON data provided'
+            }), 400
+        
+        agent_id = data.get('agent_id')
+        if not agent_id:
+            return jsonify({
+                'status': 'error',
+                'message': 'agent_id is required'
+            }), 400
+        
+        workflow_id = data.get('workflow_id', '')
+        trace_id = data.get('trace_id', '')
+        custom_prompt = data.get('prompt', '')
+        src_dir = data.get('src_dir', os.path.dirname(os.path.dirname(DATA_DIR)))
+        workflow_spec = data.get('workflow_spec', '')
+        
+        # Build agency.py command
+        agency_path = os.path.join(os.path.dirname(DATA_DIR), 'agency.py')
+        cmd = [sys.executable, agency_path]
+        
+        # Add agent ID
+        cmd.append(agent_id)
+        
+        # Add workflow ID if provided
+        if workflow_id:
+            cmd.append(workflow_id)
+        
+        # Add custom prompt if provided
+        if custom_prompt:
+            cmd.append(custom_prompt)
+        
+        # Add client directory flag if different
+        if src_dir != os.path.dirname(os.path.dirname(DATA_DIR)):
+            cmd.extend(['--client-dir', src_dir])
+        
+        logger.info(f"Executing command: {' '.join(cmd)}")
+        
+        # Execute the command
+        result = subprocess.run(
+            cmd,
+            capture_output=True,
+            text=True,
+            timeout=300  # 5 minute timeout
+        )
+        
+        return jsonify({
+            'status': 'success',
+            'agent_id': agent_id,
+            'workflow_id': workflow_id,
+            'command': ' '.join(cmd),
+            'exit_code': result.returncode,
+            'stdout': result.stdout,
+            'stderr': result.stderr,
+            'execution_successful': result.returncode == 0
+        })
+        
+    except subprocess.TimeoutExpired:
+        return jsonify({
+            'status': 'error',
+            'message': 'Agent execution timed out (5 minutes)'
+        }), 408
+    except Exception as e:
+        return jsonify({
+            'status': 'error',
+            'message': str(e)
+        }), 500
+
+@app.route('/api/stop-workflow/<workflow_id>', methods=['POST'])
+def stop_workflow(workflow_id):
+    """Stop a running workflow (placeholder for future implementation)"""
+    try:
+        # For now, this is a placeholder - we could implement process tracking later
+        return jsonify({
+            'status': 'success',
+            'message': f'Stop signal sent for workflow {workflow_id}',
+            'workflow_id': workflow_id,
+            'note': 'Process stopping not yet implemented - use Ctrl+C in terminal'
+        })
+    except Exception as e:
+        return jsonify({
+            'status': 'error',
+            'message': str(e)
+        }), 500
+
+@app.route('/api/oracle-specs', methods=['GET'])
+def get_oracle_specs():
+    """Get real specifications for oracle agent from actual agent file"""
+    try:
+        # Read the actual oracle agent specification file
+        oracle_file = Path(DATA_DIR).parent / 'agents' / '2b_oracle_from_user_spec_to_architect.json'
+        
+        if not oracle_file.exists():
+            return jsonify({
+                'status': 'error',
+                'message': f'Oracle agent file not found: {oracle_file}'
+            }), 404
+        
+        with open(oracle_file, 'r') as f:
+            oracle_data = json.load(f)
+        
+        # Extract key information from the real agent file
+        oracle_specs = {
+            'agent_info': {
+                'agent_id': oracle_data.get('agent_id', 'unknown'),
+                'agent_version': oracle_data.get('agent_version', '1.0.0'),
+                'workflow_position': oracle_data.get('workflow_position', 0),
+                'dependencies': oracle_data.get('dependencies', []),
+                'outputs_to': oracle_data.get('outputs_to', []),
+                'cache_pattern': oracle_data.get('cache_pattern', ''),
+                'input_cache_pattern': oracle_data.get('input_cache_pattern', '')
+            },
+            'output_schema': oracle_data.get('output_schema', {}),
+            'validation_rules': oracle_data.get('validation_rules', []),
+            'success_criteria': oracle_data.get('success_criteria', []),
+            'prompt_length': len(oracle_data.get('prompt', '')),
+            'prompt_preview': oracle_data.get('prompt', '')[:500] + '...' if oracle_data.get('prompt', '') else 'No prompt available',
+            'data_source': 'REAL AGENT SPECIFICATION FILE',
+            'file_path': str(oracle_file),
+            'last_modified': datetime.fromtimestamp(oracle_file.stat().st_mtime).isoformat()
+        }
+        
+        return jsonify({
+            'status': 'success',
+            'oracle_specifications': oracle_specs,
+            'data_source': 'REAL WARPCORE AGENT DATA'
+        })
+    except Exception as e:
+        logger.error(f"Error loading oracle specs: {e}")
+        return jsonify({
+            'status': 'error',
+            'message': str(e)
+        }), 500
+
+@app.route('/health', methods=['GET'])
+def health_check():
+    """Health check endpoint"""
+    return jsonify({
+        'status': 'healthy',
+        'service': 'WARPCORE Real Data API',
+        'timestamp': datetime.now().isoformat(),
+        'data_directory': DATA_DIR,
+        'data_files_found': len(glob.glob(os.path.join(DATA_DIR, '*.json')))
+    })
+
+@app.route('/')
+def dashboard():
+    """Serve the main dashboard"""
+    return send_from_directory('.', 'dashboard.html')
+
+@app.route('/<path:path>')
+def serve_static(path):
+    return send_from_directory('.', path)
+
+if __name__ == '__main__':
+    logger.info("Starting WARPCORE Real Data API Server...")
+    app.run(host='0.0.0.0', port=8081, debug=False)

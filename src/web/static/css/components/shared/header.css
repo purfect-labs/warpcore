@@ -1,6 +1,6 @@
 /* APEX Header Component - Clean Layout */
 
-.apex-header {
+.warpcore-header {
     display: flex;
     justify-content: space-between;
     align-items: center;
@@ -35,7 +35,7 @@
 }
 
 /* Title */
-.apex-title {
+.warpcore-title {
     display: flex;
     align-items: baseline;
     gap: 0.5rem;

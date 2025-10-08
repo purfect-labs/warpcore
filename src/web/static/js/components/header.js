@@ -5,7 +5,7 @@ const HeaderComponent = {
         <div class="glass rounded-2xl p-6 mb-6">
             <div class="flex items-center justify-between">
                 <div class="flex items-center space-x-4">
-                    <h1 class="text-3xl font-bold text-white">🛠️ APEX Command Center</h1>
+                    <h1 class="text-3xl font-bold text-white">🛠️ WARPCORE Command Center</h1>
                     <span class="text-sm text-gray-200">2025 Edition</span>
                 </div>
                 <div class="flex items-center space-x-4">
