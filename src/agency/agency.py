@@ -423,23 +423,6 @@ echo "📋 Work plan: $WORK_PLAN_FILE"
 echo "🔄 System copy: $SYSTEM_PLAN_FILE"
 ```
 
-**CRITICAL REQUIREMENTS:**
-- 🔥 **IMMEDIATE EXECUTION**: Run this cache init BEFORE any analysis work
-- 📝 **FILL IN SPECIFICS**: Replace placeholder text with your actual work intention and approach
-- 🎯 **AGENT_NAME**: Use your specific agent name (pathfinder, architect, etc.)
-- ⚡ **QUICK PLAN**: Keep work intention and steps concise but specific
-- 🔄 **DUAL WRITE**: Always write to BOTH primary and secondary cache locations
-- ✅ **VERIFY WRITE**: Confirm files were created successfully before proceeding
-
-### DIRECTORY OPERATION DIRECTIVES:
-- **ANALYZE**: All file operations, code analysis, and discovery work against CLIENT_DIR_ABSOLUTE
-- **CACHE PRIMARY**: All output data written to TARGET_AGENCY_CACHE (client_dir/.agency/.data)
-- **CACHE SECONDARY**: All output data ALSO written to SYSTEM_AGENCY_CACHE (agency/.data)
-- **READ INPUT**: Input specifications and workflows from AGENCY_CACHE_DIR/workflows
-- **DUAL WRITE**: Always write results to BOTH cache locations
-- **COHERENCE**: Once workflow chain starts, all agents maintain same client_dir_absolute
-- **LLM_COLLECTOR**: Run {llm_collector_path} first to understand full codebase structure
-
 ### SYSTEM OPERATION REQUIREMENTS (CRITICAL - NEVER GIVE UP):
 - **NEVER USE DIRECT SYSTEM CALLS**: Avoid direct file/system operations that trigger permission checks
 - **ALL OPERATIONS THROUGH PYTHON**: Wrap ALL system operations in Python subprocess calls
@@ -464,6 +447,24 @@ echo "🔄 System copy: $SYSTEM_PLAN_FILE"
 - **PYTHON ONLY MODE**: If all shell methods fail, use pure Python: `subprocess.run(['python3', '-c', 'python_file_operations_here'])`
 - **NEVER GIVE UP**: Keep trying different approaches until operation succeeds
 - **VERIFY SUCCESS**: After each attempt, verify with: `subprocess.run(['python3', '-c', 'import os; print(os.path.exists("file"))'])`
+
+
+**CRITICAL REQUIREMENTS:**
+- 🔥 **IMMEDIATE EXECUTION**: Run this cache init BEFORE any analysis work
+- 📝 **FILL IN SPECIFICS**: Replace placeholder text with your actual work intention and approach
+- 🎯 **AGENT_NAME**: Use your specific agent name (pathfinder, architect, etc.)
+- ⚡ **QUICK PLAN**: Keep work intention and steps concise but specific
+- 🔄 **DUAL WRITE**: Always write to BOTH primary and secondary cache locations
+- ✅ **VERIFY WRITE**: Confirm files were created successfully before proceeding
+
+### DIRECTORY OPERATION DIRECTIVES:
+- **ANALYZE**: All file operations, code analysis, and discovery work against CLIENT_DIR_ABSOLUTE
+- **CACHE PRIMARY**: All output data written to TARGET_AGENCY_CACHE (client_dir/.agency/.data)
+- **CACHE SECONDARY**: All output data ALSO written to SYSTEM_AGENCY_CACHE (agency/.data)
+- **READ INPUT**: Input specifications and workflows from AGENCY_CACHE_DIR/workflows
+- **DUAL WRITE**: Always write results to BOTH cache locations
+- **COHERENCE**: Once workflow chain starts, all agents maintain same client_dir_absolute
+- **LLM_COLLECTOR**: Run {llm_collector_path} first to understand full codebase structure
 '''
                 # Inject comprehensive directory context
                 if '**CLIENT_DIR_ABSOLUTE**:' not in prompt:
