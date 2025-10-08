@@ -213,6 +213,7 @@ const LicenseActivation = {
     init() {
         console.log('🔑 WARP LICENSE: Initializing license activation system');
         this.bindEvents();
+        this.initWebSocket(); // Initialize WebSocket for real-time updates
         this.checkInitialStatus();
     },
 
@@ -275,7 +276,7 @@ const LicenseActivation = {
             return;
         }
 
-        // WARP demo format: WARP-XXXX-XXXX-XXXX
+        // WARPCORE production license format: WARP-XXXX-XXXX-XXXX
         const format = /^WARP-[A-Z0-9]{4}-[A-Z0-9]{4}-[A-Z0-9]{4}$/;
         
         if (format.test(key.toUpperCase())) {
@@ -368,8 +369,178 @@ const LicenseActivation = {
         }
     },
 
-    // Poll for activation completion
+    // WebSocket connection for real-time updates
+    websocket: null,
+    websocketConnected: false,
+    
+    // Initialize WebSocket connection
+    initWebSocket() {
+        if (this.websocket || this.websocketConnected) {
+            return; // Already connected
+        }
+        
+        try {
+            const clientId = this.generateClientId();
+            const protocol = window.location.protocol === 'https:' ? 'wss:' : 'ws:';
+            const wsUrl = `${protocol}//${window.location.host}/ws/${clientId}`;
+            
+            console.log('🔗 WARP LICENSE: Connecting to WebSocket:', wsUrl);
+            
+            this.websocket = new WebSocket(wsUrl);
+            
+            this.websocket.onopen = () => {
+                console.log('✅ WARP LICENSE: WebSocket connected');
+                this.websocketConnected = true;
+                
+                // Subscribe to license events
+                this.websocket.send(JSON.stringify({
+                    type: 'subscribe',
+                    events: ['license_activated', 'license_deactivated', 'trial_license_generated', 'license_validated']
+                }));
+            };
+            
+            this.websocket.onmessage = (event) => {
+                try {
+                    const message = JSON.parse(event.data);
+                    this.handleWebSocketMessage(message);
+                } catch (error) {
+                    console.error('❌ WARP LICENSE: WebSocket message parsing error:', error);
+                }
+            };
+            
+            this.websocket.onclose = () => {
+                console.log('🔌 WARP LICENSE: WebSocket disconnected');
+                this.websocketConnected = false;
+                this.websocket = null;
+                
+                // Reconnect after delay
+                setTimeout(() => this.initWebSocket(), 5000);
+            };
+            
+            this.websocket.onerror = (error) => {
+                console.error('❌ WARP LICENSE: WebSocket error:', error);
+                this.websocketConnected = false;
+            };
+            
+        } catch (error) {
+            console.error('❌ WARP LICENSE: WebSocket initialization failed:', error);
+        }
+    },
+    
+    // Generate unique client ID for WebSocket
+    generateClientId() {
+        return 'license-' + Math.random().toString(36).substr(2, 9) + Date.now().toString(36);
+    },
+    
+    // Handle WebSocket messages
+    handleWebSocketMessage(message) {
+        console.log('📨 WARP LICENSE: Received WebSocket message:', message.type);
+        
+        switch (message.type) {
+            case 'license_activated':
+                this.handleLicenseActivated(message.data);
+                break;
+                
+            case 'license_deactivated':
+                this.handleLicenseDeactivated(message.data);
+                break;
+                
+            case 'trial_license_generated':
+                this.handleTrialGenerated(message.data);
+                break;
+                
+            case 'license_validated':
+                this.handleLicenseValidated(message.data);
+                break;
+                
+            default:
+                console.log('📋 WARP LICENSE: Unhandled message type:', message.type);
+        }
+    },
+    
+    // Handle license activation events from WebSocket
+    handleLicenseActivated(data) {
+        console.log('🎉 WARP LICENSE: License activated via WebSocket:', data);
+        
+        this.showSuccess(`🎉 License activated for ${data.user_email}! Features: ${data.license_type}`);
+        
+        // Update current status
+        this.currentStatus = {
+            active: true,
+            tier: data.license_type || 'professional',
+            features: data.features || ['premium'],
+            user_email: data.user_email,
+            expires_at: data.expires_at
+        };
+        
+        this.updateUI();
+        this.clearForm();
+        this.notifyStatusChange();
+    },
+    
+    // Handle license deactivation events
+    handleLicenseDeactivated(data) {
+        console.log('📋 WARP LICENSE: License deactivated via WebSocket:', data);
+        
+        this.showSuccess('License deactivated. Reverted to basic tier.');
+        
+        // Reset to basic tier
+        this.currentStatus = {
+            active: false,
+            tier: 'free',
+            features: [],
+            user_email: null,
+            expires_at: null
+        };
+        
+        this.updateUI();
+        this.notifyStatusChange();
+    },
+    
+    // Handle trial license generation
+    handleTrialGenerated(data) {
+        console.log('🎁 WARP LICENSE: Trial generated via WebSocket:', data);
+        
+        this.showSuccess(`🎁 Trial license activated for ${data.user_email}! ${data.days} days of premium features.`);
+        
+        // Update to trial status
+        this.currentStatus = {
+            active: true,
+            tier: 'trial',
+            features: ['trial', 'professional'],
+            user_email: data.user_email,
+            expires_at: data.expires_at
+        };
+        
+        this.updateUI();
+        this.notifyStatusChange();
+    },
+    
+    // Handle license validation events
+    handleLicenseValidated(data) {
+        console.log('✅ WARP LICENSE: License validated via WebSocket:', data);
+        
+        // Update validation UI if visible
+        const resultDiv = document.getElementById('license-validation-result');
+        if (resultDiv) {
+            if (data.valid) {
+                resultDiv.innerHTML = `<div class="success">✅ Valid ${data.license_type} license</div>`;
+            } else {
+                resultDiv.innerHTML = '<div class="error">❌ License validation failed</div>';
+            }
+        }
+    },
+    
+    // Poll for activation completion (fallback if WebSocket fails)
     async pollActivationStatus() {
+        // If WebSocket is connected, rely on real-time updates
+        if (this.websocketConnected) {
+            console.log('📡 WARP LICENSE: Using WebSocket for real-time updates');
+            return;
+        }
+        
+        // Fallback polling for browsers without WebSocket support
+        console.log('📋 WARP LICENSE: Using polling fallback');
         let attempts = 0;
         const maxAttempts = 10;
         
