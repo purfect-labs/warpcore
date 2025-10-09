@@ -96,8 +96,9 @@ def show_help():
    python agency.py interactive       # 🎭 Interactive Mode
    python agency.py agents           # 🎭 Show agent help!
 
-💎 DIRECTORY MASTERY:
+💎 DIRECTORY & FRANCHISE MASTERY:
    --client-dir /path/to/project    🎯 Analyze any codebase!
+   --franchise apex                 🏢 Use specific franchise (apex, framer, staff, patrol)
    
 🌈 EXAMPLES WITH USER INPUT:
    # 🕵️ Focused analysis
@@ -114,6 +115,12 @@ def show_help():
    
    # 🛡️ User requirement validation  
    python agency.py gatekeeper "ensure GDPR compliance implemented"
+   
+   # 🏢 Franchise-specific execution
+   python agency.py --franchise apex commander "strategic planning"
+   python agency.py --franchise framer origin "bootstrap creative workflow"
+   python agency.py --franchise staff pathfinder "analyze legacy system"
+   python agency.py --franchise patrol deep "security analysis"
 
 🎊 NEW UNIVERSAL INPUT FEATURES:
    🌟 ALL agents now accept user input (not just oracle!)
@@ -139,6 +146,7 @@ def main():
     parser.add_argument('workflow_id_or_input', nargs='?', help='Workflow ID for agents, JSON input file for workflows, or user input text')
     parser.add_argument('user_input_or_spec', nargs='?', help='Additional user input or spec file')
     parser.add_argument('--client-dir', '-c', type=str, help='Client directory to run analysis against (data cached back to agency)')
+    parser.add_argument('--franchise', '-f', type=str, help='Franchise name (apex, framer, staff, patrol) - if not specified, uses discovery')
     parser.add_argument('--render', '-r', action='store_true', help='Render the full prompt for the specified agent without executing it')
     parser.add_argument('--help', '-h', action='store_true', help='Show comprehensive help information')
     
@@ -149,8 +157,11 @@ def main():
         show_help()
         return
     
-    # Initialize agency with client directory if provided
-    agency = WARPCOREAgencyComposition(client_dir_absolute=args.client_dir)
+    # Initialize agency with client directory and franchise if provided
+    agency = WARPCOREAgencyComposition(
+        client_dir_absolute=args.client_dir,
+        franchise=args.franchise
+    )
     
     try:
         if args.workflow_or_agent:

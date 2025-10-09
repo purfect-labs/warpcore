@@ -84,6 +84,374 @@
             background: rgba(0,0,0,0.3);
             border-radius: 12px;
             border: 2px solid #00ff88;
+            position: relative;
+        }
+        
+        .flow-diagram-btn {
+            position: absolute;
+            top: 15px;
+            right: 15px;
+            width: 40px;
+            height: 40px;
+            background: linear-gradient(45deg, #00ff88, #00ccff);
+            border: none;
+            border-radius: 50%;
+            cursor: pointer;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 20px;
+            transition: all 0.3s ease;
+            box-shadow: 0 4px 15px rgba(0,255,136,0.3);
+        }
+        
+        .flow-diagram-btn:hover {
+            transform: scale(1.1);
+            box-shadow: 0 6px 25px rgba(0,255,136,0.6);
+        }
+        
+        .modal-overlay {
+            position: fixed;
+            top: 0;
+            left: 0;
+            right: 0;
+            bottom: 0;
+            background: rgba(0,0,0,0.9);
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            z-index: 10000;
+            opacity: 0;
+            visibility: hidden;
+            transition: all 0.3s ease;
+        }
+        
+        .modal-overlay.show {
+            opacity: 1;
+            visibility: visible;
+        }
+        
+        .modal-content {
+            background: rgba(0,0,0,0.95);
+            border: 3px solid #00ff88;
+            border-radius: 15px;
+            padding: 2rem;
+            max-width: 95vw;
+            max-height: 95vh;
+            overflow: auto;
+            position: relative;
+            transform: scale(0.7);
+            transition: transform 0.3s ease;
+        }
+        
+        .modal-overlay.show .modal-content {
+            transform: scale(1);
+        }
+        
+        .modal-header {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-bottom: 1.5rem;
+            padding-bottom: 1rem;
+            border-bottom: 2px solid #333;
+        }
+        
+        .modal-title {
+            color: #00ff88;
+            font-size: 1.8rem;
+            margin: 0;
+        }
+        
+        .close-btn {
+            background: #ff6b6b;
+            color: white;
+            border: none;
+            width: 35px;
+            height: 35px;
+            border-radius: 50%;
+            cursor: pointer;
+            font-size: 20px;
+            font-weight: bold;
+            transition: all 0.3s ease;
+        }
+        
+        .close-btn:hover {
+            background: #ff5252;
+            transform: rotate(90deg);
+        }
+        
+        .flow-diagram-img {
+            width: 100%;
+            height: auto;
+            border-radius: 10px;
+            border: 2px solid #333;
+            box-shadow: 0 8px 32px rgba(0,0,0,0.3);
+        }
+        
+        /* Cache Browser Styles */
+        .main-tabs {
+            display: flex;
+            justify-content: center;
+            background: rgba(0,0,0,0.3);
+            padding: 1rem;
+            gap: 1rem;
+        }
+        
+        .main-tab {
+            padding: 1rem 2rem;
+            background: rgba(255,255,255,0.1);
+            border: 2px solid transparent;
+            color: #ffffff;
+            cursor: pointer;
+            border-radius: 8px;
+            transition: all 0.3s ease;
+            font-weight: bold;
+            text-transform: uppercase;
+            letter-spacing: 1px;
+        }
+        
+        .main-tab:hover {
+            background: rgba(255,255,255,0.2);
+            border-color: #00ccff;
+            transform: translateY(-2px);
+        }
+        
+        .main-tab.active {
+            background: linear-gradient(45deg, #00ccff, #00ff88);
+            color: #000000;
+            border-color: #ffffff;
+        }
+        
+        .main-content {
+            display: none;
+        }
+        
+        .main-content.active {
+            display: block;
+        }
+        
+        .cache-browser {
+            padding: 2rem;
+            max-height: 80vh;
+            overflow-y: auto;
+        }
+        
+        .cache-header {
+            text-align: center;
+            margin-bottom: 2rem;
+            padding: 1rem;
+            background: rgba(0,0,0,0.3);
+            border-radius: 12px;
+            border: 2px solid #00ccff;
+        }
+        
+        .cache-explorer {
+            background: rgba(0,0,0,0.4);
+            border-radius: 12px;
+            border: 2px solid #333;
+            overflow: hidden;
+        }
+        
+        .cache-toolbar {
+            padding: 1rem;
+            background: linear-gradient(90deg, #333, #444);
+            border-bottom: 2px solid #00ccff;
+            display: flex;
+            align-items: center;
+            gap: 1rem;
+        }
+        
+        .breadcrumb {
+            color: #00ccff;
+            font-family: monospace;
+            font-size: 0.9rem;
+            flex: 1;
+        }
+        
+        .refresh-btn {
+            background: #00ccff;
+            color: #000;
+            border: none;
+            padding: 0.5rem 1rem;
+            border-radius: 5px;
+            cursor: pointer;
+            font-weight: bold;
+            transition: all 0.3s ease;
+        }
+        
+        .refresh-btn:hover {
+            background: #00ff88;
+        }
+        
+        .cache-content {
+            padding: 1rem;
+            min-height: 400px;
+        }
+        
+        .file-list {
+            display: grid;
+            gap: 0.5rem;
+        }
+        
+        .file-item {
+            display: flex;
+            align-items: center;
+            padding: 0.8rem;
+            background: rgba(255,255,255,0.05);
+            border-radius: 6px;
+            cursor: pointer;
+            transition: all 0.3s ease;
+            font-family: monospace;
+        }
+        
+        .file-item:hover {
+            background: rgba(255,255,255,0.1);
+            border-left: 4px solid #00ccff;
+        }
+        
+        .file-item.directory {
+            border-left: 4px solid #00ff88;
+        }
+        
+        .file-item.directory:hover {
+            border-left: 4px solid #ffaa00;
+        }
+        
+        .file-icon {
+            margin-right: 1rem;
+            font-size: 1.2rem;
+            width: 20px;
+            text-align: center;
+        }
+        
+        .file-name {
+            flex: 1;
+            color: #e0e0e0;
+        }
+        
+        .file-size {
+            color: #999;
+            font-size: 0.8rem;
+            margin-left: 1rem;
+        }
+        
+        .file-content {
+            background: rgba(0,0,0,0.6);
+            border-radius: 8px;
+            padding: 1rem;
+            margin-top: 1rem;
+            border: 1px solid #333;
+            max-height: 400px;
+            overflow-y: auto;
+        }
+        
+        .file-content pre {
+            margin: 0;
+            color: #e0e0e0;
+            font-family: 'Monaco', 'Consolas', monospace;
+            font-size: 0.85rem;
+            line-height: 1.4;
+        }
+        
+        /* File viewer modal */
+        .file-modal {
+            position: fixed;
+            top: 0;
+            left: 0;
+            right: 0;
+            bottom: 0;
+            background: rgba(0,0,0,0.95);
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            z-index: 10000;
+            opacity: 0;
+            visibility: hidden;
+            transition: all 0.3s ease;
+        }
+        
+        .file-modal.show {
+            opacity: 1;
+            visibility: visible;
+        }
+        
+        .file-modal-content {
+            background: rgba(0,0,0,0.98);
+            border: 3px solid #00ccff;
+            border-radius: 15px;
+            padding: 0;
+            max-width: 95vw;
+            max-height: 95vh;
+            overflow: hidden;
+            position: relative;
+            transform: scale(0.7);
+            transition: transform 0.3s ease;
+            display: flex;
+            flex-direction: column;
+        }
+        
+        .file-modal.show .file-modal-content {
+            transform: scale(1);
+        }
+        
+        .file-modal-header {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            padding: 1.5rem 2rem;
+            background: linear-gradient(90deg, #333, #444);
+            border-bottom: 2px solid #00ccff;
+            border-radius: 12px 12px 0 0;
+        }
+        
+        .file-modal-title {
+            color: #00ccff;
+            font-size: 1.5rem;
+            margin: 0;
+            font-family: monospace;
+        }
+        
+        .file-modal-body {
+            padding: 2rem;
+            overflow: auto;
+            flex: 1;
+            min-height: 200px;
+            max-height: 70vh;
+        }
+        
+        .file-modal-pre {
+            margin: 0;
+            color: #e0e0e0;
+            font-family: 'Monaco', 'Consolas', monospace;
+            font-size: 0.85rem;
+            line-height: 1.4;
+            background: rgba(0,0,0,0.5);
+            padding: 1.5rem;
+            border-radius: 8px;
+            border: 1px solid #333;
+            overflow: auto;
+        }
+        
+        .json-highlight .json-key {
+            color: #00ccff;
+            font-weight: bold;
+        }
+        
+        .json-highlight .json-string {
+            color: #00ff88;
+        }
+        
+        .json-highlight .json-number {
+            color: #ffaa00;
+        }
+        
+        .json-highlight .json-boolean {
+            color: #ff6b6b;
+        }
+        
+        .json-highlight .json-null {
+            color: #999;
         }
         
         .agent-grid {
@@ -381,16 +749,72 @@
         </div>
     </div>
     
-    <div class="franchise-tabs" id="franchiseTabs">
-        <!-- Tabs will be populated by JavaScript -->
+    <!-- Main Navigation Tabs -->
+    <div class="main-tabs">
+        <button class="main-tab active" onclick="showMainTab('agents')">🤖 Agents</button>
+        <button class="main-tab" onclick="showMainTab('cache')">💾 Cache Browser</button>
     </div>
     
-    <div id="franchiseContent">
-        <!-- Content will be populated by JavaScript -->
+    <!-- Agents Section -->
+    <div class="main-content active" id="agentsSection">
+        <div class="franchise-tabs" id="franchiseTabs">
+            <!-- Tabs will be populated by JavaScript -->
+        </div>
+        
+        <div id="franchiseContent">
+            <!-- Content will be populated by JavaScript -->
+        </div>
+    </div>
+    
+    <!-- Cache Browser Section -->
+    <div class="main-content" id="cacheSection">
+        <div class="cache-browser">
+            <div class="cache-header">
+                <h2>💾 Agency Cache Explorer</h2>
+                <p>Browse and inspect agency cache files and directories</p>
+            </div>
+            
+            <div class="cache-explorer">
+                <div class="cache-toolbar">
+                    <div class="breadcrumb" id="cacheBreadcrumb">~/agency_cache/</div>
+                    <button class="refresh-btn" onclick="refreshCache()">🔄 Refresh</button>
+                </div>
+                
+                <div class="cache-content" id="cacheContent">
+                    <div class="file-list" id="fileList">
+                        <!-- Files will be loaded here -->
+                    </div>
+                </div>
+            </div>
+        </div>
     </div>
     
     <div class="loading" id="loading">
         🔄 Loading agent data and schemas...
+    </div>
+    
+    <!-- Flow Diagram Modal -->
+    <div class="modal-overlay" id="flowModal">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h3 class="modal-title" id="modalTitle">Flow Diagram</h3>
+                <button class="close-btn" onclick="closeFlowModal()">&times;</button>
+            </div>
+            <img class="flow-diagram-img" id="flowImage" src="" alt="Flow Diagram" />
+        </div>
+    </div>
+    
+    <!-- File Viewer Modal -->
+    <div class="file-modal" id="fileModal">
+        <div class="file-modal-content">
+            <div class="file-modal-header">
+                <h3 class="file-modal-title" id="fileModalTitle">📄 File Viewer</h3>
+                <button class="close-btn" onclick="closeFileModal()">&times;</button>
+            </div>
+            <div class="file-modal-body" id="fileModalBody">
+                <!-- File content will be loaded here -->
+            </div>
+        </div>
     </div>
 
     <script>
@@ -740,6 +1164,9 @@
                     franchiseHTML.push(
                         `<div class="franchise-content" id="content-${franchise}">
                             <div class="franchise-header">
+                                <button class="flow-diagram-btn" onclick="openFlowModal('${franchise}')" title="View Agent Flow Diagram">
+                                    📊
+                                </button>
                                 <h2>🏢 ${franchise.toUpperCase()} Franchise</h2>
                                 <p>${this.agentData[franchise].length} agents with polymorphic schema integration</p>
                             </div>
@@ -979,6 +1406,295 @@
                     }
                 });
             }
+        }
+        
+        // Flow diagram modal functions
+        function openFlowModal(franchise) {
+            console.log('Opening flow modal for:', franchise);
+            const modal = document.getElementById('flowModal');
+            const title = document.getElementById('modalTitle');
+            const image = document.getElementById('flowImage');
+            
+            title.textContent = `${franchise.toUpperCase()} Agent Flow Diagram`;
+            image.src = `flow_diagrams/${franchise}_flow.png`;
+            
+            // Handle image load error
+            image.onerror = function() {
+                console.error('Failed to load image:', this.src);
+                this.alt = 'Flow diagram not available';
+                this.style.background = '#333';
+                this.style.color = '#00ff88';
+                this.style.padding = '4rem';
+                this.style.textAlign = 'center';
+                this.style.fontSize = '1.2rem';
+            };
+            
+            // Show modal with animation
+            modal.classList.add('show');
+        }
+        
+        function closeFlowModal() {
+            const modal = document.getElementById('flowModal');
+            modal.classList.remove('show');
+        }
+        
+        // Close modal when clicking outside content
+        document.getElementById('flowModal').addEventListener('click', function(e) {
+            if (e.target === this) {
+                closeFlowModal();
+            }
+        });
+        
+        // Close modals with Escape key
+        document.addEventListener('keydown', function(e) {
+            if (e.key === 'Escape') {
+                closeFlowModal();
+                closeFileModal();
+            }
+        });
+        
+        // Close file modal when clicking outside content
+        document.getElementById('fileModal').addEventListener('click', function(e) {
+            if (e.target === this) {
+                closeFileModal();
+            }
+        });
+        
+        // Main tab switching
+        function showMainTab(tabName) {
+            // Update tab buttons
+            document.querySelectorAll('.main-tab').forEach(tab => tab.classList.remove('active'));
+            event.target.classList.add('active');
+            
+            // Update content sections
+            document.querySelectorAll('.main-content').forEach(content => content.classList.remove('active'));
+            
+            if (tabName === 'agents') {
+                document.getElementById('agentsSection').classList.add('active');
+            } else if (tabName === 'cache') {
+                document.getElementById('cacheSection').classList.add('active');
+                loadCacheDirectory('agency_cache');
+            }
+        }
+        
+        // Cache browser functionality
+        let currentCachePath = 'agency_cache';
+        
+        async function loadCacheDirectory(path) {
+            try {
+                console.log('Loading cache directory:', path);
+                currentCachePath = path;
+                
+                // Update breadcrumb
+                document.getElementById('cacheBreadcrumb').textContent = '~/' + path + '/';
+                
+                // Try to fetch directory listing (this will work if server supports directory listing)
+                const response = await fetch(path + '/');
+                if (response.ok) {
+                    const html = await response.text();
+                    parseDirListing(html, path);
+                } else {
+                    // Fallback: try to load known file types
+                    loadCacheDirectoryFallback(path);
+                }
+            } catch (error) {
+                console.warn('Could not load directory listing, using fallback:', error);
+                loadCacheDirectoryFallback(path);
+            }
+        }
+        
+        function parseDirListing(html, path) {
+            const fileList = document.getElementById('fileList');
+            fileList.innerHTML = '';
+            
+            // Add back button if not in root
+            if (path !== 'agency_cache') {
+                const backItem = createFileItem('..', 'directory', 0, () => {
+                    const parentPath = path.split('/').slice(0, -1).join('/') || 'agency_cache';
+                    loadCacheDirectory(parentPath);
+                });
+                fileList.appendChild(backItem);
+            }
+            
+            // Parse HTML directory listing
+            const parser = new DOMParser();
+            const doc = parser.parseFromString(html, 'text/html');
+            const links = doc.querySelectorAll('a');
+            
+            links.forEach(link => {
+                const href = link.getAttribute('href');
+                if (href && href !== '../' && href !== '/') {
+                    const fileName = decodeURIComponent(href.replace(/\/$/, ''));
+                    const isDirectory = href.endsWith('/');
+                    
+                    const fileItem = createFileItem(fileName, isDirectory ? 'directory' : 'file', 0, () => {
+                        if (isDirectory) {
+                            loadCacheDirectory(path + '/' + fileName);
+                        } else {
+                            loadFileContent(path + '/' + fileName, fileName);
+                        }
+                    });
+                    
+                    fileList.appendChild(fileItem);
+                }
+            });
+        }
+        
+        async function loadCacheDirectoryFallback(path) {
+            const fileList = document.getElementById('fileList');
+            fileList.innerHTML = '';
+            
+            // Add back button if not in root
+            if (path !== 'agency_cache') {
+                const backItem = createFileItem('..', 'directory', 0, () => {
+                    const parentPath = path.split('/').slice(0, -1).join('/') || 'agency_cache';
+                    loadCacheDirectory(parentPath);
+                });
+                fileList.appendChild(backItem);
+            }
+            
+            // Try to load common file patterns
+            const commonFiles = [
+                'franchise/',
+                'assets/',
+                'workflows/',
+                'outputs/'
+            ];
+            
+            // Add some known JSON files pattern
+            const jsonPatterns = [
+                '_output.json',
+                '_workflow.json', 
+                '_cache.json',
+                '_analysis.json'
+            ];
+            
+            // Show message about manual exploration
+            const infoItem = document.createElement('div');
+            infoItem.innerHTML = `
+                <div class="file-item" style="border-left: 4px solid #ffaa00; cursor: default;">
+                    <div class="file-icon">ℹ️</div>
+                    <div class="file-name" style="color: #ffaa00;">
+                        Directory listing not available. Try accessing files directly by URL:
+                        <br><small style="color: #ccc; font-family: monospace;">
+                        http://localhost:8082/${path}/filename.json
+                        </small>
+                    </div>
+                </div>
+            `;
+            fileList.appendChild(infoItem);
+        }
+        
+        function createFileItem(name, type, size, onClick) {
+            const item = document.createElement('div');
+            item.className = `file-item ${type}`;
+            item.onclick = onClick;
+            
+            const icon = type === 'directory' ? '📁' : '📄';
+            const sizeText = type === 'directory' ? '' : formatFileSize(size);
+            
+            item.innerHTML = `
+                <div class="file-icon">${icon}</div>
+                <div class="file-name">${name}</div>
+                <div class="file-size">${sizeText}</div>
+            `;
+            
+            return item;
+        }
+        
+        async function loadFileContent(filePath, fileName) {
+            try {
+                console.log('Loading file:', filePath);
+                
+                // Show modal immediately with loading state
+                openFileModal(fileName, 'Loading file...');
+                
+                const response = await fetch(filePath);
+                
+                if (!response.ok) {
+                    throw new Error(`HTTP ${response.status}`);
+                }
+                
+                const content = await response.text();
+                displayFileInModal(fileName, content);
+                
+            } catch (error) {
+                console.error('Error loading file:', error);
+                displayFileInModal(fileName, `Error loading file: ${error.message}`);
+            }
+        }
+        
+        function openFileModal(fileName, content) {
+            const modal = document.getElementById('fileModal');
+            const title = document.getElementById('fileModalTitle');
+            const body = document.getElementById('fileModalBody');
+            
+            title.textContent = `📄 ${fileName}`;
+            body.innerHTML = `<pre class="file-modal-pre">${escapeHtml(content)}</pre>`;
+            
+            modal.classList.add('show');
+        }
+        
+        function displayFileInModal(fileName, content) {
+            const title = document.getElementById('fileModalTitle');
+            const body = document.getElementById('fileModalBody');
+            
+            // Try to format JSON
+            let formattedContent = content;
+            let isJSON = false;
+            let fileIcon = '📄';
+            
+            try {
+                if (fileName.endsWith('.json')) {
+                    const parsed = JSON.parse(content);
+                    formattedContent = JSON.stringify(parsed, null, 2);
+                    isJSON = true;
+                    fileIcon = '📜';
+                }
+            } catch (e) {
+                // Not valid JSON, use original content
+            }
+            
+            // Update title with file type indicator
+            const fileType = isJSON ? ' (JSON)' : '';
+            title.innerHTML = `${fileIcon} ${fileName}<span style="color: #00ff88; font-size: 0.8em;">${fileType}</span>`;
+            
+            // Format content with syntax highlighting for JSON
+            const highlightedContent = isJSON ? highlightJSON(formattedContent) : escapeHtml(formattedContent);
+            
+            body.innerHTML = `<pre class="file-modal-pre ${isJSON ? 'json-highlight' : ''}">${highlightedContent}</pre>`;
+        }
+        
+        function highlightJSON(jsonText) {
+            return jsonText
+                .replace(/(".*?"):/g, '<span class="json-key">$1</span>:')
+                .replace(/: (".*?")/g, ': <span class="json-string">$1</span>')
+                .replace(/: (\d+\.?\d*)/g, ': <span class="json-number">$1</span>')
+                .replace(/: (true|false)/g, ': <span class="json-boolean">$1</span>')
+                .replace(/: (null)/g, ': <span class="json-null">$1</span>');
+        }
+        
+        function closeFileModal() {
+            const modal = document.getElementById('fileModal');
+            modal.classList.remove('show');
+        }
+        
+        function formatFileSize(bytes) {
+            if (bytes === 0) return '0 B';
+            const k = 1024;
+            const sizes = ['B', 'KB', 'MB', 'GB'];
+            const i = Math.floor(Math.log(bytes) / Math.log(k));
+            return parseFloat((bytes / Math.pow(k, i)).toFixed(1)) + ' ' + sizes[i];
+        }
+        
+        function escapeHtml(text) {
+            const div = document.createElement('div');
+            div.textContent = text;
+            return div.innerHTML;
+        }
+        
+        function refreshCache() {
+            loadCacheDirectory(currentCachePath);
         }
         
         // Initialize dashboard when page loads
