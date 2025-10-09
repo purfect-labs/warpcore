@@ -1,0 +1,62 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Debug Dashboard</title>
+    <style>
+        body { font-family: monospace; padding: 20px; background: #1a1a1a; color: #00ff88; }
+        .status { margin: 10px 0; padding: 10px; background: #333; border-radius: 5px; }
+        .error { color: #ff6b6b; }
+        .success { color: #00ff88; }
+        .info { color: #00ccff; }
+    </style>
+</head>
+<body>
+    <h1>🔧 Debug Dashboard</h1>
+    <div id="status"></div>
+    
+    <script>
+        function log(message, type = 'info') {
+            const div = document.createElement('div');
+            div.className = `status ${type}`;
+            div.textContent = `[${new Date().toLocaleTimeString()}] ${message}`;
+            document.getElementById('status').appendChild(div);
+            console.log(message);
+        }
+        
+        async function testLoad() {
+            log('Starting debug tests...', 'info');
+            
+            try {
+                log('Testing simplified data fetch...', 'info');
+                const response = await fetch('./dashboard_data_simple.json');
+                log(`Response status: ${response.status} ${response.statusText}`, 'info');
+                log(`Response headers: ${JSON.stringify([...response.headers.entries()])}`, 'info');
+                
+                if (response.ok) {
+                    log('Parsing JSON...', 'info');
+                    const data = await response.json();
+                    log(`Data loaded successfully! Franchises: ${Object.keys(data.franchises).length}`, 'success');
+                    log(`Total agents: ${Object.values(data.franchises).reduce((sum, agents) => sum + agents.length, 0)}`, 'success');
+                    
+                    // Show franchise breakdown
+                    for (const [franchise, agents] of Object.entries(data.franchises)) {
+                        log(`${franchise.toUpperCase()}: ${agents.length} agents`, 'success');
+                    }
+                } else {
+                    log(`Failed to load data: ${response.status}`, 'error');
+                }
+            } catch (error) {
+                log(`Error: ${error.message}`, 'error');
+                log(`Stack: ${error.stack}`, 'error');
+            }
+            
+            log('Debug test completed.', 'info');
+        }
+        
+        // Start test when page loads
+        document.addEventListener('DOMContentLoaded', testLoad);
+    </script>
+</body>
+</html>

@@ -157,12 +157,28 @@ def main():
             # Command line mode
             workflow_or_agent = args.workflow_or_agent
             
-            # Check if it's a docs command
+            # Check if it's a docs command - just build everything
             if workflow_or_agent.lower() == 'docs':
-                action = args.workflow_id_or_input or "build"
-                build_type = args.user_input_or_spec or "html"
-                print(f"📋 Documentation generation would happen here: {action} {build_type}")
-                success = True
+                try:
+                    # Import the static build generator
+                    sys.path.append(str(agency.base_path / "agents" / "polymorphic"))
+                    from static_build_generator import StaticBuildGenerator
+                    
+                    print("🚀 Building static agent schemas with master prompt merged...")
+                    builder = StaticBuildGenerator()
+                    
+                    # Build all franchise agents with merged master prompt
+                    results = builder.build_all_franchises(
+                        client_dir=args.client_dir or str(agency.client_dir_absolute),
+                        agency_dir=str(agency.base_path)
+                    )
+                    
+                    success = True
+                    print(f"\n✅ Static build complete! Agents updated in-place with originals backed up.")
+                    
+                except Exception as e:
+                    print(f"❌ Static build failed: {e}")
+                    success = False
                 
             # Check if it's an individual agent request
             elif workflow_or_agent.lower() in agency.get_agent_aliases().keys():

@@ -1,0 +1,100 @@
+{
+  "agent_id": "origin",
+  "agent_version": "1.0.0",
+  "starting_directory": "AGENCY_CACHE_DIR",
+  "workflow_position": "0a",
+  "dependencies": [],
+  "outputs_to": [
+    "boss"
+  ],
+  "cache_pattern": ".data/agency/wf/{workflow_id}/agent/{agent_id}/traceid/{trace_id}/patrol_origin_recon.json",
+  "prompt": "\n## ENVIRONMENT CONTEXT (DO NOT DISCOVER - USE THIS INFO)\n\n**Current Working Directory**: /Users/shawn_meredith/code/pets/warpcore\n**Platform**: Darwin\n**Shell**: /bin/zsh\n**Python**: 3.13.7\n**Home**: /Users/shawn_meredith\n**Timestamp**: 2025-10-09T01:27:55.151251\n\n### PROJECT STRUCTURE (DYNAMIC - DO NOT SCAN)\n```\n/Users/shawn_meredith/code/pets/warpcore/\n\u251c\u2500\u2500 .data/                     # Workflow cache and results\n\u251c\u2500\u2500 .config/                   # Configuration files\n\u251c\u2500\u2500 src/agency/                # Main agency system\n\u2502   \u251c\u2500\u2500 agents/               # Agent JSON specifications\n\u2502   \u2502   \u251c\u2500\u2500 franchise/        # Franchise-specific agents\n\u2502   \u2502   \u251c\u2500\u2500 polymorphic/      # Universal schema system\n\u2502   \u2502   \u2514\u2500\u2500 docs/             # Documentation system\n\u2502   \u251c\u2500\u2500 systems/              # Schema and system management\n\u2502   \u251c\u2500\u2500 workflows/            # Workflow specifications\n\u2502   \u2514\u2500\u2500 agency.py             # Main orchestrator\n\u251c\u2500\u2500 src/api/                   # PAP architecture implementation\n\u251c\u2500\u2500 docs/                     # Documentation\n\u2514\u2500\u2500 llm-collector/            # LLM collection utility\n```\n\n### AVAILABLE TOOLS AND PRIMITIVES\n**File Operations**: read_files, write_files, file_glob, find_files\n**Execution**: run_command, subprocess, shell scripting\n**Git**: Full git repository with version control\n**Database**: SQLite available, existing licensing database\n**Config**: Hierarchical config system (.config/warpcore.config)\n**Logging**: Background logging to /tmp/ for non-blocking operations\n**Testing**: Playwright, pytest, multi-layer validation\n\n**IMPORTANT**: Use this context - do NOT waste time discovering what you already know!\n\n\nYou are ORIGIN, the DevOps security patrol initialization agent operating within enterprise Kubernetes/Docker environments. Your mission is to establish baseline security reconnaissance while maintaining strict ethical boundaries. You work FROM INSIDE enterprise infrastructure (K8s, Docker, GCP, GitHub, CircleCI) but can ONLY use information that could be obtained EXTERNALLY by an attacker. You CANNOT use insider privileges or make internal system changes. Your goal is to identify external vulnerabilities that could compromise the system. You analyze what external attackers could discover through public GitHub repos, exposed services, DNS enumeration, public cloud metadata endpoints, container vulnerabilities, and OSINT. Execute reconnaissance using tools: kubectl, docker, gcloud, gh, nmap, dig, curl, trivy, grype. Constraints: NO internal system modifications, NO use of internal-only information in external attacks, NO privilege escalation using insider knowledge, ALL methods must be reproducible by external attackers. Pass findings to BOSS for strategic coordination.",
+  "output_schema": {
+    "patrol_recon_id": "string (generated)",
+    "timestamp": "string (ISO format)",
+    "external_attack_surface": {
+      "exposed_k8s_services": "array",
+      "public_github_repos": "array",
+      "container_vulnerabilities": "array",
+      "dns_enumeration": "array",
+      "cloud_metadata_exposure": "object",
+      "network_scan_results": "object"
+    },
+    "vulnerability_assessment": {
+      "critical_findings": "array",
+      "high_risk_exposures": "array",
+      "external_attack_vectors": "array",
+      "exploitability_score": "number (0-100)"
+    },
+    "reconnaissance_methods": {
+      "techniques_used": "array",
+      "tools_executed": "array",
+      "external_reproducible": "boolean",
+      "ethical_compliance": "boolean"
+    },
+    "devops_security_posture": {
+      "k8s_security_score": "number (0-100)",
+      "container_security": "object",
+      "cicd_exposure": "object",
+      "repo_security": "object"
+    },
+    "next_agent_handoff": {
+      "target_agent": "boss",
+      "handoff_data": "object",
+      "cache_file_created": "string",
+      "recon_complete": "boolean"
+    },
+    "workflow_id": "string (from context)",
+    "agent_id": "string (agent identifier)",
+    "execution_metrics": {
+      "start_time": "string (ISO_TIMESTAMP)",
+      "end_time": "string (ISO_TIMESTAMP)",
+      "duration_seconds": "number",
+      "memory_usage_mb": "number",
+      "cpu_usage_percent": "number"
+    },
+    "performance_metrics": {
+      "output_quality_score": "number (0-100)",
+      "efficiency_rating": "EXCELLENT|GOOD|FAIR|POOR",
+      "bootstrap_success_rate": "number (0-100)",
+      "agent_discovery_accuracy": "number (0-100)",
+      "system_readiness_score": "number (0-100)"
+    },
+    "data_compression": {
+      "compressed_past_workflows": "boolean",
+      "compression_ratio": "number (0-1)",
+      "archived_workflow_count": "number",
+      "storage_saved_mb": "number",
+      "compression_method": "gzip|json_minify|archive"
+    },
+    "bonus_contributions": {
+      "extra_analysis_performed": "boolean",
+      "additional_requirements_discovered": "number",
+      "enhanced_validation_checks": "array of strings",
+      "proactive_improvements_suggested": "number",
+      "cross_workflow_insights": "array of insight objects",
+      "contribution_value_score": "number (0-100)"
+    }
+  },
+  "validation_rules": [
+    "External attack surface properly enumerated",
+    "Ethical white hat compliance required",
+    "bonus contributions must be identified and quantified",
+    "No internal system modifications allowed",
+    "All reconnaissance must be externally reproducible",
+    "data compression must be attempted for storage optimization",
+    "workflow_id must be properly validated",
+    "Container vulnerabilities assessed using public tools"
+  ],
+  "success_criteria": [
+    "All methods externally reproducible",
+    "Historical workflow data compressed for storage efficiency",
+    "Bonus contributions identified and tracked for system improvement",
+    "Public repository security assessed",
+    "BOSS agent properly prepared with reconnaissance data",
+    "DNS and network enumeration completed",
+    "Container and K8s vulnerabilities identified",
+    "Ethical boundaries maintained",
+    "External attack surface comprehensively mapped"
+  ]
+}

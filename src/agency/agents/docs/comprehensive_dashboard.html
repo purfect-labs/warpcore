@@ -1,0 +1,990 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>WARPCORE Agent Dashboard - Complete Schema Viewer</title>
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+        
+        body {
+            font-family: 'Monaco', 'Consolas', 'Courier New', monospace;
+            background: linear-gradient(135deg, #1e3c72 0%, #2a5298 100%);
+            color: #ffffff;
+            overflow-x: hidden;
+        }
+        
+        .header {
+            text-align: center;
+            padding: 2rem;
+            background: rgba(0,0,0,0.3);
+            border-bottom: 3px solid #00ff88;
+        }
+        
+        .header h1 {
+            font-size: 2.5rem;
+            margin-bottom: 0.5rem;
+            background: linear-gradient(45deg, #00ff88, #00ccff);
+            -webkit-background-clip: text;
+            -webkit-text-fill-color: transparent;
+            background-clip: text;
+        }
+        
+        .franchise-tabs {
+            display: flex;
+            justify-content: center;
+            background: rgba(0,0,0,0.2);
+            padding: 1rem;
+            flex-wrap: wrap;
+            gap: 0.5rem;
+        }
+        
+        .tab-button {
+            padding: 1rem 2rem;
+            background: rgba(255,255,255,0.1);
+            border: 2px solid transparent;
+            color: #ffffff;
+            cursor: pointer;
+            border-radius: 8px;
+            transition: all 0.3s ease;
+            font-weight: bold;
+            text-transform: uppercase;
+            letter-spacing: 1px;
+        }
+        
+        .tab-button:hover {
+            background: rgba(255,255,255,0.2);
+            border-color: #00ff88;
+            transform: translateY(-2px);
+        }
+        
+        .tab-button.active {
+            background: linear-gradient(45deg, #00ff88, #00ccff);
+            color: #000000;
+            border-color: #ffffff;
+        }
+        
+        .franchise-content {
+            display: none;
+            padding: 2rem;
+        }
+        
+        .franchise-content.active {
+            display: block;
+        }
+        
+        .franchise-header {
+            text-align: center;
+            margin-bottom: 2rem;
+            padding: 1rem;
+            background: rgba(0,0,0,0.3);
+            border-radius: 12px;
+            border: 2px solid #00ff88;
+        }
+        
+        .agent-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(400px, 1fr));
+            gap: 1.5rem;
+            margin-bottom: 2rem;
+        }
+        
+        .agent-card {
+            background: rgba(0,0,0,0.4);
+            border-radius: 12px;
+            border: 2px solid #333;
+            overflow: hidden;
+            transition: all 0.3s ease;
+        }
+        
+        .agent-card:hover {
+            border-color: #00ff88;
+            transform: translateY(-5px);
+            box-shadow: 0 10px 30px rgba(0,255,136,0.3);
+        }
+        
+        .agent-header {
+            padding: 1rem;
+            background: linear-gradient(90deg, #333, #444);
+            border-bottom: 2px solid #00ff88;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            cursor: pointer;
+        }
+        
+        .agent-name {
+            font-size: 1.1rem;
+            font-weight: bold;
+            color: #00ff88;
+        }
+        
+        .agent-id {
+            font-size: 0.9rem;
+            color: #00ccff;
+            background: rgba(0,0,0,0.3);
+            padding: 0.3rem 0.6rem;
+            border-radius: 4px;
+        }
+        
+        .expand-icon {
+            font-size: 1.2rem;
+            transition: transform 0.3s ease;
+            color: #00ff88;
+        }
+        
+        .agent-content {
+            max-height: 0;
+            overflow: hidden;
+            transition: max-height 0.5s ease;
+        }
+        
+        .agent-content.expanded {
+            max-height: 2000px;
+        }
+        
+        .agent-details {
+            padding: 1rem;
+        }
+        
+        .detail-tabs {
+            display: flex;
+            margin-bottom: 1rem;
+            background: rgba(0,0,0,0.3);
+            border-radius: 6px;
+            overflow: hidden;
+        }
+        
+        .detail-tab {
+            flex: 1;
+            padding: 0.7rem;
+            background: transparent;
+            border: none;
+            color: #ccc;
+            cursor: pointer;
+            transition: all 0.3s ease;
+            font-size: 0.9rem;
+        }
+        
+        .detail-tab:hover {
+            background: rgba(255,255,255,0.1);
+            color: #fff;
+        }
+        
+        .detail-tab.active {
+            background: #00ff88;
+            color: #000;
+        }
+        
+        .detail-content {
+            display: none;
+            background: rgba(0,0,0,0.5);
+            border-radius: 6px;
+            padding: 1rem;
+            max-height: 400px;
+            overflow-y: auto;
+        }
+        
+        .detail-content.active {
+            display: block;
+        }
+        
+        .json-viewer {
+            font-family: 'Monaco', 'Consolas', 'Courier New', monospace;
+            font-size: 0.85rem;
+            line-height: 1.4;
+            white-space: pre-wrap;
+            color: #e0e0e0;
+        }
+        
+        .json-key {
+            color: #00ccff;
+            font-weight: bold;
+        }
+        
+        .json-string {
+            color: #00ff88;
+        }
+        
+        .json-number {
+            color: #ffaa00;
+        }
+        
+        .json-boolean {
+            color: #ff6b6b;
+        }
+        
+        .json-null {
+            color: #999;
+        }
+        
+        .schema-info {
+            display: grid;
+            gap: 1rem;
+        }
+        
+        .schema-section {
+            background: rgba(255,255,255,0.05);
+            border-radius: 6px;
+            padding: 1rem;
+            border-left: 4px solid #00ff88;
+        }
+        
+        .schema-title {
+            color: #00ff88;
+            font-weight: bold;
+            margin-bottom: 0.5rem;
+            font-size: 1rem;
+        }
+        
+        .schema-content {
+            color: #ccc;
+            font-size: 0.9rem;
+            line-height: 1.5;
+        }
+        
+        .schema-list {
+            list-style: none;
+            padding-left: 1rem;
+        }
+        
+        .schema-list li {
+            margin-bottom: 0.3rem;
+            position: relative;
+        }
+        
+        .schema-list li:before {
+            content: "▶";
+            color: #00ff88;
+            position: absolute;
+            left: -1rem;
+        }
+        
+        .polymorphic-mapping {
+            background: linear-gradient(45deg, rgba(0,255,136,0.1), rgba(0,204,255,0.1));
+            border: 1px solid #00ff88;
+            border-radius: 6px;
+            padding: 0.8rem;
+            margin-top: 0.5rem;
+        }
+        
+        .mapping-type {
+            color: #00ccff;
+            font-weight: bold;
+            font-size: 0.9rem;
+        }
+        
+        .search-container {
+            position: fixed;
+            top: 20px;
+            right: 20px;
+            z-index: 1000;
+        }
+        
+        .search-box {
+            padding: 0.8rem;
+            background: rgba(0,0,0,0.8);
+            border: 2px solid #00ff88;
+            border-radius: 25px;
+            color: #fff;
+            font-size: 0.9rem;
+            width: 250px;
+            outline: none;
+        }
+        
+        .search-box::placeholder {
+            color: #aaa;
+        }
+        
+        .stats-bar {
+            display: flex;
+            justify-content: center;
+            gap: 2rem;
+            margin: 2rem 0;
+            flex-wrap: wrap;
+        }
+        
+        .stat-item {
+            text-align: center;
+            padding: 1rem;
+            background: rgba(0,0,0,0.3);
+            border-radius: 8px;
+            border: 2px solid #333;
+            min-width: 150px;
+        }
+        
+        .stat-number {
+            font-size: 2rem;
+            font-weight: bold;
+            color: #00ff88;
+            display: block;
+        }
+        
+        .stat-label {
+            color: #ccc;
+            font-size: 0.9rem;
+            margin-top: 0.5rem;
+        }
+        
+        .loading {
+            text-align: center;
+            padding: 4rem;
+            font-size: 1.2rem;
+            color: #00ff88;
+        }
+        
+        /* Scrollbar styling */
+        ::-webkit-scrollbar {
+            width: 8px;
+        }
+        
+        ::-webkit-scrollbar-track {
+            background: rgba(0,0,0,0.3);
+        }
+        
+        ::-webkit-scrollbar-thumb {
+            background: #00ff88;
+            border-radius: 4px;
+        }
+        
+        ::-webkit-scrollbar-thumb:hover {
+            background: #00ccff;
+        }
+    </style>
+</head>
+<body>
+    <div class="search-container">
+        <input type="text" class="search-box" placeholder="Search agents, schemas, properties..." id="searchBox">
+    </div>
+    
+    <div class="header">
+        <h1>🚀 WARPCORE Agent Dashboard</h1>
+        <p>Complete Schema & JSON Viewer for All Franchise Agents</p>
+    </div>
+    
+    <div class="stats-bar" id="statsBar">
+        <div class="stat-item">
+            <span class="stat-number" id="totalAgents">0</span>
+            <span class="stat-label">Total Agents</span>
+        </div>
+        <div class="stat-item">
+            <span class="stat-number" id="totalFranchises">0</span>
+            <span class="stat-label">Franchises</span>
+        </div>
+        <div class="stat-item">
+            <span class="stat-number" id="polymorphicMappings">0</span>
+            <span class="stat-label">Polymorphic Mappings</span>
+        </div>
+    </div>
+    
+    <div class="franchise-tabs" id="franchiseTabs">
+        <!-- Tabs will be populated by JavaScript -->
+    </div>
+    
+    <div id="franchiseContent">
+        <!-- Content will be populated by JavaScript -->
+    </div>
+    
+    <div class="loading" id="loading">
+        🔄 Loading agent data and schemas...
+    </div>
+
+    <script>
+        class WARPCOREDashboard {
+            constructor() {
+                this.agentData = {};
+                this.polymorphicMappings = this.getPolymorphicMappings();
+                this.currentFranchise = null;
+                this.searchTerm = '';
+                this.init();
+            }
+            
+            getPolymorphicMappings() {
+                return {
+                    // Staff franchise (legacy)
+                    "bootstrap_agent": "BootstrapAgentSchema",
+                    "workflow_orchestrator_agent": "OrchestratorAgentSchema", 
+                    "schema_coherence_reconciler_agent": "SchemaReconcilerAgentSchema",
+                    "requirements_generator_agent": "RequirementsGeneratorAgentSchema",
+                    "requirements_validator_agent": "RequirementsValidatorAgentSchema",
+                    "implementation_agent": "ImplementationAgentSchema",
+                    "gate_promote_agent": "GatePromoteAgentSchema",
+                    "user_input_requirements_translator": "UserInputTranslatorAgentSchema",
+                    
+                    // Framer franchise mappings
+                    "origin": "BootstrapAgentSchema",
+                    "boss": "OrchestratorAgentSchema",
+                    "pathfinder": "SchemaReconcilerAgentSchema",
+                    "oracle": "UserInputTranslatorAgentSchema",
+                    "architect": "RequirementsGeneratorAgentSchema",
+                    "enforcer": "RequirementsValidatorAgentSchema",
+                    "craftsman_implementation": "ImplementationAgentSchema",
+                    "craftbuddy": "RequirementsGeneratorAgentSchema",
+                    "gatekeeper": "GatePromoteAgentSchema",
+                    "ghostwriter": "RequirementsGeneratorAgentSchema",
+                    "alice": "RequirementsValidatorAgentSchema",
+                    "flux": "ImplementationAgentSchema",
+                    "mama_bear": "GatePromoteAgentSchema",
+                    "harmony": "SchemaReconcilerAgentSchema",
+                    
+                    // PATROL franchise mappings
+                    "deep": "RequirementsGeneratorAgentSchema",
+                    "cipher": "RequirementsValidatorAgentSchema",
+                    "glitch": "ImplementationAgentSchema",
+                    "zero": "GatePromoteAgentSchema"
+                };
+            }
+            
+            async init() {
+                try {
+                    console.log('Starting dashboard initialization...');
+                    await this.loadAgentData();
+                    console.log('Agent data loaded, rendering dashboard...');
+                    await this.renderDashboard();
+                    console.log('Dashboard rendered, binding events...');
+                    this.bindEvents();
+                    console.log('Events bound, hiding loading screen...');
+                    document.getElementById('loading').style.display = 'none';
+                    console.log('Dashboard initialization complete!');
+                } catch (error) {
+                    console.error('Dashboard initialization failed:', error);
+                    document.getElementById('loading').innerHTML = `❌ Error: ${error.message}<br><small>Check console for details</small>`;
+                }
+            }
+            
+            async loadAgentData() {
+                try {
+                    // Try simplified data first (faster loading)
+                    console.log('Trying to load simplified dashboard data...');
+                    const simpleResponse = await fetch('./dashboard_data_simple.json');
+                    if (simpleResponse.ok) {
+                        const data = await simpleResponse.json();
+                        this.agentData = data.franchises;
+                        if (data.polymorphic_mappings) {
+                            this.polymorphicMappings = data.polymorphic_mappings;
+                        }
+                        console.log('Loaded simplified agent data:', data.metadata);
+                        return;
+                    }
+                } catch (error) {
+                    console.warn('Could not load simplified data, trying full data:', error);
+                }
+                
+                try {
+                    // Fallback to full agent data
+                    console.log('Loading full dashboard data...');
+                    const response = await fetch('./dashboard_data.json');
+                    if (response.ok) {
+                        const data = await response.json();
+                        this.agentData = data.franchises;
+                        if (data.polymorphic_mappings) {
+                            this.polymorphicMappings = data.polymorphic_mappings;
+                        }
+                        console.log('Loaded full agent data:', data.metadata);
+                        return;
+                    }
+                } catch (error) {
+                    console.warn('Could not load full agent data, using simulated data:', error);
+                }
+                
+                // Final fallback to simulated data
+                console.log('Using simulated data as fallback');
+                this.agentData = await this.loadSimulatedAgentData();
+            }
+            
+            async loadSimulatedAgentData() {
+                // Simulate loading agent data from different franchises
+                const franchises = ['apex', 'framer', 'staff', 'patrol'];
+                const data = {};
+                
+                for (const franchise of franchises) {
+                    data[franchise] = await this.loadFranchiseAgents(franchise);
+                }
+                
+                return data;
+            }
+            
+            async loadFranchiseAgents(franchise) {
+                // Simulate agent data structure
+                const agentTemplates = {
+                    apex: [
+                        {name: "commander", id: "commander", file: "1_commander_from_user_to_tactician.json"},
+                        {name: "tactician", id: "tactician", file: "2_tactician_from_commander_to_operator.json"},
+                        {name: "operator", id: "operator", file: "3_operator_from_tactician_to_complete.json"},
+                        {name: "intel", id: "intel", file: "4_intel_from_user_to_commander.json"}
+                    ],
+                    framer: [
+                        {name: "origin", id: "origin", file: "0a_origin_from_none_to_boss.json"},
+                        {name: "boss", id: "boss", file: "0b_boss_from_origin_to_pathfinder.json"},
+                        {name: "pathfinder", id: "pathfinder", file: "1a_pathfinder_from_boss_to_architect.json"},
+                        {name: "oracle", id: "oracle", file: "1b_oracle_from_user_to_architect.json"},
+                        {name: "architect", id: "architect", file: "2_architect_from_pathfinder_oracle_to_enforcer.json"},
+                        {name: "enforcer", id: "enforcer", file: "3_enforcer_from_architect_craftbuddy_to_craftsman.json"},
+                        {name: "craftsman", id: "craftsman_implementation", file: "4a_craftsman_from_enforcer_craftbuddy_to_gatekeeper_craftbuddy.json"},
+                        {name: "craftbuddy", id: "craftbuddy", file: "4b_craftbuddy_from_craftsman_alice_to_craftsman_alice.json"},
+                        {name: "gatekeeper", id: "gatekeeper", file: "5_gatekeeper_from_craftsman_to_ghostwriter_pathfinder.json"},
+                        {name: "ghostwriter", id: "ghostwriter", file: "6_ghostwriter_from_gatekeeper_craftbuddy_to_craftbuddy_alice.json"},
+                        {name: "alice", id: "alice", file: "7_alice_from_ghostwriter_to_flux.json"},
+                        {name: "flux", id: "flux", file: "8_flux_from_alice_to_pathfinder.json"},
+                        {name: "harmony", id: "harmony", file: "harmony_from_user.json"},
+                        {name: "mama_bear", id: "mama_bear", file: "mama_bear_from_user.json"}
+                    ],
+                    staff: [
+                        {name: "origin", id: "origin", file: "0a_origin_from_none_to_boss.json"},
+                        {name: "boss", id: "boss", file: "0b_boss_from_origin_to_pathfinder.json"},
+                        {name: "pathfinder", id: "pathfinder", file: "1a_pathfinder_from_boss_to_architect.json"},
+                        {name: "oracle", id: "oracle", file: "1b_oracle_from_user_to_architect.json"},
+                        {name: "architect", id: "architect", file: "2_architect_from_pathfinder_oracle_to_enforcer.json"},
+                        {name: "enforcer", id: "enforcer", file: "3_enforcer_from_architect_to_craftsman.json"},
+                        {name: "craftsman", id: "craftsman_implementation", file: "4a_craftsman_from_enforcer_craftbuddy_to_gatekeeper_craftbuddy.json"},
+                        {name: "craftbuddy", id: "craftbuddy", file: "4b_craftbuddy_from_craftsman_to_craftsman.json"},
+                        {name: "gatekeeper", id: "gatekeeper", file: "5_gatekeeper_from_craftsman_to_pathfinder.json"},
+                        {name: "harmony", id: "harmony", file: "harmony_meta_coherence_agent.json"},
+                        {name: "mama_bear", id: "mama_bear", file: "mama_bear.json"}
+                    ],
+                    patrol: [
+                        {name: "origin", id: "origin", file: "0a_origin_from_none_to_boss.json"},
+                        {name: "boss", id: "boss", file: "0b_boss_from_origin_to_pathfinder.json"},
+                        {name: "pathfinder", id: "pathfinder", file: "1a_pathfinder_from_boss_to_architect.json"},
+                        {name: "oracle", id: "oracle", file: "1b_oracle_from_user_to_architect.json"},
+                        {name: "architect", id: "architect", file: "2_architect_from_pathfinder_oracle_to_enforcer.json"},
+                        {name: "enforcer", id: "enforcer", file: "3_enforcer_from_architect_to_craftsman.json"},
+                        {name: "craftsman", id: "craftsman_implementation", file: "4a_craftsman_from_enforcer_to_craftbuddy_gatekeeper.json"},
+                        {name: "craftbuddy", id: "craftbuddy", file: "4b_craftbuddy_from_craftsman_to_craftsman.json"},
+                        {name: "gatekeeper", id: "gatekeeper", file: "5_gatekeeper_from_craftsman_to_deep_pathfinder.json"},
+                        {name: "deep", id: "deep", file: "7_deep_from_craftsman_to_cipher.json"},
+                        {name: "cipher", id: "cipher", file: "8_cipher_from_deep_to_glitch.json"},
+                        {name: "glitch", id: "glitch", file: "9_glitch_from_cipher_to_zero.json"},
+                        {name: "zero", id: "zero", file: "10_zero_from_glitch_to_complete.json"},
+                        {name: "harmony", id: "harmony", file: "harmony_from_user.json"},
+                        {name: "mama_bear", id: "mama_bear", file: "mama_bear_from_user.json"}
+                    ]
+                };
+                
+                return agentTemplates[franchise].map(agent => ({
+                    ...agent,
+                    json_data: this.generateMockAgentData(agent.id, franchise),
+                    polymorphic_schema: this.getPolymorphicSchema(agent.id)
+                }));
+            }
+            
+            generateMockAgentData(agentId, franchise) {
+                return {
+                    agent_id: agentId,
+                    agent_version: "2.0.0",
+                    franchise: franchise,
+                    static_build_info: {
+                        build_timestamp: new Date().toISOString(),
+                        build_type: "STATIC_MERGED",
+                        polymorphic_enhanced: true,
+                        self_contained: true
+                    },
+                    output_schema: {
+                        workflow_id: "string (from context)",
+                        agent_id: `string (${agentId})`,
+                        timestamp: "string (ISO_TIMESTAMP)",
+                        comprehensive_caching_info: {
+                            workflow_cache: "Standard JSON for next agent",
+                            asset_cache: "ALL generated work products",
+                            artifacts_cache: "ONLY truly remarkable discoveries"
+                        },
+                        execution_metrics: {
+                            start_time: "string (ISO_TIMESTAMP)",
+                            end_time: "string (ISO_TIMESTAMP)",
+                            duration_seconds: "number",
+                            memory_usage_mb: "number",
+                            cpu_usage_percent: "number"
+                        },
+                        performance_metrics: {
+                            output_quality_score: "number (0-100)",
+                            efficiency_rating: "EXCELLENT|GOOD|FAIR|POOR"
+                        }
+                    },
+                    validation_rules: [
+                        "All outputs must be written to BOTH primary and secondary cache locations",
+                        "Cache acknowledgment must be created immediately before starting work",
+                        "Asset cache must be used for all generated work products",
+                        "Workflow_id must be properly validated"
+                    ],
+                    success_criteria: [
+                        "Historical workflow data compressed for storage efficiency",
+                        "Dual cache write operations completed successfully",
+                        "Asset cache properly organized with appropriate subdirectories",
+                        "Comprehensive caching strategy implemented successfully"
+                    ]
+                };
+            }
+            
+            getPolymorphicSchema(agentId) {
+                const mapping = this.polymorphicMappings[agentId];
+                if (!mapping) return null;
+                
+                return {
+                    schema_class: mapping,
+                    base_features: [
+                        "Data compression tracking",
+                        "Bonus contributions identification",
+                        "Base execution metrics",
+                        "Universal validation rules",
+                        "Shared success criteria"
+                    ],
+                    specific_features: this.getSchemaSpecificFeatures(mapping)
+                };
+            }
+            
+            getSchemaSpecificFeatures(schemaClass) {
+                const features = {
+                    "BootstrapAgentSchema": [
+                        "System health validation",
+                        "Agent discovery results",
+                        "Bootstrap configuration",
+                        "Orchestrator preparation"
+                    ],
+                    "OrchestratorAgentSchema": [
+                        "Agent sequencing",
+                        "Workflow coordination",
+                        "Agent lifecycle management",
+                        "Orchestration success tracking"
+                    ],
+                    "SchemaReconcilerAgentSchema": [
+                        "File analysis summary",
+                        "Coherence issue detection",
+                        "PAP compliance scoring",
+                        "Detailed findings reporting"
+                    ],
+                    "RequirementsGeneratorAgentSchema": [
+                        "Requirements enumeration",
+                        "Priority classification",
+                        "Implementation phases",
+                        "Dependency mapping"
+                    ],
+                    "RequirementsValidatorAgentSchema": [
+                        "Requirements validation",
+                        "PAP compliance checking",
+                        "Feasibility assessment",
+                        "Implementation readiness"
+                    ],
+                    "ImplementationAgentSchema": [
+                        "Code implementation",
+                        "Test execution",
+                        "File modifications",
+                        "Git preparation"
+                    ],
+                    "GatePromoteAgentSchema": [
+                        "Cross-agent validation",
+                        "Git operations",
+                        "Gate decision making",
+                        "Workflow completion"
+                    ],
+                    "UserInputTranslatorAgentSchema": [
+                        "Input processing",
+                        "Requirements extraction",
+                        "Translation accuracy",
+                        "Structured output generation"
+                    ]
+                };
+                
+                return features[schemaClass] || ["Generic polymorphic features"];
+            }
+            
+            async renderDashboard() {
+                console.log('Rendering stats...');
+                this.renderStats();
+                console.log('Rendering tabs...');
+                this.renderTabs();
+                console.log('Rendering content...');
+                await this.renderContent();
+                console.log('Dashboard render complete.');
+            }
+            
+            renderStats() {
+                const totalAgents = Object.values(this.agentData).reduce((sum, agents) => sum + agents.length, 0);
+                const totalFranchises = Object.keys(this.agentData).length;
+                const totalMappings = Object.keys(this.polymorphicMappings).length;
+                
+                document.getElementById('totalAgents').textContent = totalAgents;
+                document.getElementById('totalFranchises').textContent = totalFranchises;
+                document.getElementById('polymorphicMappings').textContent = totalMappings;
+            }
+            
+            renderTabs() {
+                const tabsContainer = document.getElementById('franchiseTabs');
+                const franchises = Object.keys(this.agentData);
+                
+                tabsContainer.innerHTML = franchises.map(franchise => 
+                    `<button class="tab-button" data-franchise="${franchise}">
+                        ${franchise.toUpperCase()}
+                        <span style="display:block;font-size:0.7rem;opacity:0.8;">
+                            ${this.agentData[franchise].length} agents
+                        </span>
+                    </button>`
+                ).join('');
+                
+                // Tab activation will happen after content is rendered
+            }
+            
+            async renderContent() {
+                const contentContainer = document.getElementById('franchiseContent');
+                const franchises = Object.keys(this.agentData);
+                
+                console.log(`Rendering ${franchises.length} franchises...`);
+                
+                const franchiseHTML = [];
+                for (const franchise of franchises) {
+                    console.log(`Rendering ${franchise} franchise with ${this.agentData[franchise].length} agents...`);
+                    const agentsHTML = await this.renderAgents(franchise);
+                    franchiseHTML.push(
+                        `<div class="franchise-content" id="content-${franchise}">
+                            <div class="franchise-header">
+                                <h2>🏢 ${franchise.toUpperCase()} Franchise</h2>
+                                <p>${this.agentData[franchise].length} agents with polymorphic schema integration</p>
+                            </div>
+                            <div class="agent-grid">
+                                ${agentsHTML}
+                            </div>
+                        </div>`
+                    );
+                    // Small delay to prevent blocking
+                    await new Promise(resolve => setTimeout(resolve, 10));
+                }
+                
+                contentContainer.innerHTML = franchiseHTML.join('');
+                console.log('Content rendering complete.');
+                
+                // Now activate the first tab
+                if (franchises.length > 0) {
+                    console.log(`Activating first tab: ${franchises[0]}`);
+                    this.setActiveTab(franchises[0]);
+                }
+            }
+            
+            async renderAgents(franchise) {
+                const agents = this.agentData[franchise];
+                const agentHTML = [];
+                
+                for (let i = 0; i < agents.length; i++) {
+                    const agent = agents[i];
+                    console.log(`Rendering agent ${i + 1}/${agents.length}: ${agent.name}`);
+                    
+                    try {
+                        const html = `<div class="agent-card" data-agent="${agent.id}">
+                            <div class="agent-header" onclick="this.parentElement.querySelector('.agent-content').classList.toggle('expanded'); this.querySelector('.expand-icon').style.transform = this.parentElement.querySelector('.agent-content').classList.contains('expanded') ? 'rotate(90deg)' : 'rotate(0deg)'">
+                                <div class="agent-name">${agent.name}</div>
+                                <div class="agent-id">${agent.id}</div>
+                                <div class="expand-icon">▶</div>
+                            </div>
+                            <div class="agent-content">
+                                <div class="agent-details">
+                                    <div class="detail-tabs">
+                                        <button class="detail-tab active" onclick="this.parentElement.parentElement.querySelector('.detail-content.active').classList.remove('active'); this.parentElement.parentElement.querySelector('#json-${agent.id}').classList.add('active'); this.parentElement.querySelector('.detail-tab.active').classList.remove('active'); this.classList.add('active')">JSON Schema</button>
+                                        <button class="detail-tab" onclick="this.parentElement.parentElement.querySelector('.detail-content.active').classList.remove('active'); this.parentElement.parentElement.querySelector('#polymorphic-${agent.id}').classList.add('active'); this.parentElement.querySelector('.detail-tab.active').classList.remove('active'); this.classList.add('active')">Polymorphic</button>
+                                        <button class="detail-tab" onclick="this.parentElement.parentElement.querySelector('.detail-content.active').classList.remove('active'); this.parentElement.parentElement.querySelector('#build-${agent.id}').classList.add('active'); this.parentElement.querySelector('.detail-tab.active').classList.remove('active'); this.classList.add('active')">Build Info</button>
+                                    </div>
+                                    
+                                    <div class="detail-content active" id="json-${agent.id}">
+                                        <div class="json-viewer">${this.formatJSON(agent.json_data)}</div>
+                                    </div>
+                                    
+                                    <div class="detail-content" id="polymorphic-${agent.id}">
+                                        ${this.renderPolymorphicInfo(agent)}
+                                    </div>
+                                    
+                                    <div class="detail-content" id="build-${agent.id}">
+                                        ${this.renderBuildInfo(agent)}
+                                    </div>
+                                </div>
+                            </div>
+                        </div>`;
+                        
+                        agentHTML.push(html);
+                    } catch (error) {
+                        console.error(`Error rendering agent ${agent.name}:`, error);
+                        agentHTML.push(`<div class="agent-card error">Error rendering ${agent.name}: ${error.message}</div>`);
+                    }
+                    
+                    // Small delay every 5 agents to prevent blocking
+                    if (i % 5 === 0 && i > 0) {
+                        await new Promise(resolve => setTimeout(resolve, 5));
+                    }
+                }
+                
+                return agentHTML.join('');
+            }
+            
+            renderPolymorphicInfo(agent) {
+                const schema = agent.polymorphic_schema;
+                if (!schema) {
+                    return `<div class="schema-section">
+                        <div class="schema-title">No Polymorphic Mapping</div>
+                        <div class="schema-content">This agent does not have a polymorphic schema mapping.</div>
+                    </div>`;
+                }
+                
+                return `
+                    <div class="schema-section">
+                        <div class="schema-title">Schema Class</div>
+                        <div class="polymorphic-mapping">
+                            <div class="mapping-type">${schema.schema_class}</div>
+                        </div>
+                    </div>
+                    
+                    <div class="schema-section">
+                        <div class="schema-title">Base Features</div>
+                        <div class="schema-content">
+                            <ul class="schema-list">
+                                ${schema.base_features.map(feature => `<li>${feature}</li>`).join('')}
+                            </ul>
+                        </div>
+                    </div>
+                    
+                    <div class="schema-section">
+                        <div class="schema-title">Specific Features</div>
+                        <div class="schema-content">
+                            <ul class="schema-list">
+                                ${schema.specific_features.map(feature => `<li>${feature}</li>`).join('')}
+                            </ul>
+                        </div>
+                    </div>
+                `;
+            }
+            
+            renderBuildInfo(agent) {
+                const buildInfo = agent.json_data.static_build_info || {};
+                const outputSchema = agent.json_data.output_schema || {};
+                const cachingInfo = outputSchema.comprehensive_caching_info || {};
+                
+                let buildStatusHTML = `
+                    <div class="schema-section">
+                        <div class="schema-title">Build Status</div>
+                        <div class="schema-content">
+                            <div style="margin-bottom: 0.5rem;">
+                                <strong>Type:</strong> ${buildInfo.build_type || 'Unknown'}
+                            </div>
+                            <div style="margin-bottom: 0.5rem;">
+                                <strong>Timestamp:</strong> ${buildInfo.build_timestamp ? new Date(buildInfo.build_timestamp).toLocaleString() : 'Unknown'}
+                            </div>
+                            <div style="margin-bottom: 0.5rem;">
+                                <strong>Polymorphic Enhanced:</strong> ${buildInfo.polymorphic_enhanced ? '✅ Yes' : '❌ No'}
+                            </div>
+                            <div>
+                                <strong>Self Contained:</strong> ${buildInfo.self_contained ? '✅ Yes' : '❌ No'}
+                            </div>
+                        </div>
+                    </div>`;
+                
+                // Only show caching section if caching info exists
+                if (Object.keys(cachingInfo).length > 0) {
+                    buildStatusHTML += `
+                    <div class="schema-section">
+                        <div class="schema-title">Caching Strategy</div>
+                        <div class="schema-content">
+                            <div style="margin-bottom: 0.5rem;">
+                                <strong>Workflow Cache:</strong> ${cachingInfo.workflow_cache || 'Not specified'}
+                            </div>
+                            <div style="margin-bottom: 0.5rem;">
+                                <strong>Asset Cache:</strong> ${cachingInfo.asset_cache || 'Not specified'}
+                            </div>
+                            <div>
+                                <strong>Artifacts Cache:</strong> ${cachingInfo.artifacts_cache || 'Not specified'}
+                            </div>
+                        </div>
+                    </div>`;
+                } else {
+                    buildStatusHTML += `
+                    <div class="schema-section">
+                        <div class="schema-title">Agent Metadata</div>
+                        <div class="schema-content">
+                            <div style="margin-bottom: 0.5rem;">
+                                <strong>Agent ID:</strong> ${agent.json_data.agent_id || agent.id}
+                            </div>
+                            <div style="margin-bottom: 0.5rem;">
+                                <strong>Version:</strong> ${agent.json_data.version || agent.json_data.agent_version || 'Unknown'}
+                            </div>
+                            <div>
+                                <strong>Franchise:</strong> ${agent.json_data.franchise || agent.franchise}
+                            </div>
+                        </div>
+                    </div>`;
+                }
+                
+                return buildStatusHTML;
+            }
+            
+            formatJSON(obj) {
+                return JSON.stringify(obj, null, 2)
+                    .replace(/(".*?"):/g, '<span class="json-key">$1</span>:')
+                    .replace(/: (".*?")/g, ': <span class="json-string">$1</span>')
+                    .replace(/: (\d+\.?\d*)/g, ': <span class="json-number">$1</span>')
+                    .replace(/: (true|false)/g, ': <span class="json-boolean">$1</span>')
+                    .replace(/: (null)/g, ': <span class="json-null">$1</span>');
+            }
+            
+            setActiveTab(franchise) {
+                try {
+                    // Update tab buttons
+                    document.querySelectorAll('.tab-button').forEach(btn => btn.classList.remove('active'));
+                    const tabButton = document.querySelector(`[data-franchise="${franchise}"]`);
+                    if (tabButton) {
+                        tabButton.classList.add('active');
+                    } else {
+                        console.warn(`Tab button not found for franchise: ${franchise}`);
+                    }
+                    
+                    // Update content
+                    document.querySelectorAll('.franchise-content').forEach(content => content.classList.remove('active'));
+                    const contentElement = document.getElementById(`content-${franchise}`);
+                    if (contentElement) {
+                        contentElement.classList.add('active');
+                    } else {
+                        console.warn(`Content element not found for franchise: ${franchise}`);
+                    }
+                    
+                    this.currentFranchise = franchise;
+                } catch (error) {
+                    console.error('Error in setActiveTab:', error);
+                }
+            }
+            
+            bindEvents() {
+                // Tab switching
+                document.addEventListener('click', (e) => {
+                    if (e.target.closest('.tab-button')) {
+                        const franchise = e.target.closest('.tab-button').dataset.franchise;
+                        this.setActiveTab(franchise);
+                    }
+                });
+                
+                // Search functionality
+                document.getElementById('searchBox').addEventListener('input', (e) => {
+                    this.searchTerm = e.target.value.toLowerCase();
+                    this.filterAgents();
+                });
+            }
+            
+            filterAgents() {
+                document.querySelectorAll('.agent-card').forEach(card => {
+                    const agentName = card.dataset.agent.toLowerCase();
+                    const cardText = card.textContent.toLowerCase();
+                    
+                    if (this.searchTerm === '' || 
+                        agentName.includes(this.searchTerm) || 
+                        cardText.includes(this.searchTerm)) {
+                        card.style.display = 'block';
+                    } else {
+                        card.style.display = 'none';
+                    }
+                });
+            }
+        }
+        
+        // Initialize dashboard when page loads
+        document.addEventListener('DOMContentLoaded', () => {
+            new WARPCOREDashboard();
+        });
+    </script>
+</body>
+</html>
