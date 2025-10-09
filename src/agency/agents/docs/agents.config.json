@@ -1,0 +1,312 @@
+{
+  "version": "1.0.0",
+  "description": "Centralized WARPCORE Agent System Configuration",
+  "core_agents": {
+    "origin": {
+      "id": "0a",
+      "name": "ORIGIN",
+      "role": "Bootstrap Agent",
+      "description": "Initializes workflow system, performs health checks",
+      "styling": {
+        "fill": "#8b5cf6",
+        "stroke": "#6d28d9",
+        "stroke_width": "2px"
+      }
+    },
+    "boss": {
+      "id": "0b",
+      "name": "BOSS",
+      "role": "Workflow Orchestrator",
+      "description": "Manages workflow execution, sequences agents",
+      "styling": {
+        "fill": "#7c3aed",
+        "stroke": "#6d28d9",
+        "stroke_width": "2px"
+      }
+    },
+    "pathfinder": {
+      "id": "1a",
+      "name": "PATHFINDER",
+      "role": "Schema Coherence Reconciler",
+      "description": "Analyzes codebase, identifies gaps and inconsistencies",
+      "styling": {
+        "fill": "#3b82f6",
+        "stroke": "#2563eb",
+        "stroke_width": "2px"
+      }
+    },
+    "oracle": {
+      "id": "1b",
+      "name": "ORACLE",
+      "role": "User Input Requirements Translator",
+      "description": "Converts user specs into structured requirements",
+      "styling": {
+        "fill": "#f59e0b",
+        "stroke": "#d97706",
+        "stroke_width": "2px"
+      }
+    },
+    "architect": {
+      "id": "2",
+      "name": "ARCHITECT",
+      "role": "Requirements Generator",
+      "description": "Converts analysis into actionable requirements",
+      "styling": {
+        "fill": "#22c55e",
+        "stroke": "#16a34a",
+        "stroke_width": "2px"
+      }
+    },
+    "enforcer": {
+      "id": "3",
+      "name": "ENFORCER",
+      "role": "Enhanced Requirements Validator",
+      "description": "Validates requirements for feasibility and PAP compliance",
+      "styling": {
+        "fill": "#ef4444",
+        "stroke": "#dc2626",
+        "stroke_width": "2px"
+      }
+    },
+    "craftsman": {
+      "id": "4a",
+      "name": "CRAFTSMAN",
+      "role": "Implementation Agent",
+      "description": "Executes approved requirements, modifies code files",
+      "styling": {
+        "fill": "#06b6d4",
+        "stroke": "#0891b2",
+        "stroke_width": "2px"
+      }
+    },
+    "craftbuddy": {
+      "id": "4b",
+      "name": "CRAFTBUDDY",
+      "role": "Creative Enhancement & Decision Agent",
+      "description": "Reviews work, decides loop back or promote forward",
+      "styling": {
+        "fill": "#84cc16",
+        "stroke": "#65a30d",
+        "stroke_width": "2px"
+      }
+    },
+    "gatekeeper": {
+      "id": "5",
+      "name": "GATEKEEPER",
+      "role": "Gate Promote Agent",
+      "description": "Final validation, decides completion or cycle restart",
+      "styling": {
+        "fill": "#10b981",
+        "stroke": "#059669",
+        "stroke_width": "2px"
+      }
+    }
+  },
+
+  "franchise_agents": {
+    "framer": {
+      "ghostwriter": {
+        "id": "6",
+        "name": "GHOSTWRITER",
+        "role": "Content Creator",
+        "description": "Creates content based on intelligence collected",
+        "styling": {
+          "fill": "#9333ea",
+          "stroke": "#7c2d12",
+          "stroke_width": "2px"
+        }
+      },
+      "alice": {
+        "id": "7",
+        "name": "ALICE",
+        "role": "Muchness Agent",
+        "description": "Adds creative muchness and consultation loops",
+        "styling": {
+          "fill": "#ec4899",
+          "stroke": "#be185d",
+          "stroke_width": "2px"
+        }
+      },
+      "flux": {
+        "id": "8",
+        "name": "FLUX",
+        "role": "Content Publisher",
+        "description": "Publishes finalized content to target destinations",
+        "styling": {
+          "fill": "#06b6d4",
+          "stroke": "#0369a1",
+          "stroke_width": "2px"
+        }
+      }
+    },
+    "staff": {
+      "specialist": {
+        "id": "6",
+        "name": "SPECIALIST",
+        "role": "Domain Expert",
+        "description": "Provides specialized domain knowledge and validation",
+        "styling": {
+          "fill": "#f97316",
+          "stroke": "#ea580c",
+          "stroke_width": "2px"
+        }
+      }
+    }
+  },
+
+  "dev_agents": {
+    "mama_bear": {
+      "id": "DEV_QA",
+      "name": "MAMA BEAR",
+      "role": "QA & Production Readiness Inspector",
+      "description": "Development tool for comprehensive quality assurance",
+      "styling": {
+        "fill": "#f97316",
+        "stroke": "#ea580c",
+        "stroke_width": "2px"
+      }
+    },
+    "harmony": {
+      "id": "DEV_META",
+      "name": "HARMONY",
+      "role": "Coherence Guardian",
+      "description": "Development meta-agent for maintaining system coherence",
+      "styling": {
+        "fill": "#ec4899",
+        "stroke": "#db2777",
+        "stroke_width": "2px"
+      }
+    }
+  },
+
+  "flow_patterns": {
+    "staff": {
+      "title": "Staff Franchise - Implementation & Validation",
+      "subtitle": "Core Implementation with Domain Expertise",
+      "flow_type": "standard_with_specialist",
+      "phases": [
+        {
+          "name": "Bootstrap",
+          "agents": ["origin", "boss"],
+          "description": "System initialization and orchestration"
+        },
+        {
+          "name": "Analysis",
+          "agents": ["pathfinder", "oracle", "architect"],
+          "description": "Requirements analysis and architecture"
+        },
+        {
+          "name": "Validation",
+          "agents": ["enforcer"],
+          "description": "Requirements validation and compliance"
+        },
+        {
+          "name": "Implementation",
+          "agents": ["craftsman", "craftbuddy", "specialist"],
+          "description": "Code implementation with domain expertise"
+        },
+        {
+          "name": "Gate Control",
+          "agents": ["gatekeeper"],
+          "description": "Final validation and cycle management"
+        }
+      ],
+      "connections": [
+        {"from": "origin", "to": "boss", "label": "bootstrap"},
+        {"from": "boss", "to": "pathfinder", "label": "orchestration"},
+        {"from": "pathfinder", "to": "architect", "label": "analysis"},
+        {"from": "oracle", "to": "architect", "label": "user_requirements"},
+        {"from": "architect", "to": "enforcer", "label": "requirements"},
+        {"from": "enforcer", "to": "craftsman", "label": "validation"},
+        {"from": "craftsman", "to": "craftbuddy", "label": "implementation"},
+        {"from": "craftbuddy", "to": "specialist", "label": "domain_review"},
+        {"from": "specialist", "to": "gatekeeper", "label": "expert_validation"},
+        {"from": "gatekeeper", "to": "craftsman", "label": "fixes", "type": "conditional"},
+        {"from": "gatekeeper", "to": "pathfinder", "label": "new_cycle", "type": "conditional"}
+      ],
+      "from_user": [
+        {"to": "oracle", "label": "user_specifications"}
+      ]
+    },
+    "framer": {
+      "title": "Framer Franchise - Intelligence & Content Creation",
+      "subtitle": "Intelligence Collection & Content Creation Franchise",
+      "flow_type": "intelligence_content_pipeline",
+      "phases": [
+        {
+          "name": "Intelligence Bootstrap",
+          "agents": ["origin", "boss"],
+          "description": "Intelligence system initialization"
+        },
+        {
+          "name": "Intelligence Collection",
+          "agents": ["pathfinder", "oracle", "architect", "enforcer", "craftsman", "craftbuddy"],
+          "description": "Data collection and analysis pipeline"
+        },
+        {
+          "name": "Intelligence Validation",
+          "agents": ["gatekeeper"],
+          "description": "Intelligence quality gate"
+        },
+        {
+          "name": "Content Creation",
+          "agents": ["ghostwriter", "alice"],
+          "description": "Content generation with creative enhancement"
+        },
+        {
+          "name": "Publishing",
+          "agents": ["flux"],
+          "description": "Content publishing and distribution"
+        }
+      ],
+      "connections": [
+        {"from": "origin", "to": "boss", "label": "origin_bootstrap"},
+        {"from": "boss", "to": "pathfinder", "label": "boss_orchestration"},
+        {"from": "pathfinder", "to": "architect", "label": "pathfinder_collection_plan"},
+        {"from": "oracle", "to": "architect", "label": "oracle_user_intent"},
+        {"from": "architect", "to": "enforcer", "label": "architect_design"},
+        {"from": "enforcer", "to": "craftsman", "label": "enforcer_validation"},
+        {"from": "craftsman", "to": "craftbuddy", "label": "craftsman_data_collection"},
+        {"from": "craftbuddy", "to": "craftsman", "label": "craftbuddy_feedback", "type": "loop"},
+        {"from": "craftsman", "to": "gatekeeper", "label": "craftsman_to_gatekeeper"},
+        {"from": "gatekeeper", "to": "ghostwriter", "label": "gatekeeper_intelligence_good"},
+        {"from": "gatekeeper", "to": "pathfinder", "label": "gatekeeper_restart_intelligence", "type": "conditional"},
+        {"from": "ghostwriter", "to": "alice", "label": "ghostwriter_content"},
+        {"from": "alice", "to": "craftbuddy", "label": "alice_asks_craftbuddy", "type": "consultation"},
+        {"from": "craftbuddy", "to": "alice", "label": "craftbuddy_feedback", "type": "consultation"},
+        {"from": "alice", "to": "flux", "label": "alice_adapted_content"},
+        {"from": "flux", "to": "COMPLETE", "label": "flux_published"}
+      ],
+      "from_user": [
+        {"to": "oracle", "label": "oracle_research_specs"}
+      ]
+    }
+  },
+
+  "ui_elements": {
+    "user_input": {
+      "staff": {"icon": "👤", "label": "USER", "sublabel": "Requirements Input"},
+      "framer": {"icon": "👤", "label": "USER", "sublabel": "Research Intent Input"}
+    },
+    "completion": {
+      "staff": {"icon": "✅", "label": "COMPLETE", "sublabel": "Implementation Ready"},
+      "framer": {"icon": "✅", "label": "COMPLETE", "sublabel": "Published Content"}
+    }
+  },
+
+  "dev_connections": {
+    "from_user": [
+      {"to": "mama_bear", "label": "system_state_input"},
+      {"to": "harmony", "label": "coherence_check_request"}
+    ]
+  },
+
+  "mermaid_templates": {
+    "node_template": "{id}[\"{id}<br/>{name}<br/>{role}\"]",
+    "user_template": "{icon} {label}<br/>{sublabel}",
+    "complete_template": "{icon} {label}<br/>{sublabel}",
+    "connection_template": "{from} -->|\"{label}\"| {to}",
+    "conditional_template": "{from} -.->|\"{label}\"| {to}",
+    "styling_template": "classDef {agent_key} fill:{fill},stroke:{stroke},stroke-width:{stroke_width}"
+  }
+}

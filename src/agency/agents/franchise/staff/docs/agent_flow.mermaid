@@ -1,0 +1,59 @@
+flowchart TD
+    %% Staff Agent Flow - Software Development
+    
+    ORIGIN["ORIGIN"]
+    BOSS["BOSS"]
+    PATHFINDER["PATHFINDER"]
+    ORACLE["ORACLE"]
+    ARCHITECT["ARCHITECT"]
+    ENFORCER["ENFORCER"]
+    CRAFTSMAN["CRAFTSMAN"]
+    CRAFTBUDDY["CRAFTBUDDY"]
+    GATEKEEPER["GATEKEEPER"]
+    HARMONY["HARMONY"]
+    MAMA_BEAR["MAMA_BEAR"]
+    USER(["USER"])
+    COMPLETE(["COMPLETE"])
+
+    ORIGIN --> BOSS
+    USER --> ORACLE
+    BOSS --> PATHFINDER
+    PATHFINDER --> ARCHITECT
+    ORACLE --> ARCHITECT
+    ARCHITECT --> ENFORCER
+    ENFORCER --> CRAFTSMAN
+    CRAFTSMAN <--> CRAFTBUDDY
+    CRAFTSMAN --> GATEKEEPER
+    
+    %% STAFF specific agents after GATEKEEPER
+    GATEKEEPER --> PATHFINDER
+    USER --> MAMA_BEAR
+    USER --> HARMONY
+
+    %% Styling
+    classDef origin fill:#dc2626,stroke:#991b1b,stroke-width:2px
+    classDef boss fill:#dc2626,stroke:#991b1b,stroke-width:2px
+    classDef pathfinder fill:#dc2626,stroke:#991b1b,stroke-width:2px
+    classDef oracle fill:#dc2626,stroke:#991b1b,stroke-width:2px
+    classDef architect fill:#dc2626,stroke:#991b1b,stroke-width:2px
+    classDef enforcer fill:#dc2626,stroke:#991b1b,stroke-width:2px
+    classDef craftsman fill:#dc2626,stroke:#991b1b,stroke-width:3px
+    classDef craftbuddy fill:#dc2626,stroke:#991b1b,stroke-width:3px
+    classDef gatekeeper fill:#dc2626,stroke:#991b1b,stroke-width:2px
+    classDef harmony fill:#8b5cf6,stroke:#7c3aed,stroke-width:2px
+    classDef mama_bear fill:#ec4899,stroke:#be185d,stroke-width:2px
+    classDef complete fill:#22c55e,stroke:#16a34a,stroke-width:2px
+
+    %% Apply Classes
+    class ORIGIN origin
+    class BOSS boss
+    class PATHFINDER pathfinder
+    class ORACLE oracle
+    class ARCHITECT architect
+    class ENFORCER enforcer
+    class CRAFTSMAN craftsman
+    class CRAFTBUDDY craftbuddy
+    class GATEKEEPER gatekeeper
+    class HARMONY harmony
+    class MAMA_BEAR mama_bear
+    class COMPLETE complete

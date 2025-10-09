@@ -1,0 +1,69 @@
+flowchart TD
+    %% APEX Agent Flow - Tactical Operations
+    
+    ORIGIN["ORIGIN"]
+    BOSS["BOSS"]
+    PATHFINDER["PATHFINDER"]
+    ORACLE["ORACLE"]
+    ARCHITECT["ARCHITECT"]
+    ENFORCER["ENFORCER"]
+    CRAFTSMAN["CRAFTSMAN"]
+    CRAFTBUDDY["CRAFTBUDDY"]
+    GATEKEEPER["GATEKEEPER"]
+    COMMANDER["COMMANDER"]
+    TACTICIAN["TACTICIAN"]
+    OPERATOR["OPERATOR"]
+    INTEL["INTEL"]
+    USER(["USER"])
+    COMPLETE(["COMPLETE"])
+
+    ORIGIN --> BOSS
+    USER --> ORACLE
+    BOSS --> PATHFINDER
+    PATHFINDER --> ARCHITECT
+    ORACLE --> ARCHITECT
+    ARCHITECT --> ENFORCER
+    ENFORCER --> CRAFTSMAN
+    CRAFTSMAN <--> CRAFTBUDDY
+    CRAFTSMAN --> GATEKEEPER
+    
+    %% APEX specific agents after GATEKEEPER  
+    GATEKEEPER --> PATHFINDER
+    GATEKEEPER --> COMMANDER
+    COMMANDER --> TACTICIAN
+    TACTICIAN --> OPERATOR
+    USER --> INTEL
+    INTEL --> COMMANDER
+    OPERATOR --> COMPLETE
+
+    %% Styling
+    classDef origin fill:#dc2626,stroke:#991b1b,stroke-width:2px
+    classDef boss fill:#dc2626,stroke:#991b1b,stroke-width:2px
+    classDef pathfinder fill:#dc2626,stroke:#991b1b,stroke-width:2px
+    classDef oracle fill:#dc2626,stroke:#991b1b,stroke-width:2px
+    classDef architect fill:#dc2626,stroke:#991b1b,stroke-width:2px
+    classDef enforcer fill:#dc2626,stroke:#991b1b,stroke-width:2px
+    classDef craftsman fill:#dc2626,stroke:#991b1b,stroke-width:3px
+    classDef craftbuddy fill:#dc2626,stroke:#991b1b,stroke-width:3px
+    classDef gatekeeper fill:#dc2626,stroke:#991b1b,stroke-width:2px
+    classDef commander fill:#1e40af,stroke:#1e3a8a,stroke-width:3px
+    classDef tactician fill:#059669,stroke:#047857,stroke-width:3px
+    classDef operator fill:#dc2626,stroke:#991b1b,stroke-width:3px
+    classDef intel fill:#7c2d12,stroke:#451a03,stroke-width:3px
+    classDef complete fill:#22c55e,stroke:#16a34a,stroke-width:2px
+
+    %% Apply Classes
+    class ORIGIN origin
+    class BOSS boss
+    class PATHFINDER pathfinder
+    class ORACLE oracle
+    class ARCHITECT architect
+    class ENFORCER enforcer
+    class CRAFTSMAN craftsman
+    class CRAFTBUDDY craftbuddy
+    class GATEKEEPER gatekeeper
+    class COMMANDER commander
+    class TACTICIAN tactician
+    class OPERATOR operator
+    class INTEL intel
+    class COMPLETE complete

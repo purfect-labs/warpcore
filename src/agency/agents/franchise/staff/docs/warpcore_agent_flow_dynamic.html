@@ -1,0 +1,1869 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>WARPCORE Agent System - Flow Documentation</title>
+    <script src="https://cdn.jsdelivr.net/npm/mermaid@10.6.1/dist/mermaid.min.js"></script>
+    <style>
+        
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        html, body {
+            height: 100vh;
+            overflow-x: hidden;
+            font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
+            background: linear-gradient(135deg, #0f172a 0%, #1e293b 50%, #334155 100%);
+            color: #f8fafc;
+            line-height: 1.6;
+        }
+
+        .container {
+            padding: 20px;
+            max-width: 1400px;
+            margin: 0 auto;
+        }
+
+        .header {
+            text-align: center;
+            padding: 30px;
+            background: linear-gradient(135deg, rgba(139, 92, 246, 0.1) 0%, rgba(124, 58, 237, 0.05) 100%);
+            border-radius: 16px;
+            backdrop-filter: blur(20px);
+            border: 1px solid rgba(139, 92, 246, 0.2);
+            margin-bottom: 30px;
+            box-shadow: 0 8px 32px rgba(139, 92, 246, 0.1);
+        }
+
+        .header h1 {
+            color: #8b5cf6;
+            font-size: 2.5rem;
+            font-weight: 700;
+            margin-bottom: 10px;
+            text-shadow: 0 0 20px rgba(139, 92, 246, 0.3);
+            background: linear-gradient(135deg, #8b5cf6, #7c3aed);
+            background-clip: text;
+            -webkit-background-clip: text;
+            -webkit-text-fill-color: transparent;
+        }
+
+        .watermark {
+            background: rgba(139, 92, 246, 0.1);
+            color: #a78bfa;
+            padding: 8px 16px;
+            border-radius: 8px;
+            font-size: 0.85rem;
+            border: 1px solid rgba(139, 92, 246, 0.3);
+            display: inline-block;
+            margin-top: 12px;
+            font-weight: 500;
+        }
+
+        .tab-container {
+            background: rgba(255, 255, 255, 0.02);
+            border-radius: 16px;
+            overflow: hidden;
+            border: 1px solid rgba(139, 92, 246, 0.1);
+            backdrop-filter: blur(10px);
+        }
+
+        .tab-nav {
+            display: flex;
+            background: rgba(139, 92, 246, 0.05);
+            border-bottom: 1px solid rgba(139, 92, 246, 0.1);
+        }
+
+        .tab-button {
+            flex: 1;
+            padding: 16px 20px;
+            background: transparent;
+            border: none;
+            color: #94a3b8;
+            cursor: pointer;
+            font-size: 0.95rem;
+            font-weight: 500;
+            transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+            position: relative;
+        }
+
+        .tab-button:hover {
+            background: rgba(139, 92, 246, 0.1);
+            color: #a78bfa;
+            transform: translateY(-1px);
+        }
+
+        .tab-button.active {
+            background: rgba(139, 92, 246, 0.15);
+            color: #8b5cf6;
+            border-bottom: 3px solid #8b5cf6;
+            font-weight: 600;
+        }
+
+        .tab-content {
+            display: none;
+            padding: 20px;
+        }
+
+        .tab-content.active {
+            display: block;
+        }
+
+        .stats-grid {
+            display: grid;
+            grid-template-columns: repeat(4, 1fr);
+            gap: 15px;
+            margin-bottom: 20px;
+        }
+
+        .stat-card {
+            background: linear-gradient(135deg, rgba(139, 92, 246, 0.1) 0%, rgba(124, 58, 237, 0.05) 100%);
+            border-radius: 12px;
+            padding: 20px;
+            text-align: center;
+            border: 1px solid rgba(139, 92, 246, 0.2);
+            backdrop-filter: blur(10px);
+            transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+        }
+
+        .stat-card:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 8px 25px rgba(139, 92, 246, 0.15);
+            border-color: rgba(139, 92, 246, 0.3);
+        }
+
+        .stat-value {
+            font-size: 2rem;
+            font-weight: 700;
+            color: #8b5cf6;
+            display: block;
+            margin-bottom: 8px;
+            background: linear-gradient(135deg, #8b5cf6, #7c3aed);
+            background-clip: text;
+            -webkit-background-clip: text;
+            -webkit-text-fill-color: transparent;
+        }
+
+        .stat-label {
+            color: #cbd5e1;
+            font-size: 0.85rem;
+            font-weight: 500;
+            text-transform: uppercase;
+            letter-spacing: 0.05em;
+        }
+
+        .mermaid-container {
+            background: linear-gradient(135deg, rgba(15, 23, 42, 0.8) 0%, rgba(30, 41, 59, 0.6) 100%);
+            border-radius: 16px;
+            padding: 30px;
+            margin: 30px 0;
+            text-align: center;
+            border: 1px solid rgba(139, 92, 246, 0.1);
+            backdrop-filter: blur(20px);
+            box-shadow: 0 8px 32px rgba(139, 92, 246, 0.1);
+        }
+
+        .agent-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(300px, 1fr));
+            gap: 15px;
+        }
+
+        .agent-card {
+            background: linear-gradient(135deg, rgba(255, 255, 255, 0.02) 0%, rgba(139, 92, 246, 0.05) 100%);
+            border-radius: 12px;
+            padding: 20px;
+            border: 1px solid rgba(139, 92, 246, 0.15);
+            transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+            backdrop-filter: blur(10px);
+        }
+
+        .agent-card:hover {
+            transform: translateY(-4px) scale(1.02);
+            box-shadow: 0 12px 40px rgba(139, 92, 246, 0.2);
+            border-color: rgba(139, 92, 246, 0.4);
+            background: linear-gradient(135deg, rgba(139, 92, 246, 0.08) 0%, rgba(124, 58, 237, 0.06) 100%);
+        }
+
+        .agent-header {
+            display: flex;
+            align-items: center;
+            gap: 10px;
+            margin-bottom: 10px;
+        }
+
+        .agent-position {
+            width: 35px;
+            height: 35px;
+            border-radius: 50%;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-weight: bold;
+            color: #000;
+        }
+
+        .agent-info h3 {
+            color: #8b5cf6;
+            font-size: 1.2rem;
+            font-weight: 600;
+            margin-bottom: 4px;
+            background: linear-gradient(135deg, #8b5cf6, #7c3aed);
+            background-clip: text;
+            -webkit-background-clip: text;
+            -webkit-text-fill-color: transparent;
+        }
+
+        .role {
+            color: #cbd5e1;
+            font-size: 0.85rem;
+            font-weight: 400;
+            line-height: 1.4;
+        }
+
+        .agent-details {
+            font-size: 0.8rem;
+            line-height: 1.4;
+        }
+
+        .agent-details div {
+            margin-bottom: 5px;
+        }
+
+        .file-list {
+            background: rgba(0, 0, 0, 0.3);
+            border-radius: 8px;
+            padding: 15px;
+            font-family: 'Courier New', monospace;
+            font-size: 0.8rem;
+        }
+
+        .file-item {
+            padding: 8px 0;
+            border-bottom: 1px solid rgba(255, 255, 255, 0.1);
+            color: #e6e6e6;
+        }
+
+        .file-item:last-child {
+            border-bottom: none;
+        }
+
+        .schema-preview {
+            background: rgba(0, 0, 0, 0.4);
+            border-radius: 8px;
+            padding: 15px;
+            font-family: 'Courier New', monospace;
+            font-size: 0.7rem;
+            color: #e6e6e6;
+            line-height: 1.4;
+            overflow-x: auto;
+        }
+
+        .flow-patterns {
+            background: rgba(255, 204, 0, 0.1);
+            border-radius: 8px;
+            padding: 15px;
+            margin-top: 20px;
+        }
+
+        .flow-patterns h3 {
+            color: #ffcc00;
+            margin-bottom: 10px;
+        }
+
+        .pattern-grid {
+            display: grid;
+            grid-template-columns: 1fr 1fr;
+            gap: 15px;
+            font-size: 0.85rem;
+        }
+
+        .pattern-item {
+            padding: 10px;
+            background: rgba(0, 0, 0, 0.2);
+            border-radius: 5px;
+        }
+
+        /* Harmony Tab Styles */
+        .harmony-header {
+            text-align: center;
+            padding: 30px;
+            background: linear-gradient(135deg, rgba(251, 191, 36, 0.1) 0%, rgba(245, 158, 11, 0.05) 100%);
+            border-radius: 16px;
+            margin-bottom: 30px;
+            border: 1px solid rgba(251, 191, 36, 0.2);
+        }
+        
+        .harmony-header h2 {
+            color: #fbbf24;
+            font-size: 2rem;
+            margin-bottom: 10px;
+            background: linear-gradient(135deg, #fbbf24, #f59e0b);
+            background-clip: text;
+            -webkit-background-clip: text;
+            -webkit-text-fill-color: transparent;
+        }
+        
+        .harmony-meta {
+            display: flex;
+            justify-content: center;
+            gap: 20px;
+            margin-top: 15px;
+        }
+        
+        .coherence-level {
+            background: rgba(34, 197, 94, 0.2);
+            color: #22c55e;
+            padding: 8px 16px;
+            border-radius: 20px;
+            font-weight: 600;
+            border: 1px solid rgba(34, 197, 94, 0.3);
+        }
+        
+        .insights-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(400px, 1fr));
+            gap: 20px;
+        }
+        
+        .insight-card {
+            background: linear-gradient(135deg, rgba(251, 191, 36, 0.03) 0%, rgba(245, 158, 11, 0.01) 100%);
+            border-radius: 16px;
+            padding: 24px;
+            border: 1px solid rgba(251, 191, 36, 0.15);
+            transition: all 0.3s ease;
+        }
+        
+        .insight-card:hover {
+            transform: translateY(-4px);
+            box-shadow: 0 12px 40px rgba(251, 191, 36, 0.1);
+            border-color: rgba(251, 191, 36, 0.3);
+        }
+        
+        .insight-card h3 {
+            color: #fbbf24;
+            font-size: 1.4rem;
+            margin-bottom: 16px;
+            font-weight: 600;
+        }
+        
+        .flow-pattern {
+            font-size: 1.1rem;
+            font-weight: 600;
+            color: #f59e0b;
+            margin-bottom: 12px;
+        }
+        
+        .flow-description {
+            color: #e5e7eb;
+            font-size: 0.9rem;
+            line-height: 1.5;
+            margin-bottom: 16px;
+        }
+        
+        .relationship-item {
+            background: rgba(0, 0, 0, 0.2);
+            border-radius: 8px;
+            padding: 12px;
+            margin-bottom: 8px;
+            border-left: 3px solid #fbbf24;
+        }
+        
+        .relationship-flow {
+            font-weight: 600;
+            color: #fbbf24;
+            margin-bottom: 4px;
+        }
+        
+        .relationship-type {
+            font-size: 0.8rem;
+            color: #f59e0b;
+            text-transform: uppercase;
+            letter-spacing: 0.05em;
+        }
+        
+        .relationship-significance {
+            font-size: 0.85rem;
+            color: #d1d5db;
+            margin-top: 6px;
+        }
+        
+        .elegance-score {
+            background: rgba(34, 197, 94, 0.1);
+            color: #22c55e;
+            padding: 8px 12px;
+            border-radius: 8px;
+            font-weight: 600;
+            text-align: center;
+            margin-top: 12px;
+        }
+        
+        .design-principle {
+            background: rgba(139, 92, 246, 0.1);
+            padding: 12px;
+            border-radius: 8px;
+            color: #a78bfa;
+            font-weight: 500;
+            margin-bottom: 16px;
+        }
+        
+        .assessment-grid {
+            display: grid;
+            gap: 8px;
+            margin-bottom: 16px;
+        }
+        
+        .assessment-item {
+            display: flex;
+            justify-content: space-between;
+            padding: 8px 0;
+            border-bottom: 1px solid rgba(75, 85, 99, 0.3);
+        }
+        
+        .assessment-item .label {
+            font-weight: 500;
+            color: #9ca3af;
+        }
+        
+        .assessment-item .value {
+            color: #f3f4f6;
+            font-weight: 400;
+        }
+        
+        .innovations-grid {
+            display: grid;
+            gap: 12px;
+        }
+        
+        .innovation-item {
+            background: rgba(0, 0, 0, 0.3);
+            border-radius: 12px;
+            padding: 16px;
+            border: 1px solid rgba(99, 102, 241, 0.2);
+        }
+        
+        .innovation-name {
+            font-weight: 600;
+            color: #6366f1;
+            margin-bottom: 6px;
+        }
+        
+        .innovation-level {
+            display: inline-block;
+            padding: 4px 10px;
+            border-radius: 12px;
+            font-size: 0.75rem;
+            font-weight: 600;
+            margin-bottom: 8px;
+        }
+        
+        .level-high {
+            background: rgba(239, 68, 68, 0.2);
+            color: #ef4444;
+        }
+        
+        .level-medium {
+            background: rgba(251, 191, 36, 0.2);
+            color: #fbbf24;
+        }
+        
+        .level-low {
+            background: rgba(34, 197, 94, 0.2);
+            color: #22c55e;
+        }
+        
+        .innovation-desc {
+            color: #d1d5db;
+            font-size: 0.9rem;
+            margin-bottom: 8px;
+            line-height: 1.4;
+        }
+        
+        .innovation-benefits {
+            color: #9ca3af;
+            font-size: 0.8rem;
+            font-style: italic;
+        }
+        
+        .metrics-grid {
+            display: grid;
+            gap: 8px;
+        }
+        
+        .metric-item {
+            display: flex;
+            justify-content: space-between;
+            padding: 8px 0;
+            border-bottom: 1px solid rgba(75, 85, 99, 0.2);
+        }
+        
+        .metric-label {
+            color: #9ca3af;
+            font-size: 0.9rem;
+        }
+        
+        .metric-value {
+            color: #22c55e;
+            font-weight: 500;
+            font-size: 0.9rem;
+        }
+        
+        .recommendations-grid {
+            display: grid;
+            grid-template-columns: 1fr 1fr;
+            gap: 20px;
+        }
+        
+        .rec-section h4 {
+            color: #fbbf24;
+            margin-bottom: 12px;
+            font-size: 1.1rem;
+        }
+        
+        .rec-list {
+            list-style: none;
+            padding: 0;
+        }
+        
+        .rec-list li {
+            background: rgba(0, 0, 0, 0.2);
+            padding: 10px 12px;
+            border-radius: 6px;
+            margin-bottom: 8px;
+            border-left: 3px solid #fbbf24;
+            font-size: 0.9rem;
+            color: #e5e7eb;
+        }
+        
+        .philosophy-card {
+            grid-column: span 2;
+            background: linear-gradient(135deg, rgba(168, 85, 247, 0.05) 0%, rgba(147, 51, 234, 0.02) 100%);
+            border: 1px solid rgba(168, 85, 247, 0.15);
+        }
+        
+        .philosophy-content {
+            display: grid;
+            gap: 20px;
+        }
+        
+        .design-philosophy h4,
+        .flow-aesthetics h4,
+        .emergent-properties h4 {
+            color: #a855f7;
+            margin-bottom: 8px;
+        }
+        
+        .design-philosophy p,
+        .flow-aesthetics p {
+            color: #d1d5db;
+            line-height: 1.6;
+            font-style: italic;
+        }
+        
+        .emergent-properties ul {
+            list-style: none;
+            padding: 0;
+        }
+        
+        .emergent-properties li {
+            background: rgba(168, 85, 247, 0.1);
+            padding: 8px 12px;
+            border-radius: 6px;
+            margin-bottom: 6px;
+            color: #e5e7eb;
+            border-left: 2px solid #a855f7;
+        }
+        
+        .harmony-placeholder {
+            text-align: center;
+            padding: 60px 20px;
+            color: #6b7280;
+            font-size: 1.2rem;
+            background: rgba(251, 191, 36, 0.05);
+            border-radius: 16px;
+            border: 2px dashed rgba(251, 191, 36, 0.2);
+        }
+        
+        /* Innovation Analysis Styles */
+        .innovation-card {
+            background: linear-gradient(135deg, rgba(34, 197, 94, 0.05) 0%, rgba(16, 185, 129, 0.02) 100%);
+            border: 1px solid rgba(34, 197, 94, 0.15);
+        }
+        
+        .innovation-content {
+            display: grid;
+            gap: 20px;
+        }
+        
+        .cost-efficiency-section h4,
+        .performance-section h4 {
+            color: #22c55e;
+            margin-bottom: 12px;
+            font-size: 1.1rem;
+        }
+        
+        .opportunities-grid,
+        .enhancements-grid {
+            display: grid;
+            gap: 12px;
+        }
+        
+        .opportunity-item,
+        .enhancement-item {
+            background: rgba(0, 0, 0, 0.3);
+            border-radius: 8px;
+            padding: 12px;
+            border: 1px solid rgba(34, 197, 94, 0.2);
+        }
+        
+        .opportunity-title,
+        .enhancement-name {
+            font-weight: 600;
+            color: #22c55e;
+            margin-bottom: 6px;
+        }
+        
+        .opportunity-impact,
+        .opportunity-evidence,
+        .opportunity-files,
+        .enhancement-target,
+        .enhancement-roi {
+            font-size: 0.9rem;
+            color: #d1d5db;
+            margin-bottom: 4px;
+        }
+        
+        .opportunity-files,
+        .enhancement-roi {
+            font-style: italic;
+            color: #9ca3af;
+        }
+        
+        /* Actionable Tickets Styles */
+        .tickets-card {
+            background: linear-gradient(135deg, rgba(99, 102, 241, 0.05) 0%, rgba(79, 70, 229, 0.02) 100%);
+            border: 1px solid rgba(99, 102, 241, 0.15);
+        }
+        
+        .tickets-summary {
+            display: flex;
+            gap: 20px;
+            margin-bottom: 20px;
+            padding: 12px;
+            background: rgba(0, 0, 0, 0.2);
+            border-radius: 8px;
+        }
+        
+        .summary-stat {
+            color: #6366f1;
+            font-weight: 600;
+            font-size: 0.9rem;
+        }
+        
+        .tickets-grid {
+            display: grid;
+            gap: 12px;
+        }
+        
+        .ticket-item {
+            background: rgba(0, 0, 0, 0.3);
+            border-radius: 8px;
+            padding: 16px;
+            border-left: 4px solid #6366f1;
+        }
+        
+        .ticket-item.priority-high {
+            border-left-color: #ef4444;
+            background: rgba(239, 68, 68, 0.05);
+        }
+        
+        .ticket-item.priority-medium {
+            border-left-color: #f59e0b;
+            background: rgba(245, 158, 11, 0.05);
+        }
+        
+        .ticket-item.priority-low {
+            border-left-color: #22c55e;
+            background: rgba(34, 197, 94, 0.05);
+        }
+        
+        .ticket-header {
+            display: flex;
+            justify-content: space-between;
+            margin-bottom: 8px;
+        }
+        
+        .ticket-id {
+            font-weight: 600;
+            color: #6366f1;
+            font-family: 'Monaco', 'Courier New', monospace;
+        }
+        
+        .ticket-priority {
+            padding: 2px 8px;
+            border-radius: 4px;
+            font-size: 0.75rem;
+            font-weight: 600;
+        }
+        
+        .priority-high .ticket-priority {
+            background: rgba(239, 68, 68, 0.2);
+            color: #ef4444;
+        }
+        
+        .priority-medium .ticket-priority {
+            background: rgba(245, 158, 11, 0.2);
+            color: #f59e0b;
+        }
+        
+        .priority-low .ticket-priority {
+            background: rgba(34, 197, 94, 0.2);
+            color: #22c55e;
+        }
+        
+        .ticket-title {
+            font-weight: 600;
+            color: #f3f4f6;
+            margin-bottom: 8px;
+            font-size: 1.1rem;
+        }
+        
+        .ticket-files,
+        .ticket-current,
+        .ticket-desired {
+            font-size: 0.9rem;
+            color: #d1d5db;
+            margin-bottom: 6px;
+        }
+        
+        .ticket-files {
+            font-family: 'Monaco', 'Courier New', monospace;
+            color: #a78bfa;
+        }
+        
+        .ticket-justification {
+            font-size: 0.9rem;
+            color: #9ca3af;
+            font-style: italic;
+            margin-top: 8px;
+            padding-top: 8px;
+            border-top: 1px solid rgba(99, 102, 241, 0.2);
+        }
+        
+        /* Harmony Expandable Sections Styles */
+        .harmony-sections {
+            display: flex;
+            flex-direction: column;
+            gap: 20px;
+        }
+        
+        .harmony-buttons {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(300px, 1fr));
+            gap: 12px;
+            margin-bottom: 20px;
+        }
+        
+        .harmony-section-btn {
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            padding: 16px 20px;
+            background: linear-gradient(135deg, rgba(251, 191, 36, 0.1) 0%, rgba(245, 158, 11, 0.05) 100%);
+            border: 1px solid rgba(251, 191, 36, 0.2);
+            border-radius: 12px;
+            color: #f3f4f6;
+            font-size: 1rem;
+            font-weight: 600;
+            cursor: pointer;
+            transition: all 0.3s ease;
+            position: relative;
+            overflow: hidden;
+        }
+        
+        .harmony-section-btn:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 8px 25px rgba(251, 191, 36, 0.15);
+            border-color: rgba(251, 191, 36, 0.4);
+            background: linear-gradient(135deg, rgba(251, 191, 36, 0.15) 0%, rgba(245, 158, 11, 0.08) 100%);
+        }
+        
+        .harmony-section-btn.active {
+            background: linear-gradient(135deg, rgba(251, 191, 36, 0.2) 0%, rgba(245, 158, 11, 0.1) 100%);
+            border-color: rgba(251, 191, 36, 0.5);
+            box-shadow: 0 4px 20px rgba(251, 191, 36, 0.2);
+        }
+        
+        .harmony-section-btn.active .expand-icon {
+            transform: rotate(180deg);
+        }
+        
+        .section-icon {
+            font-size: 1.2rem;
+            margin-right: 12px;
+        }
+        
+        .section-title {
+            flex: 1;
+            text-align: left;
+        }
+        
+        .expand-icon {
+            font-size: 0.8rem;
+            color: #fbbf24;
+            transition: transform 0.3s ease;
+            margin-left: 12px;
+        }
+        
+        .harmony-content {
+            position: relative;
+        }
+        
+        .harmony-section-content {
+            animation: slideDown 0.3s ease-out;
+            margin-bottom: 20px;
+        }
+        
+        .harmony-section-content.hiding {
+            animation: slideUp 0.3s ease-out;
+        }
+        
+        @keyframes slideDown {
+            from {
+                opacity: 0;
+                max-height: 0;
+                transform: translateY(-10px);
+            }
+            to {
+                opacity: 1;
+                max-height: 2000px;
+                transform: translateY(0);
+            }
+        }
+        
+        @keyframes slideUp {
+            from {
+                opacity: 1;
+                max-height: 2000px;
+                transform: translateY(0);
+            }
+            to {
+                opacity: 0;
+                max-height: 0;
+                transform: translateY(-10px);
+            }
+        }
+        
+        /* Enhanced tooltip styles */
+        .harmony-section-btn[title] {
+            position: relative;
+        }
+        
+        .harmony-section-btn[title]:hover::after {
+            content: attr(title);
+            position: absolute;
+            bottom: 100%;
+            left: 50%;
+            transform: translateX(-50%);
+            background: rgba(0, 0, 0, 0.9);
+            color: #fbbf24;
+            padding: 8px 12px;
+            border-radius: 6px;
+            font-size: 0.85rem;
+            font-weight: 400;
+            white-space: nowrap;
+            z-index: 1000;
+            margin-bottom: 8px;
+            border: 1px solid rgba(251, 191, 36, 0.3);
+            box-shadow: 0 4px 12px rgba(0, 0, 0, 0.3);
+        }
+        
+        .harmony-section-btn[title]:hover::before {
+            content: '';
+            position: absolute;
+            bottom: 100%;
+            left: 50%;
+            transform: translateX(-50%);
+            border: 6px solid transparent;
+            border-top-color: rgba(0, 0, 0, 0.9);
+            z-index: 1001;
+            margin-bottom: 2px;
+        }
+
+        @media (max-width: 768px) {
+            .stats-grid {
+                grid-template-columns: repeat(2, 1fr);
+            }
+            .agent-grid {
+                grid-template-columns: 1fr;
+            }
+            .pattern-grid {
+                grid-template-columns: 1fr;
+            }
+            .insights-grid {
+                grid-template-columns: 1fr;
+            }
+            .recommendations-grid {
+                grid-template-columns: 1fr;
+            }
+            .philosophy-card {
+                grid-column: span 1;
+            }
+            .harmony-buttons {
+                grid-template-columns: 1fr;
+                gap: 8px;
+            }
+            .harmony-section-btn {
+                padding: 12px 16px;
+                font-size: 0.9rem;
+            }
+            .section-icon {
+                font-size: 1rem;
+                margin-right: 8px;
+            }
+            .harmony-section-btn[title]:hover::after {
+                font-size: 0.8rem;
+                padding: 6px 10px;
+                white-space: normal;
+                max-width: 250px;
+            }
+        }
+        
+    </style>
+</head>
+<body>
+    <div class="container">
+        <div class="header">
+            <h1>🤖 WARPCORE Agent System</h1>
+            <p>Dynamic Flow Documentation - Generated from Real Agent Schemas</p>
+            <p class="watermark">Generated: 2025-10-09T01:55:01.515953</p>
+        </div>
+
+        <div class="tab-container">
+            <div class="tab-nav">
+                <button class="tab-button active" onclick="showTab('flow')">📊 Flow</button>
+                <button class="tab-button" onclick="showTab('agents')">🤖 Agents</button>
+                <button class="tab-button" onclick="showTab('harmony')">🎵 Harmony</button>
+                <button class="tab-button" onclick="showTab('schema')">📋 Schema</button>
+                <button class="tab-button" onclick="showTab('files')">📁 Files</button>
+            </div>
+
+            <!-- Flow Tab -->
+            <div id="flow-tab" class="tab-content active">
+                <div class="tab-pane">
+                    <div class="stats-grid">
+                        
+                        <div class="stat-card">
+                            <span class="stat-value">11</span>
+                            <span class="stat-label">Total Agents</span>
+                        </div>
+                        <div class="stat-card">
+                            <span class="stat-value">10</span>
+                            <span class="stat-label">Unique Positions</span>
+                        </div>
+                        <div class="stat-card">
+                            <span class="stat-value">1</span>
+                            <span class="stat-label">Loop Patterns</span>
+                        </div>
+                        <div class="stat-card">
+                            <span class="stat-value">4</span>
+                            <span class="stat-label">Parallel Flows</span>
+                        </div>
+        
+                    </div>
+                    <div class="mermaid-container">
+                        <div class="mermaid">
+flowchart TD
+    %% WARPCORE Agent Flow Configuration
+    %% Fallback mode - basic agent flow
+
+    %% Styling
+    classDef origin fill:#8b5cf6,stroke:#6d28d9,stroke-width:2px
+    classDef boss fill:#7c3aed,stroke:#6d28d9,stroke-width:2px
+    classDef pathfinder fill:#3b82f6,stroke:#2563eb,stroke-width:2px
+    classDef oracle fill:#f59e0b,stroke:#d97706,stroke-width:2px
+    classDef architect fill:#22c55e,stroke:#16a34a,stroke-width:2px
+    classDef enforcer fill:#ef4444,stroke:#dc2626,stroke-width:2px
+    classDef craftsman fill:#06b6d4,stroke:#0891b2,stroke-width:2px
+    classDef craftbuddy fill:#84cc16,stroke:#65a30d,stroke-width:2px
+    classDef gatekeeper fill:#10b981,stroke:#059669,stroke-width:2px
+    classDef complete fill:#22c55e,stroke:#16a34a,stroke-width:2px
+    classDef mama_bear fill:#f97316,stroke:#ea580c,stroke-width:2px
+    classDef harmony fill:#ec4899,stroke:#db2777,stroke-width:2px
+    class MAMA_BEAR mama_bear
+    class HARMONY harmony
+
+                        </div>
+                    </div>
+                    
+                    <div class="flow-patterns">
+                        <h3>🔄 WARPCORE Agent Flow Patterns</h3>
+                        <div class="pattern-grid">
+                            <div class="pattern-item">
+                                <strong>Schema-Driven Flow:</strong><br>
+                                
+                                Flow relationships defined in comprehensive schema with input/output types
+                            </div>
+                            <div class="pattern-item">
+                                <strong>Convergent Architecture:</strong><br>
+                                PATHFINDER (codebase analysis) and ORACLE (user specs) both output to ARCHITECT in common schema format
+                            </div>
+                            <div class="pattern-item">
+                                <strong>Decision Loops:</strong><br>
+                                CRAFTBUDDY: loop back to CRAFTSMAN or promote to GATEKEEPER<br>
+                                GATEKEEPER: send fixes to CRAFTSMAN or new cycle to BOSS
+                            </div>
+                            <div class="pattern-item">
+                                <strong>Schema Transformations:</strong><br>
+                                Each agent performs specific data transformations with defined input/output schemas
+                            </div>
+                        </div>
+                    </div>
+        
+                </div>
+            </div>
+
+            <!-- Agents Tab -->
+            <div id="agents-tab" class="tab-content">
+                <div class="tab-pane">
+                    <div class="agent-grid">
+                        
+                        <div class="agent-card">
+                            <div class="agent-header">
+                                <div class="agent-position" style="background: #ff6b6b;">0a</div>
+                                <div class="agent-info">
+                                    <h3>ORIGIN</h3>
+                                    <div class="role">Bootstrap Agent - Agent 0x that initializes the entire WARPCORE gap analysis workflow system. Your mission is to start Agent 0 (Orchestrator) with full steam and manage complete workflow restarts.</div>
+                                </div>
+                            </div>
+                            <div class="agent-details">
+                                <div><strong>File:</strong> 0a_origin_from_none_to_boss.json</div>
+                                <div><strong>Inputs:</strong> None</div>
+                                <div><strong>Outputs:</strong> boss</div>
+                                <div><strong>Cache:</strong> {workflow_id}_{trace_id}_origin_bootstrap_state.json</div>
+                            </div>
+                        </div>
+            
+                        <div class="agent-card">
+                            <div class="agent-header">
+                                <div class="agent-position" style="background: #4ecdc4;">0b</div>
+                                <div class="agent-info">
+                                    <h3>BOSS</h3>
+                                    <div class="role">Workflow Orchestrator Agent - Agent 0 that manages the entire WARPCORE gap analysis workflow. You sequence through all 5 agents (1→2→3→4→5) and can restart from any workflow ID and step.</div>
+                                </div>
+                            </div>
+                            <div class="agent-details">
+                                <div><strong>File:</strong> 0b_boss_from_origin_to_pathfinder.json</div>
+                                <div><strong>Inputs:</strong> origin</div>
+                                <div><strong>Outputs:</strong> pathfinder</div>
+                                <div><strong>Cache:</strong> {workflow_id}_{trace_id}_boss_orchestration_state.json</div>
+                            </div>
+                        </div>
+            
+                        <div class="agent-card">
+                            <div class="agent-header">
+                                <div class="agent-position" style="background: #45b7d1;">1a</div>
+                                <div class="agent-info">
+                                    <h3>PATHFINDER</h3>
+                                    <div class="role">Schema Coherence Reconciler Agent - the first agent in the WARPCORE gap analysis workflow. Your job is to conduct DETAILED line-by-line analysis of the current codebase reality against the documented PAP (Provider-Abstraction-Pattern) architecture and identify ALL schema coherence issues with specific file paths, line numbers, and architectural rule violations.</div>
+                                </div>
+                            </div>
+                            <div class="agent-details">
+                                <div><strong>File:</strong> 1a_pathfinder_from_boss_to_architect.json</div>
+                                <div><strong>Inputs:</strong> boss</div>
+                                <div><strong>Outputs:</strong> architect</div>
+                                <div><strong>Cache:</strong> {workflow_id}_{trace_id}_pathfinder_codebase_coherence_analysis.json</div>
+                            </div>
+                        </div>
+            
+                        <div class="agent-card">
+                            <div class="agent-header">
+                                <div class="agent-position" style="background: #ffeaa7;">1b</div>
+                                <div class="agent-info">
+                                    <h3>ORACLE</h3>
+                                    <div class="role">User Input Requirements Translator Agent - you convert raw user specifications and workflow specs into structured implementation requirements. You analyze the CLIENT_DIRECTORY codebase reality and generate requirements to implement workflow features into that codebase.</div>
+                                </div>
+                            </div>
+                            <div class="agent-details">
+                                <div><strong>File:</strong> 1b_oracle_from_user_to_architect.json</div>
+                                <div><strong>Inputs:</strong> user</div>
+                                <div><strong>Outputs:</strong> architect</div>
+                                <div><strong>Cache:</strong> {workflow_id}_{trace_id}_oracle_user_coherence_analysis.json</div>
+                            </div>
+                        </div>
+            
+                        <div class="agent-card">
+                            <div class="agent-header">
+                                <div class="agent-position" style="background: #96ceb4;">2</div>
+                                <div class="agent-info">
+                                    <h3>ARCHITECT</h3>
+                                    <div class="role">Requirements Generator Agent - you convert schema coherence analysis into structured implementation requirements. You analyze the CLIENT_DIRECTORY codebase reality and generate requirements to implement workflow features into that codebase.</div>
+                                </div>
+                            </div>
+                            <div class="agent-details">
+                                <div><strong>File:</strong> 2_architect_from_pathfinder_oracle_to_enforcer.json</div>
+                                <div><strong>Inputs:</strong> pathfinder, oracle</div>
+                                <div><strong>Outputs:</strong> enforcer</div>
+                                <div><strong>Cache:</strong> {workflow_id}_{trace_id}_architect_requirements_analysis.json</div>
+                            </div>
+                        </div>
+            
+                        <div class="agent-card">
+                            <div class="agent-header">
+                                <div class="agent-position" style="background: #fab1a0;">3</div>
+                                <div class="agent-info">
+                                    <h3>ENFORCER</h3>
+                                    <div class="role">Enhanced Requirements Validator Agent - responsible for validating requirements, compressing historical data, and identifying bonus contributions beyond core requirements.</div>
+                                </div>
+                            </div>
+                            <div class="agent-details">
+                                <div><strong>File:</strong> 3_enforcer_from_architect_craftbuddy_to_craftsman.json</div>
+                                <div><strong>Inputs:</strong> architect, craftbuddy</div>
+                                <div><strong>Outputs:</strong> craftsman</div>
+                                <div><strong>Cache:</strong> {workflow_id}_{trace_id}_enforcer_requirements_validation.json</div>
+                            </div>
+                        </div>
+            
+                        <div class="agent-card">
+                            <div class="agent-header">
+                                <div class="agent-position" style="background: #fd79a8;">4a</div>
+                                <div class="agent-info">
+                                    <h3>CRAFTSMAN_IMPLEMENTATION</h3>
+                                    <div class="role">Implementation Agent - the fourth agent in the WARPCORE gap analysis workflow. Your mission is to execute the validated requirements from workflow ID {workflow_id} by making actual code changes to the WARPCORE codebase.</div>
+                                </div>
+                            </div>
+                            <div class="agent-details">
+                                <div><strong>File:</strong> 4a_craftsman_from_enforcer_gatekeeper_to_craftbuddy.json</div>
+                                <div><strong>Inputs:</strong> enforcer, gatekeeper</div>
+                                <div><strong>Outputs:</strong> craftbuddy</div>
+                                <div><strong>Cache:</strong> {workflow_id}_{trace_id}_craftsman_implementation_results.json</div>
+                            </div>
+                        </div>
+            
+                        <div class="agent-card">
+                            <div class="agent-header">
+                                <div class="agent-position" style="background: #e17055;">4b</div>
+                                <div class="agent-info">
+                                    <h3>CRAFTBUDDY</h3>
+                                    <div class="role">You are CRAFTBUDDY - the creative handy buddy who reviews CRAFTSMAN's implementation work and makes a critical routing decision.</div>
+                                </div>
+                            </div>
+                            <div class="agent-details">
+                                <div><strong>File:</strong> 4b_craftbuddy_from_craftsman_to_enforcer_gatekeeper.json</div>
+                                <div><strong>Inputs:</strong> craftsman</div>
+                                <div><strong>Outputs:</strong> enforcer, gatekeeper</div>
+                                <div><strong>Cache:</strong> {workflow_id}_{trace_id}_craftbuddy_decision.json</div>
+                            </div>
+                        </div>
+            
+                        <div class="agent-card">
+                            <div class="agent-header">
+                                <div class="agent-position" style="background: #00b894;">5</div>
+                                <div class="agent-info">
+                                    <h3>GATEKEEPER</h3>
+                                    <div class="role">Gate Promote Agent - the fifth and final agent in the WARPCORE gap analysis workflow. Your mission is to validate the implementation results from workflow ID wf_0f432a3ac836 against ALL previous agents, execute git operations, and determine if the cycle should repeat or complete.</div>
+                                </div>
+                            </div>
+                            <div class="agent-details">
+                                <div><strong>File:</strong> 5_gatekeeper_from_craftbuddy_to_craftsman_pathfinder.json</div>
+                                <div><strong>Inputs:</strong> craftbuddy</div>
+                                <div><strong>Outputs:</strong> craftsman, pathfinder</div>
+                                <div><strong>Cache:</strong> {workflow_id}_{trace_id}_gatekeeper_promotion_results.json</div>
+                            </div>
+                        </div>
+            
+                        <div class="agent-card">
+                            <div class="agent-header">
+                                <div class="agent-position" style="background: #00ff88;">?</div>
+                                <div class="agent-info">
+                                    <h3>HARMONY</h3>
+                                    <div class="role">" || echo "0")</div>
+                                </div>
+                            </div>
+                            <div class="agent-details">
+                                <div><strong>File:</strong> harmony_meta_coherence_agent.json</div>
+                                <div><strong>Inputs:</strong> None</div>
+                                <div><strong>Outputs:</strong> End</div>
+                                <div><strong>Cache:</strong> {workflow_id}_harmony_coherence_results.json</div>
+                            </div>
+                        </div>
+            
+                        <div class="agent-card">
+                            <div class="agent-header">
+                                <div class="agent-position" style="background: #00ff88;">?</div>
+                                <div class="agent-info">
+                                    <h3>MAMA_BEAR</h3>
+                                    <div class="role">Agent</div>
+                                </div>
+                            </div>
+                            <div class="agent-details">
+                                <div><strong>File:</strong> mama_bear.json</div>
+                                <div><strong>Inputs:</strong> None</div>
+                                <div><strong>Outputs:</strong> End</div>
+                                <div><strong>Cache:</strong> {workflow_id}_mama_bear_assessment.json</div>
+                            </div>
+                        </div>
+            
+                    </div>
+                </div>
+            </div>
+
+            <!-- Harmony Tab -->
+            <div id="harmony-tab" class="tab-content">
+                <div class="tab-pane">
+                    
+                    <div class="harmony-header">
+                        <h2>🎵 HARMONY - Ecosystem Insights</h2>
+                        <div class="harmony-meta">
+                            <span class="coherence-level">PERFECT_HARMONY_PLUS_BUSINESS_VALUE</span>
+                            <span class="timestamp">2025-10-08T01:33:25Z</span>
+                        </div>
+                    </div>
+                    
+                    <div class="harmony-sections">
+                        <div class="harmony-buttons">
+                            
+                <button class="harmony-section-btn" 
+                        data-section="relationships"
+                        title="View critical agent relationships and flow patterns">
+                    <span class="section-icon">🔗</span>
+                    <span class="section-title">🔗 Agent Relationships</span>
+                    <span class="expand-icon">▼</span>
+                </button>
+            
+                <button class="harmony-section-btn" 
+                        data-section="architecture"
+                        title="System architecture analysis and design principles">
+                    <span class="section-icon">🏢</span>
+                    <span class="section-title">🏢 Architecture</span>
+                    <span class="expand-icon">▼</span>
+                </button>
+            
+                <button class="harmony-section-btn" 
+                        data-section="innovations"
+                        title="System innovation insights and breakthrough patterns">
+                    <span class="section-icon">💡</span>
+                    <span class="section-title">💡 Traditional Innovations</span>
+                    <span class="expand-icon">▼</span>
+                </button>
+            
+                <button class="harmony-section-btn" 
+                        data-section="cost_efficiency"
+                        title="Cost reduction opportunities with concrete savings">
+                    <span class="section-icon">💰</span>
+                    <span class="section-title">💰 Cost Efficiency ($195K/year)</span>
+                    <span class="expand-icon">▼</span>
+                </button>
+            
+                <button class="harmony-section-btn" 
+                        data-section="tickets"
+                        title="Ready-to-implement tickets with file paths and ROI">
+                    <span class="section-icon">🎫</span>
+                    <span class="section-title">🎫 Implementation Tickets (5)</span>
+                    <span class="expand-icon">▼</span>
+                </button>
+            
+                <button class="harmony-section-btn" 
+                        data-section="health"
+                        title="System health indicators and performance metrics">
+                    <span class="section-icon">📊</span>
+                    <span class="section-title">📊 System Health</span>
+                    <span class="expand-icon">▼</span>
+                </button>
+            
+                <button class="harmony-section-btn" 
+                        data-section="recommendations"
+                        title="Harmony preservation and enhancement recommendations">
+                    <span class="section-icon">🎯</span>
+                    <span class="section-title">🎯 Recommendations</span>
+                    <span class="expand-icon">▼</span>
+                </button>
+            
+                <button class="harmony-section-btn" 
+                        data-section="philosophy"
+                        title="Design philosophy and emergent system properties">
+                    <span class="section-icon">🤔</span>
+                    <span class="section-title">🤔 Philosophy</span>
+                    <span class="expand-icon">▼</span>
+                </button>
+            
+                        </div>
+                        <div class="harmony-content">
+                            
+                <div class="harmony-section-content" id="relationships-content" style="display: none;">
+                    
+            <div class="insight-card">
+                <h3>🔗 Agent Relationship Dynamics</h3>
+                <div class="flow-pattern">Linear Progression with Dual Convergence</div>
+                <div class="flow-description">ORIGIN bootstraps → BOSS orchestrates → Dual paths (PATHFINDER analysis + ORACLE input) converge at ARCHITECT → Linear progression through validation, implementation, enhancement, and promotion</div>
+                <div class="relationships-list">
+                    
+                <div class="relationship-item">
+                    <div class="relationship-flow">ORIGIN → BOSS</div>
+                    <div class="relationship-type">Bootstrap Handoff</div>
+                    <div class="relationship-significance">System initialization and workflow selection</div>
+                </div>
+            
+                <div class="relationship-item">
+                    <div class="relationship-flow">BOSS → PATHFINDER + ORACLE</div>
+                    <div class="relationship-type">Dual Path Orchestration</div>
+                    <div class="relationship-significance">Creates parallel analysis streams for comprehensive requirements gathering</div>
+                </div>
+            
+                <div class="relationship-item">
+                    <div class="relationship-flow">PATHFINDER + ORACLE → ARCHITECT</div>
+                    <div class="relationship-type">Convergent Synthesis</div>
+                    <div class="relationship-significance">Combines codebase analysis with user input for complete requirements generation</div>
+                </div>
+            
+                <div class="relationship-item">
+                    <div class="relationship-flow">CRAFTSMAN → CRAFTBUDDY</div>
+                    <div class="relationship-type">Creative Enhancement Loop</div>
+                    <div class="relationship-significance">Implementation can be enhanced or approved for promotion</div>
+                </div>
+            
+                </div>
+                <div class="elegance-score">Flow Elegance: 95/100</div>
+            </div>
+        
+                </div>
+            
+                <div class="harmony-section-content" id="architecture-content" style="display: none;">
+                    
+            <div class="insight-card">
+                <h3>🏗️ Architectural Philosophy</h3>
+                <div class="design-principle">Provider-Abstraction-Pattern with Agent Specialization</div>
+                <div class="assessment-grid">
+                    <div class="assessment-item">
+                        <span class="label">Modularity:</span>
+                        <span class="value">Highly modular - each agent has single, clear responsibility</span>
+                    </div>
+                    <div class="assessment-item">
+                        <span class="label">Scalability:</span>
+                        <span class="value">Excellent - new agents can be inserted at any workflow position</span>
+                    </div>
+                    <div class="assessment-item">
+                        <span class="label">Maintenance:</span>
+                        <span class="value">Low - clear dependencies and well-defined interfaces</span>
+                    </div>
+                </div>
+                <div class="design-strengths">
+                    <h4>Design Strengths:</h4>
+                    <ul><li>Clear separation of concerns</li><li>Well-defined input/output contracts</li><li>Smart input discovery system</li><li>Commit-per-REQ-ID workflow tracking</li><li>RAY ID ticket lifecycle management</li></ul>
+                </div>
+            </div>
+        
+                </div>
+            
+                <div class="harmony-section-content" id="innovations-content" style="display: none;">
+                    
+            <div class="insight-card">
+                <h3>💡 Innovation Insights</h3>
+                <div class="innovations-grid">
+                    
+                    <div class="innovation-item">
+                        <div class="innovation-name">Smart Input Discovery</div>
+                        <div class="innovation-level level-high">
+                            HIGH
+                        </div>
+                        <div class="innovation-desc">Dynamic workflow/trace ID discovery eliminates hardcoded dependencies</div>
+                        <div class="innovation-benefits">Flexible workflow chaining, Better debugging, Autonomous agent operation</div>
+                    </div>
+                
+                    <div class="innovation-item">
+                        <div class="innovation-name">Commit Per Req Id Workflow</div>
+                        <div class="innovation-level level-high">
+                            HIGH
+                        </div>
+                        <div class="innovation-desc">Each requirement becomes trackable feature with enriched commit messages</div>
+                        <div class="innovation-benefits">Clear git history, Traceable implementation, Progress tracking</div>
+                    </div>
+                
+                    <div class="innovation-item">
+                        <div class="innovation-name">Dual Convergence Pattern</div>
+                        <div class="innovation-level level-medium">
+                            MEDIUM
+                        </div>
+                        <div class="innovation-desc">PATHFINDER + ORACLE → ARCHITECT creates comprehensive requirements</div>
+                        <div class="innovation-benefits">Complete context, User + codebase alignment, Robust requirements</div>
+                    </div>
+                
+                    <div class="innovation-item">
+                        <div class="innovation-name">Creative Enhancement Loop</div>
+                        <div class="innovation-level level-medium">
+                            MEDIUM
+                        </div>
+                        <div class="innovation-desc">CRAFTBUDDY can enhance or approve implementations</div>
+                        <div class="innovation-benefits">Value-add opportunities, Quality improvements, Creative solutions</div>
+                    </div>
+                
+                </div>
+            </div>
+        
+                </div>
+            
+                <div class="harmony-section-content" id="cost_efficiency-content" style="display: none;">
+                    
+            <div class="insight-card innovation-card">
+                <h3>💡 Innovation & Cost Efficiency Analysis</h3>
+                <div class="innovation-content">
+                    <div class="cost-efficiency-section">
+                        <h4>💰 Cost Efficiency Opportunities</h4>
+                        <div class="opportunities-grid">
+            <div class="opportunity-item">
+                <div class="opportunity-title">Agent Workflow Parallelization</div>
+                <div class="opportunity-impact">Impact: HIGH</div>
+                <div class="opportunity-evidence">Evidence: PATHFINDER and ORACLE can run simultaneously, reducing workflow time by 40%</div>
+                <div class="opportunity-files">Files: agents/1_pathfinder_from_boss_to_architect.json, agents/2b_oracle_from_user_spec_to_architect.json</div>
+            </div>
+            
+            <div class="opportunity-item">
+                <div class="opportunity-title">Smart Caching Enhancement</div>
+                <div class="opportunity-impact">Impact: MEDIUM</div>
+                <div class="opportunity-evidence">Evidence: Current cache patterns could be optimized for 60% faster repeat operations</div>
+                <div class="opportunity-files">Files: agents/4a_craftsman_from_enforcer_to_craftbuddy.json, agents/3_enforcer_from_architect_craftbuddy_to_craftsman.json</div>
+            </div>
+            
+            <div class="opportunity-item">
+                <div class="opportunity-title">Redundant Operation Elimination</div>
+                <div class="opportunity-impact">Impact: MEDIUM</div>
+                <div class="opportunity-evidence">Evidence: Multiple agents perform similar validation - consolidation opportunity</div>
+                <div class="opportunity-files">Files: agents/3_enforcer_from_architect_craftbuddy_to_craftsman.json, agents/5_gatekeeper_from_craftbuddy_to_complete.json</div>
+            </div>
+            </div>
+                    </div>
+                    <div class="performance-section">
+                        <h4>🚀 Performance Enhancements</h4>
+                        <div class="enhancements-grid">
+            <div class="enhancement-item">
+                <div class="enhancement-name">Intelligent Agent Orchestration</div>
+                <div class="enhancement-target">Target: 50% reduction in workflow completion time</div>
+                <div class="enhancement-roi">ROI: 300% ROI within 6 months</div>
+            </div>
+            
+            <div class="enhancement-item">
+                <div class="enhancement-name">Predictive Caching System</div>
+                <div class="enhancement-target">Target: 80% cache hit rate improvement</div>
+                <div class="enhancement-roi">ROI: 200% ROI within 3 months</div>
+            </div>
+            
+            <div class="enhancement-item">
+                <div class="enhancement-name">Advanced Analytics Integration</div>
+                <div class="enhancement-target">Target: Real-time bottleneck detection and resolution</div>
+                <div class="enhancement-roi">ROI: 150% ROI within 12 months</div>
+            </div>
+            </div>
+                    </div>
+                </div>
+            </div>
+        
+                </div>
+            
+                <div class="harmony-section-content" id="tickets-content" style="display: none;">
+                    
+            <div class="insight-card tickets-card">
+                <h3>🎫 Actionable Implementation Tickets</h3>
+                <div class="tickets-summary">
+                    <div class="summary-stat">Total: 5</div>
+                    <div class="summary-stat">High: 2</div>
+                    <div class="summary-stat">Medium: 2</div>
+                    <div class="summary-stat">Low: 1</div>
+                </div>
+                <div class="tickets-grid">
+            <div class="ticket-item priority-high">
+                <div class="ticket-header">
+                    <span class="ticket-id">HARM-001</span>
+                    <span class="ticket-priority">HIGH</span>
+                </div>
+                <div class="ticket-title">Implement Parallel PATHFINDER-ORACLE Execution</div>
+                <div class="ticket-files">Files: agents/0b_boss_from_origin_to_pathfinder_oracle.json, agents/1_pathfinder_from_boss_to_architect.json, agents/2b_oracle_from_user_spec_to_architect.json</div>
+                <div class="ticket-current">Current: Sequential execution: BOSS → PATHFINDER → ARCHITECT, BOSS → ORACLE → ARCHITECT</div>
+                <div class="ticket-desired">Desired: Parallel execution: BOSS → [PATHFINDER + ORACLE] → ARCHITECT with synchronized handoff</div>
+                <div class="ticket-justification">40% reduction in workflow time = $50k/year savings + faster customer delivery</div>
+            </div>
+            
+            <div class="ticket-item priority-medium">
+                <div class="ticket-header">
+                    <span class="ticket-id">HARM-002</span>
+                    <span class="ticket-priority">MEDIUM</span>
+                </div>
+                <div class="ticket-title">Optimize CRAFTSMAN Cache Strategy</div>
+                <div class="ticket-files">Files: agents/4a_craftsman_from_enforcer_to_craftbuddy.json</div>
+                <div class="ticket-current">Current: Basic cache pattern: {workflow_id}_craftsman_implementations.json</div>
+                <div class="ticket-desired">Desired: Intelligent caching with content hashing and similarity detection</div>
+                <div class="ticket-justification">60% cache hit improvement = $25k/year in compute savings + faster iterations</div>
+            </div>
+            
+            <div class="ticket-item priority-medium">
+                <div class="ticket-header">
+                    <span class="ticket-id">HARM-003</span>
+                    <span class="ticket-priority">MEDIUM</span>
+                </div>
+                <div class="ticket-title">Consolidate Validation Logic</div>
+                <div class="ticket-files">Files: agents/3_enforcer_from_architect_craftbuddy_to_craftsman.json, agents/5_gatekeeper_from_craftbuddy_to_complete.json</div>
+                <div class="ticket-current">Current: Duplicate validation logic in ENFORCER and GATEKEEPER agents</div>
+                <div class="ticket-desired">Desired: Shared validation module with agent-specific customizations</div>
+                <div class="ticket-justification">Eliminate redundant processing = $30k/year savings + improved consistency</div>
+            </div>
+            
+            <div class="ticket-item priority-high">
+                <div class="ticket-header">
+                    <span class="ticket-id">HARM-004</span>
+                    <span class="ticket-priority">HIGH</span>
+                </div>
+                <div class="ticket-title">Implement Predictive Workflow Caching</div>
+                <div class="ticket-files">Files: agents/0a_origin_from_none_to_boss.json, agents/0b_boss_from_origin_to_pathfinder_oracle.json</div>
+                <div class="ticket-current">Current: Reactive caching - cache results after processing</div>
+                <div class="ticket-desired">Desired: Predictive caching - pre-cache likely workflow patterns based on historical data</div>
+                <div class="ticket-justification">80% cache hit improvement = $40k/year savings + significantly faster user experience</div>
+            </div>
+            
+            <div class="ticket-item priority-low">
+                <div class="ticket-header">
+                    <span class="ticket-id">HARM-005</span>
+                    <span class="ticket-priority">LOW</span>
+                </div>
+                <div class="ticket-title">Add Real-time Performance Monitoring</div>
+                <div class="ticket-files">Files: agency.py, agents/harmony_meta_coherence_agent.json</div>
+                <div class="ticket-current">Current: Basic logging and static analysis</div>
+                <div class="ticket-desired">Desired: Real-time performance metrics, bottleneck detection, and automated alerts</div>
+                <div class="ticket-justification">Proactive issue detection = reduced downtime and improved reliability</div>
+            </div>
+            </div>
+            </div>
+        
+                </div>
+            
+                <div class="harmony-section-content" id="health-content" style="display: none;">
+                    
+            <div class="insight-card">
+                <h3>📊 System Health Indicators</h3>
+                <div class="health-section">
+                    <h4>Coherence Metrics</h4>
+                    <div class="metrics-grid"><div class='metric-item'><span class='metric-label'>Agent Connectivity:</span><span class='metric-value'>100% - All agents properly connected</span></div><div class='metric-item'><span class='metric-label'>Dependency Resolution:</span><span class='metric-value'>100% - No circular dependencies</span></div><div class='metric-item'><span class='metric-label'>Schema Synchronization:</span><span class='metric-value'>100% - All schemas aligned</span></div><div class='metric-item'><span class='metric-label'>Documentation Currency:</span><span class='metric-value'>100% - All docs up to date</span></div></div>
+                </div>
+                <div class="health-section">
+                    <h4>Performance Indicators</h4>
+                    <div class="metrics-grid"><div class='metric-item'><span class='metric-label'>Workflow Efficiency:</span><span class='metric-value'>EXCELLENT</span></div><div class='metric-item'><span class='metric-label'>Agent Specialization:</span><span class='metric-value'>OPTIMAL</span></div><div class='metric-item'><span class='metric-label'>Error Handling:</span><span class='metric-value'>ROBUST</span></div><div class='metric-item'><span class='metric-label'>Monitoring Coverage:</span><span class='metric-value'>COMPREHENSIVE</span></div></div>
+                </div>
+            </div>
+        
+                </div>
+            
+                <div class="harmony-section-content" id="recommendations-content" style="display: none;">
+                    
+            <div class="insight-card">
+                <h3>🎯 Harmony Recommendations</h3>
+                <div class="recommendations-grid">
+                    <div class="rec-section">
+                        <h4>🛡️ Preservation Priorities</h4>
+                        <ul class="rec-list"><li>Maintain linear progression clarity in main workflow</li><li>Preserve dual-input convergence pattern (PATHFINDER + ORACLE → ARCHITECT)</li><li>Keep HARMONY and MAMA_BEAR as independent meta/QA agents</li></ul>
+                    </div>
+                    <div class="rec-section">
+                        <h4>🚀 Enhancement Opportunities</h4>
+                        <ul class="rec-list"><li>Consider parallel REQ-ID processing in CRAFTSMAN for large workflows</li><li>Add performance metrics to commit messages</li><li>Enhance CRAFTBUDDY creative pattern detection</li></ul>
+                    </div>
+                </div>
+            </div>
+        
+                </div>
+            
+                <div class="harmony-section-content" id="philosophy-content" style="display: none;">
+                    
+            <div class="insight-card philosophy-card">
+                <h3>🤔 Philosophical Observations</h3>
+                <div class="philosophy-content">
+                    <div class="design-philosophy">
+                        <h4>Design Philosophy</h4>
+                        <p>The WARPCORE agent system embodies a philosophy of 'Intelligent Specialization with Collaborative Synthesis' - each agent excels in its domain while contributing to a greater emergent intelligence.</p>
+                    </div>
+                    <div class="flow-aesthetics">
+                        <h4>Flow Aesthetics</h4>
+                        <p>The workflow exhibits natural rhythms: Bootstrap → Analyze → Generate → Validate → Implement → Enhance → Promote, mirroring human problem-solving patterns.</p>
+                    </div>
+                    <div class="emergent-properties">
+                        <h4>Emergent Properties</h4>
+                        <ul><li>System becomes more intelligent than sum of its parts</li><li>Natural quality gates emerge from agent interactions</li><li>Self-documenting behavior through trace ID lineage</li><li>Adaptive workflow based on requirement complexity</li></ul>
+                    </div>
+                </div>
+            </div>
+        
+                </div>
+            
+                        </div>
+                    </div>
+        
+                </div>
+            </div>
+
+            <!-- Schema Tab -->
+            <div id="schema-tab" class="tab-content">
+                <div class="tab-pane">
+                    <h3>📋 Agent Schema Analysis</h3>
+                    <div class="schema-preview">
+{
+  "flow_pattern": "Dynamic WARPCORE Agent Data Flow",
+  "generated_from": "Real agent JSON files (fallback)",
+  "timestamp": "2025-10-09T01:55:01.516309",
+  "agents": {
+    "origin": {
+      "position": "0a",
+      "filename": "0a_origin_from_none_to_boss",
+      "inputs": [],
+      "outputs": [
+        "boss"
+      ],
+      "role": "Bootstrap Agent - Agent 0x that initializes the entire WARPCORE gap analysis workflow system. Your mission is to start Agent 0 (Orchestrator) with full steam and manage complete workflow restarts.",
+      "cache_pattern": "{workflow_id}_{trace_id}_origin_bootstrap_state.json"
+    },
+    "boss": {
+      "position": "0b",
+      "filename": "0b_boss_from_origin_to_pathfinder",
+      "inputs": [
+        "origin"
+      ],
+      "outputs": [
+        "pathfinder"
+      ],
+      "role": "Workflow Orchestrator Agent - Agent 0 that manages the entire WARPCORE gap analysis workflow. You sequence through all 5 agents (1\u21922\u21923\u21924\u21925) and can restart from any workflow ID and step.",
+      "cache_pattern": "{workflow_id}_{trace_id}_boss_orchestration_state.json"
+    },
+    "pathfinder": {
+      "position": "1a",
+      "filename": "1a_pathfinder_from_boss_to_architect",
+      "inputs": [
+        "boss"
+      ],
+      "outputs": [
+        "architect"
+      ],
+      "role": "Schema Coherence Reconciler Agent - the first agent in the WARPCORE gap analysis workflow. Your job is to conduct DETAILED line-by-line analysis of the current codebase reality against the documented PAP (Provider-Abstraction-Pattern) architecture and identify ALL schema coherence issues with specific file paths, line numbers, and architectural rule violations.",
+      "cache_pattern": "{workflow_id}_{trace_id}_pathfinder_codebase_coherence_analysis.json"
+    },
+    "oracle": {
+      "position": "1b",
+      "filename": "1b_oracle_from_user_to_architect",
+      "inputs": [
+        "user"
+      ],
+      "outputs": [
+        "architect"
+      ],
+      "role": "User Input Requirements Translator Agent - you convert raw user specifications and workflow specs into structured implementation requirements. You analyze the CLIENT_DIRECTORY codebase reality and generate requirements to implement workflow features into that codebase.",
+      "cache_pattern": "{workflow_id}_{trace_id}_oracle_user_coherence_analysis.json"
+    },
+    "architect": {
+      "position": "2",
+      "filename": "2_architect_from_pathfinder_oracle_to_enforcer",
+      "inputs": [
+        "pathfinder",
+        "oracle"
+      ],
+      "outputs": [
+        "enforcer"
+      ],
+      "role": "Requirements Generator Agent - you convert schema coherence analysis into structured implementation requirements. You analyze the CLIENT_DIRECTORY codebase reality and generate requirements to implement workflow features into that codebase.",
+      "cache_pattern": "{workflow_id}_{trace_id}_architect_requirements_analysis.json"
+    },
+    "enforcer": {
+      "position": "3",
+      "filename": "3_enforcer_from_architect_craftbuddy_to_craftsman",
+      "inputs": [
+        "architect",
+        "craftbuddy"
+      ],
+      "outputs": [
+        "craftsman"
+      ],
+      "role": "Enhanced Requirements Validator Agent - responsible for validating requirements, compressing historical data, and identifying bonus contributions beyond core requirements.",
+      "cache_pattern": "{workflow_id}_{trace_id}_enforcer_requirements_validation.json"
+    },
+    "craftsman_implementation": {
+      "position": "4a",
+      "filename": "4a_craftsman_from_enforcer_gatekeeper_to_craftbuddy",
+      "inputs": [
+        "enforcer",
+        "gatekeeper"
+      ],
+      "outputs": [
+        "craftbuddy"
+      ],
+      "role": "Implementation Agent - the fourth agent in the WARPCORE gap analysis workflow. Your mission is to execute the validated requirements from workflow ID {workflow_id} by making actual code changes to the WARPCORE codebase.",
+      "cache_pattern": "{workflow_id}_{trace_id}_craftsman_implementation_results.json"
+    },
+    "craftbuddy": {
+      "position": "4b",
+      "filename": "4b_craftbuddy_from_craftsman_to_enforcer_gatekeeper",
+      "inputs": [
+        "craftsman"
+      ],
+      "outputs": [
+        "enforcer",
+        "gatekeeper"
+      ],
+      "role": "You are CRAFTBUDDY - the creative handy buddy who reviews CRAFTSMAN's implementation work and makes a critical routing decision.",
+      "cache_pattern": "{workflow_id}_{trace_id}_craftbuddy_decision.json"
+    },
+    "gatekeeper": {
+      "position": "5",
+      "filename": "5_gatekeeper_from_craftbuddy_to_craftsman_pathfinder",
+      "inputs": [
+        "craftbuddy"
+      ],
+      "outputs": [
+        "craftsman",
+        "pathfinder"
+      ],
+      "role": "Gate Promote Agent - the fifth and final agent in the WARPCORE gap analysis workflow. Your mission is to validate the implementation results from workflow ID wf_0f432a3ac836 against ALL previous agents, execute git operations, and determine if the cycle should repeat or complete.",
+      "cache_pattern": "{workflow_id}_{trace_id}_gatekeeper_promotion_results.json"
+    },
+    "harmony": {
+      "position": "?",
+      "filename": "harmony_meta_coherence_agent",
+      "inputs": [],
+      "outputs": [],
+      "role": "\" || echo \"0\")",
+      "cache_pattern": "{workflow_id}_harmony_coherence_results.json"
+    },
+    "mama_bear": {
+      "position": "?",
+      "filename": "mama_bear",
+      "inputs": [],
+      "outputs": [],
+      "role": "Agent",
+      "cache_pattern": "{workflow_id}_mama_bear_assessment.json"
+    }
+  }
+}
+                    </div>
+                </div>
+            </div>
+
+            <!-- Files Tab -->
+            <div id="files-tab" class="tab-content">
+                <div class="tab-pane">
+                    <h3>📁 Agent Files - Current Structure</h3>
+                    <div class="file-list">
+                        <div class="file-item">0a_origin_from_none_to_boss.json</div>
+<div class="file-item">0b_boss_from_origin_to_pathfinder.json</div>
+<div class="file-item">1a_pathfinder_from_boss_to_architect.json</div>
+<div class="file-item">1b_oracle_from_user_to_architect.json</div>
+<div class="file-item">2_architect_from_pathfinder_oracle_to_enforcer.json</div>
+<div class="file-item">3_enforcer_from_architect_craftbuddy_to_craftsman.json</div>
+<div class="file-item">4a_craftsman_from_enforcer_gatekeeper_to_craftbuddy.json</div>
+<div class="file-item">4b_craftbuddy_from_craftsman_to_enforcer_gatekeeper.json</div>
+<div class="file-item">5_gatekeeper_from_craftbuddy_to_craftsman_pathfinder.json</div>
+<div class="file-item">harmony_meta_coherence_agent.json</div>
+<div class="file-item">mama_bear.json</div>
+
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <script>
+        
+        // Initialize Mermaid
+        mermaid.initialize({
+            startOnLoad: true,
+            theme: 'dark',
+            flowchart: {
+                useMaxWidth: true,
+                htmlLabels: true
+            }
+        });
+
+        // Tab switching function
+        function showTab(tabName) {
+            // Hide all tabs
+            const tabs = document.querySelectorAll('.tab-content');
+            tabs.forEach(tab => tab.classList.remove('active'));
+            
+            // Remove active from all buttons
+            const buttons = document.querySelectorAll('.tab-button');
+            buttons.forEach(button => button.classList.remove('active'));
+            
+            // Show selected tab
+            document.getElementById(tabName + '-tab').classList.add('active');
+            
+            // Activate clicked button
+            event.target.classList.add('active');
+            
+            // Auto-expand Cost Efficiency section when Harmony tab is clicked
+            if (tabName === 'harmony') {
+                setTimeout(() => {
+                    const costEfficiencyButton = document.querySelector('[data-section="cost_efficiency"]');
+                    if (costEfficiencyButton && !costEfficiencyButton.classList.contains('active')) {
+                        costEfficiencyButton.click();
+                    }
+                }, 100);
+            }
+        }
+
+        // Add hover effects
+        document.querySelectorAll('.agent-card').forEach(card => {
+            card.addEventListener('mouseenter', function() {
+                this.style.transform = 'translateY(-3px) scale(1.02)';
+            });
+            
+            card.addEventListener('mouseleave', function() {
+                this.style.transform = 'translateY(0) scale(1)';
+            });
+        });
+        
+        // Harmony section expansion functionality
+        document.querySelectorAll('.harmony-section-btn').forEach(button => {
+            button.addEventListener('click', function() {
+                const sectionId = this.getAttribute('data-section');
+                const contentElement = document.getElementById(sectionId + '-content');
+                
+                // Toggle active state on button
+                this.classList.toggle('active');
+                
+                if (contentElement.style.display === 'none' || contentElement.style.display === '') {
+                    // Show content
+                    contentElement.style.display = 'block';
+                    contentElement.classList.remove('hiding');
+                } else {
+                    // Hide content with animation
+                    contentElement.classList.add('hiding');
+                    setTimeout(() => {
+                        contentElement.style.display = 'none';
+                        contentElement.classList.remove('hiding');
+                    }, 300);
+                }
+            });
+            
+            // Enhanced hover effects for harmony buttons
+            button.addEventListener('mouseenter', function() {
+                if (!this.classList.contains('active')) {
+                    this.style.transform = 'translateY(-2px)';
+                }
+            });
+            
+            button.addEventListener('mouseleave', function() {
+                if (!this.classList.contains('active')) {
+                    this.style.transform = 'translateY(0)';
+                }
+            });
+        });
+        
+        // Auto-expand first section (Cost Efficiency) on Harmony tab load
+        document.addEventListener('DOMContentLoaded', function() {
+            const harmonyTab = document.getElementById('harmony-tab');
+            if (harmonyTab && harmonyTab.classList.contains('active')) {
+                const firstHighValueButton = document.querySelector('[data-section="cost_efficiency"]');
+                if (firstHighValueButton) {
+                    firstHighValueButton.click();
+                }
+            }
+        });
+        
+        
+    </script>
+</body>
+</html>

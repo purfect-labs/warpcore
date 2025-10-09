@@ -1,0 +1,73 @@
+flowchart TD
+    %% Framer Agent Flow - Content Intelligence
+
+    ORIGIN["ORIGIN"]
+    BOSS["BOSS"]
+    PATHFINDER["PATHFINDER"]
+    ORACLE["ORACLE"]
+    ARCHITECT["ARCHITECT"]
+    ENFORCER["ENFORCER"]
+    CRAFTSMAN["CRAFTSMAN"]
+    CRAFTBUDDY["CRAFTBUDDY"]
+    GATEKEEPER["GATEKEEPER"]
+    GHOSTWRITER["GHOSTWRITER"]
+    ALICE["ALICE"]
+    FLUX["FLUX"]
+    BEAR["BEAR"]
+    HARMONY["HARMONY"]
+    USER(["USER"])
+    COMPLETE(["COMPLETE"])
+
+    ORIGIN --> BOSS
+    USER --> ORACLE
+    BOSS --> PATHFINDER
+    PATHFINDER --> ARCHITECT
+    ORACLE --> ARCHITECT
+    ARCHITECT --> ENFORCER
+    ENFORCER --> CRAFTSMAN
+    CRAFTSMAN <--> CRAFTBUDDY
+    CRAFTSMAN --> GATEKEEPER
+    
+    %% FRAMER specific agents after GATEKEEPER
+    GATEKEEPER --> PATHFINDER
+    GATEKEEPER --> GHOSTWRITER
+    GHOSTWRITER <--> CRAFTBUDDY
+    GHOSTWRITER --> ALICE
+    ALICE --> FLUX
+    FLUX --> COMPLETE
+    USER --> BEAR
+    USER --> HARMONY
+
+    %% Styling
+    classDef origin fill:#dc2626,stroke:#991b1b,stroke-width:2px
+    classDef boss fill:#dc2626,stroke:#991b1b,stroke-width:2px
+    classDef pathfinder fill:#dc2626,stroke:#991b1b,stroke-width:2px
+    classDef oracle fill:#dc2626,stroke:#991b1b,stroke-width:2px
+    classDef architect fill:#dc2626,stroke:#991b1b,stroke-width:2px
+    classDef enforcer fill:#dc2626,stroke:#991b1b,stroke-width:2px
+    classDef craftsman fill:#dc2626,stroke:#991b1b,stroke-width:3px
+    classDef craftbuddy fill:#dc2626,stroke:#991b1b,stroke-width:3px
+    classDef gatekeeper fill:#dc2626,stroke:#991b1b,stroke-width:2px
+    classDef ghostwriter fill:#9333ea,stroke:#7c2d12,stroke-width:2px
+    classDef alice fill:#ec4899,stroke:#be185d,stroke-width:2px
+    classDef flux fill:#06b6d4,stroke:#0369a1,stroke-width:2px
+    classDef mamabear fill:#dc2626,stroke:#991b1b,stroke-width:2px
+    classDef harmony fill:#dc2626,stroke:#991b1b,stroke-width:2px
+    classDef complete fill:#22c55e,stroke:#16a34a,stroke-width:2px
+
+    %% Apply Classes
+    class ORIGIN origin
+    class BOSS boss
+    class PATHFINDER pathfinder
+    class ORACLE oracle
+    class ARCHITECT architect
+    class ENFORCER enforcer
+    class CRAFTSMAN craftsman
+    class CRAFTBUDDY craftbuddy
+    class GATEKEEPER gatekeeper
+    class GHOSTWRITER ghostwriter
+    class ALICE alice
+    class FLUX flux
+    class MAMABEAR mamabear
+    class HARMONY harmony
+    class COMPLETE complete

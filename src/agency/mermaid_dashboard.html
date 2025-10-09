@@ -1,0 +1,92 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>🎯 Agent Flow Dashboard</title>
+    <script src="https://cdn.jsdelivr.net/npm/mermaid@10.6.1/dist/mermaid.min.js"></script>
+    <style>
+        body {
+            font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif;
+            background: #1a1a1a;
+            color: #fff;
+            margin: 0;
+            padding: 20px;
+        }
+        .container {
+            max-width: 1200px;
+            margin: 0 auto;
+        }
+        h1 {
+            text-align: center;
+            color: #8b5cf6;
+            margin-bottom: 30px;
+        }
+        .mermaid-container {
+            background: #fff;
+            border-radius: 8px;
+            padding: 20px;
+            margin: 20px 0;
+            text-align: center;
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <h1>🎯 Franchise Agent Flow</h1>
+        
+        <div class="mermaid-container">
+            <div class="mermaid">
+flowchart TD
+    %% Framer Agent Flow - Auto-generated from directory structure
+
+    ORIGIN["0a<br/>ORIGIN"]
+    BOSS["0b<br/>BOSS"]
+    PATHFINDER["1a<br/>PATHFINDER"]
+    ORACLE["1b<br/>ORACLE"]
+    ARCHITECT["2<br/>ARCHITECT"]
+    ENFORCER["3<br/>ENFORCER"]
+    CRAFTSMAN["4a<br/>CRAFTSMAN"]
+    CRAFTBUDDY["4b<br/>CRAFTBUDDY"]
+    GATEKEEPER["5<br/>GATEKEEPER"]
+    GHOSTWRITER["6<br/>GHOSTWRITER"]
+    ALICE["7<br/>ALICE"]
+    FLUX["8<br/>FLUX"]
+    BEAR["mama<br/>BEAR"]
+    HARMONY["HAR<br/>HARMONY"]
+    USER(["USER"])
+    COMPLETE(["COMPLETE"])
+
+    ORIGIN -->|"origin_to_boss"| BOSS
+    BOSS -->|"boss_to_pathfinder"| PATHFINDER
+    PATHFINDER -->|"pathfinder_to_architect"| ARCHITECT
+    ORACLE -->|"oracle_to_architect"| ARCHITECT
+    USER -->|"user_to_oracle"| ORACLE
+    ARCHITECT -->|"architect_to_enforcer"| ENFORCER
+    ENFORCER -->|"enforcer_to_craftsman"| CRAFTSMAN
+    CRAFTSMAN <-->|"craftsman_craftbuddy_loop"| CRAFTBUDDY
+    CRAFTSMAN -->|"craftsman_to_gatekeeper"| GATEKEEPER
+    GATEKEEPER -->|"gatekeeper_to_ghostwriter"| GHOSTWRITER
+    GATEKEEPER -->|"gatekeeper_to_pathfinder"| PATHFINDER
+    GHOSTWRITER -->|"ghostwriter_to_alice"| ALICE
+    ALICE <-->|"alice_craftbuddy_loop"| CRAFTBUDDY
+    ALICE -->|"alice_to_flux"| FLUX
+    USER -->|"user_to_bear"| BEAR
+    USER -->|"user_to_harmony"| HARMONY
+    FLUX -->|"flux_to_pathfinder"| PATHFINDER
+            </div>
+        </div>
+    </div>
+
+    <script>
+        mermaid.initialize({
+            startOnLoad: true,
+            theme: 'default',
+            flowchart: {
+                useMaxWidth: true,
+                htmlLabels: true
+            }
+        });
+    </script>
+</body>
+</html>

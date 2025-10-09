@@ -327,6 +327,7 @@ class AgentSchemaFactory:
     """Factory for creating agent schemas polymorphically"""
     
     AGENT_CLASSES = {
+        # Staff franchise (legacy)
         "bootstrap_agent": BootstrapAgentSchema,
         "workflow_orchestrator_agent": OrchestratorAgentSchema,
         "schema_coherence_reconciler_agent": SchemaReconcilerAgentSchema,
@@ -334,7 +335,29 @@ class AgentSchemaFactory:
         "requirements_validator_agent": RequirementsValidatorAgentSchema,
         "implementation_agent": ImplementationAgentSchema,
         "gate_promote_agent": GatePromoteAgentSchema,
-        "user_input_requirements_translator": UserInputTranslatorAgentSchema
+        "user_input_requirements_translator": UserInputTranslatorAgentSchema,
+        
+        # Framer franchise mappings
+        "origin": BootstrapAgentSchema,
+        "boss": OrchestratorAgentSchema,
+        "pathfinder": SchemaReconcilerAgentSchema,
+        "oracle": UserInputTranslatorAgentSchema,
+        "architect": RequirementsGeneratorAgentSchema,
+        "enforcer": RequirementsValidatorAgentSchema,
+        "craftsman_implementation": ImplementationAgentSchema,
+        "craftbuddy": RequirementsGeneratorAgentSchema,  # Creative enhancer, similar to requirements gen
+        "gatekeeper": GatePromoteAgentSchema,
+        "ghostwriter": RequirementsGeneratorAgentSchema,  # Content creator, similar functionality
+        "alice": RequirementsValidatorAgentSchema,       # Decision maker, validation role
+        "flux": ImplementationAgentSchema,               # Output executor, implementation role
+        "mama_bear": GatePromoteAgentSchema,             # QA role, similar to gate promotion
+        "harmony": SchemaReconcilerAgentSchema,          # Meta-coherence, schema analysis role
+        
+        # PATROL franchise mappings
+        "deep": RequirementsGeneratorAgentSchema,        # Enumeration = requirements gathering
+        "cipher": RequirementsValidatorAgentSchema,      # Vuln validation = requirements validation  
+        "glitch": ImplementationAgentSchema,             # Exploitation = implementation
+        "zero": GatePromoteAgentSchema                   # Mission debrief = gate promotion
     }
     
     @classmethod
