@@ -67,7 +67,7 @@ async function validateLicenseKey() {
     resultDiv.innerHTML = '<div class="loading">🔄 Validating...</div>';
     
     try {
-        const response = await fetch('/api/license/validate', {
+        const response = await fetch('/api/license/validate-sync', {
             method: 'POST',
             headers: { 'Content-Type': 'application/json' },
             body: JSON.stringify({ license_key: licenseKey })
@@ -90,7 +90,7 @@ async function refreshLicenseStatus() {
     console.log('🔑 WARPCORE: Refreshing license status');
     
     try {
-        const response = await fetch('/api/license/status');
+        const response = await fetch('/api/license/status-sync');
         const result = await response.json();
         
         if (result.success) {
@@ -114,7 +114,7 @@ async function deactivateLicense() {
     console.log('🔑 WARPCORE: Deactivating license');
     
     try {
-        const response = await fetch('/api/license/deactivate', {
+        const response = await fetch('/api/license/deactivate-sync', {
             method: 'POST'
         });
         
@@ -143,7 +143,7 @@ async function refreshLicenseStatusDirect() {
     console.log('🔑 WARPCORE: Direct license status refresh');
     
     try {
-        const response = await fetch('/api/license/status');
+        const response = await fetch('/api/license/status-sync');
         const result = await response.json();
         
         if (result.success) {
@@ -241,7 +241,7 @@ const LicenseActivation = {
     // Check initial license status
     async checkInitialStatus() {
         try {
-            const response = await fetch('/api/license/status');
+            const response = await fetch('/api/license/status-sync');
             const result = await response.json();
             
             if (result.success && result.data) {
@@ -306,7 +306,7 @@ const LicenseActivation = {
         this.showLoading('Activating license...');
         
         try {
-            const response = await fetch('/api/license/activate', {
+            const response = await fetch('/api/license/activate-sync', {
                 method: 'POST',
                 headers: { 'Content-Type': 'application/json' },
                 body: JSON.stringify({
@@ -318,9 +318,10 @@ const LicenseActivation = {
             const result = await response.json();
             
             if (result.success) {
-                this.showSuccess('License activation started! Please wait...');
-                // Poll for activation completion
-                setTimeout(() => this.pollActivationStatus(), 2000);
+                this.showSuccess('License activated successfully!');
+                // Update status immediately since sync endpoint
+                setTimeout(() => this.checkInitialStatus(), 1000);
+                this.clearForm();
             } else {
                 this.showError(result.error || 'License activation failed');
             }
@@ -345,7 +346,7 @@ const LicenseActivation = {
         this.showLoading('Starting trial license...');
         
         try {
-            const response = await fetch('/api/license/generate-trial', {
+            const response = await fetch('/api/license/generate-trial-sync', {
                 method: 'POST',
                 headers: { 'Content-Type': 'application/json' },
                 body: JSON.stringify({
@@ -357,8 +358,8 @@ const LicenseActivation = {
             const result = await response.json();
             
             if (result.success) {
-                this.showSuccess('Trial license started! Professional features are now available.');
-                setTimeout(() => this.checkInitialStatus(), 2000);
+                this.showSuccess('Trial license activated! Professional features are now available.');
+                setTimeout(() => this.checkInitialStatus(), 1000);
             } else {
                 this.showError(result.error || 'Trial activation failed');
             }

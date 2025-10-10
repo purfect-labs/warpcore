@@ -90,30 +90,15 @@ class LicenseOrchestrator:
             }
     
     async def orchestrate_license_activation(self, license_key: str, user_email: str = None) -> Dict[str, Any]:
-        """Orchestrate complex license activation workflow"""
+        """Orchestrate license activation workflow"""
         try:
-            # Simple test license bypass for development
-            if license_key.startswith("test-") or license_key.startswith("warp-"):
-                self.logger.info(f"WARP ORCHESTRATOR: Activating test license for {user_email}")
-                return {
-                    "success": True,
-                    "message": "Test license activated successfully",
-                    "user_email": user_email or "test@warpcore.dev",
-                    "user_name": "Test User",
-                    "expires": "2025-12-31T23:59:59",
-                    "features": ["basic", "test"],
-                    "license_type": "test",
-                    "orchestrated": True,
-                    "source": "TEST_BYPASS"
-                }
+            self.logger.info(f"WARP ORCHESTRATOR: Starting license activation for {user_email}")
             
-            # Safe config access
+            # Get watermark config safely
             try:
                 watermark = self.config.get_watermark_config() or {}
             except Exception as e:
                 watermark = {"enabled": True}
-            
-            self.logger.info(f"WARP ORCHESTRATOR: Starting license activation for {user_email}")
             
             # Step 1: Validate license key first
             validation_result = await self.orchestrate_license_validation(license_key)

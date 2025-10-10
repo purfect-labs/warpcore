@@ -444,6 +444,17 @@ class WARPCOREAPIServer:
             except Exception as e:
                 return {"success": False, "error": str(e)}
         
+        @self.app.post("/api/license/deactivate-sync")
+        async def deactivate_license_sync():
+            """REAL license deactivation - immediately deactivates current license"""
+            try:
+                from .license_manager import get_license_manager
+                license_manager = get_license_manager()
+                result = license_manager.deactivate_license()
+                return result
+            except Exception as e:
+                return {"success": False, "error": f"License deactivation failed: {str(e)}"}
+        
         @self.app.get("/api/license/subscription")
         async def get_subscription_info():
             """Get subscription and feature information"""
