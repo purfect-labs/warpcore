@@ -373,19 +373,14 @@ class WARPCOREAPIServer:
         async def activate_license_sync(request: LicenseActivateRequest):
             """Activate a license key synchronously for development - actually activates immediately"""
             try:
-                print(f"ROUTE DEBUG: activate-sync called with {request.license_key}")
                 license_controller = self.controller_registry.get_license_controller()
-                print(f"ROUTE DEBUG: license_controller = {license_controller}")
                 if license_controller:
                     # Call activation method directly (synchronously) for development
-                    print("ROUTE DEBUG: About to call controller.activate_license")
                     result = await license_controller.activate_license(request.license_key, request.user_email)
-                    print(f"ROUTE DEBUG: Controller returned: {result}")
                     return result
                 else:
                     return {"success": False, "error": "License controller not available"}
             except Exception as e:
-                print(f"ROUTE DEBUG: Exception caught: {str(e)} - type: {type(e)}")
                 return {"success": False, "error": str(e)}
         
         @self.app.post("/api/license/generate-trial")
