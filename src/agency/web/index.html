@@ -819,6 +819,44 @@
             letter-spacing: 1px;
         }
         
+        /* Franchise Tabs */
+        .franchise-tabs {
+            padding: 0.5rem 1rem;
+            background: var(--bg-primary);
+            border-bottom: 1px solid var(--border-subtle);
+        }
+        
+        .franchise-buttons {
+            display: flex;
+            gap: 0.5rem;
+            flex-wrap: wrap;
+        }
+        
+        .franchise-btn {
+            padding: 0.4rem 0.8rem;
+            background: var(--bg-secondary);
+            border: 1px solid var(--border-subtle);
+            border-radius: 6px;
+            color: var(--text-secondary);
+            font-size: 0.75rem;
+            font-weight: 600;
+            cursor: pointer;
+            transition: all 0.2s;
+            text-transform: uppercase;
+            letter-spacing: 0.5px;
+        }
+        
+        .franchise-btn:hover {
+            border-color: var(--accent-purple);
+            color: var(--text-primary);
+        }
+        
+        .franchise-btn.active {
+            background: linear-gradient(135deg, var(--accent-purple), var(--accent-blue));
+            border-color: var(--accent-purple);
+            color: white;
+        }
+        
         /* Better Stop Button */
         .btn-stop {
             background: linear-gradient(135deg, #ef4444, #dc2626);
@@ -1599,6 +1637,13 @@
                         <button class="btn-secondary btn-xs" onclick="loadWorkflow()">REFRESH</button>
                     </div>
                 </div>
+                
+                <!-- Franchise Tabs -->
+                <div class="franchise-tabs">
+                    <div id="franchise-buttons" class="franchise-buttons">
+                        <!-- Franchise buttons will be loaded here -->
+                    </div>
+                </div>
                 <div class="panel-content">
                     <div class="workflow-graph" id="workflow-graph">
                         <div class="loading-workflow">Loading workflow...</div>
@@ -1805,7 +1850,7 @@
         
         // Load available agents and workflow IDs on page load
         document.addEventListener('DOMContentLoaded', function() {
-            loadWorkflow();
+            loadFranchises();
             refreshProcesses();
             loadWorkflowIds();
         });
@@ -2149,16 +2194,86 @@
         let currentSequenceIndex = 0;
         let sequenceAgents = [];
         
+        // Franchise management variables
+        let availableFranchises = [];
+        let currentFranchise = null;
+        
+        // Load available franchises
+        async function loadFranchises() {
+            try {
+                const response = await fetch('http://localhost:8081/api/franchises');
+                const data = await response.json();
+                
+                if (data.status === 'success' && data.franchises) {
+                    availableFranchises = data.franchises;
+                    renderFranchiseTabs();
+                    
+                    // Set first franchise as default
+                    if (availableFranchises.length > 0 && !currentFranchise) {
+                        selectFranchise(availableFranchises[0]);
+                    }
+                } else {
+                    console.error('Failed to load franchises:', data.message);
+                }
+            } catch (error) {
+                console.error('Error loading franchises:', error);
+            }
+        }
+        
+        // Render franchise tabs
+        function renderFranchiseTabs() {
+            const container = document.getElementById('franchise-buttons');
+            if (!container) return;
+            
+            container.innerHTML = availableFranchises.map(franchise => 
+                `<button class="franchise-btn" data-franchise="${franchise}" onclick="selectFranchise('${franchise}')">
+                    ${franchise.toUpperCase()}
+                </button>`
+            ).join('');
+        }
+        
+        // Select a franchise
+        async function selectFranchise(franchise) {
+            if (currentFranchise === franchise) return;
+            
+            currentFranchise = franchise;
+            
+            // Update active tab
+            document.querySelectorAll('.franchise-btn').forEach(btn => {
+                btn.classList.toggle('active', btn.dataset.franchise === franchise);
+            });
+            
+            // Reload workflow with franchise filter
+            await loadWorkflow();
+        }
+        
         async function loadWorkflow() {
             const workflowGraph = document.getElementById('workflow-graph');
             workflowGraph.innerHTML = '<div class="loading-workflow">Loading workflow...</div>';
             
             try {
-                const response = await fetch('http://localhost:8081/api/agents');
+                // Use franchise parameter if available
+                const url = currentFranchise 
+                    ? `http://localhost:8081/api/agents?franchise=${currentFranchise}`
+                    : 'http://localhost:8081/api/agents';
+                    
+                const response = await fetch(url);
                 const data = await response.json();
                 
                 if (data.status === 'success' && data.agents) {
                     workflowData = data.agents;
+                    renderWorkflowGraph(workflowData);
+                } else if (Array.isArray(data)) {
+                    // Handle direct array response from franchise API
+                    workflowData = data.map((agent, index) => ({
+                        id: agent,
+                        workflow_position: index,
+                        version: '1.0.0',
+                        dependencies: [],
+                        outputs_to: [],
+                        validation_rules: 0,
+                        success_criteria: 0
+                    }));
                     renderWorkflowGraph(workflowData);
                 } else {
                     workflowGraph.innerHTML = '<div class="loading-workflow">Failed to load workflow</div>';
@@ -2491,8 +2606,11 @@
                     `;
                 }
                 
-                // Load agent prompt
-                const promptResponse = await fetch(`http://localhost:8081/api/agents/${agent.id}/prompt`);
+                // Load agent prompt with franchise parameter
+                const promptUrl = currentFranchise 
+                    ? `http://localhost:8081/api/agent/${agent.id}/prompt?franchise=${currentFranchise}`
+                    : `http://localhost:8081/api/agents/${agent.id}/prompt`;
+                const promptResponse = await fetch(promptUrl);
                 const promptData = await promptResponse.json();
                 
                 if (promptData.status === 'success') {
@@ -2545,11 +2663,11 @@
             // Set UI state
             document.getElementById('agent-status').textContent = 'Running';
             document.getElementById('agent-status').className = 'status-badge status-running running';
-            document.getElementById('terminal-output').innerHTML = 'Starting execution...\n';
+            document.getElementById('terminal-output').innerHTML = 'Starting streaming execution...\n';
             document.getElementById('execute-btn').disabled = true;
             document.getElementById('stop-btn').style.display = 'inline-block';
             
-            // Get execution parameters (simplified)
+            // Get execution parameters
             const workflowId = document.getElementById('workflow-id').value.trim() || `auto-${selectedAgent.id}-${Date.now()}`;
             let contextDir = '/Users/shawn_meredith/code/pets/warpcore'; // Smart default
             let customPrompt = '';
@@ -2563,17 +2681,17 @@
             currentWorkflowId = workflowId;
             
             try {
-                // Start the execution via regular API (no streaming for now)
-                const response = await fetch('http://localhost:8081/api/execute-agent', {
+                // Start streaming execution
+                const response = await fetch(`http://localhost:8081/api/agent/${selectedAgent.id}/execute/stream`, {
                     method: 'POST',
                     headers: {
                         'Content-Type': 'application/json',
                     },
                     body: JSON.stringify({
-                        agent_id: selectedAgent.id,
-                        workflow_id: workflowId,
+                        franchise: currentFranchise,
                         custom_prompt: customPrompt,
-                        src_dir: contextDir
+                        src_dir: contextDir,
+                        workflow_id: workflowId
                     }),
                 });
                 
@@ -2581,22 +2699,16 @@
                 const terminal = document.getElementById('terminal-output');
                 
                 if (result.status === 'success') {
-                    terminal.innerHTML += `✅ Started successfully!\n`;
-                    terminal.innerHTML += `📋 Command: ${result.command}\n`;
-                    terminal.innerHTML += `🆔 Process ID: ${result.process_id}\n`;
-                    terminal.innerHTML += `🏷️  Workflow ID: ${result.workflow_id}\n\n`;
-                    terminal.innerHTML += `⏳ Agent is running in background...\n`;
-                    terminal.innerHTML += `💡 Use the Process Manager to monitor progress\n\n`;
+                    terminal.innerHTML += `🚀 Streaming started for ${selectedAgent.id}\n`;
+                    terminal.innerHTML += `🆔 Client ID: ${result.client_id}\n`;
+                    terminal.innerHTML += `🏷️ Workflow ID: ${result.workflow_id}\n\n`;
                     terminal.scrollTop = terminal.scrollHeight;
                     
-                    // Update current workflow ID
-                    currentWorkflowId = result.workflow_id;
-                    
-                    // Poll for completion
-                    pollForCompletion(result.workflow_id);
+                    // Start streaming connection
+                    startAgentStream(result.client_id, result.workflow_id);
                     
                 } else {
-                    terminal.innerHTML += `❌ Failed to start: ${result.message}\n`;
+                    terminal.innerHTML += `❌ Failed to start streaming: ${result.message}\n`;
                     document.getElementById('agent-status').textContent = 'Failed';
                     document.getElementById('agent-status').className = 'status-badge status-failed';
                     document.getElementById('execute-btn').disabled = false;
@@ -2611,9 +2723,70 @@
                 document.getElementById('execute-btn').disabled = false;
                 document.getElementById('stop-btn').style.display = 'none';
             }
+        }
+        
+        // Streaming connection management
+        let currentEventSource = null;
+        
+        function startAgentStream(clientId, workflowId) {
+            // Close any existing stream
+            if (currentEventSource) {
+                currentEventSource.close();
+            }
             
-            // Refresh processes
-            await refreshProcesses();
+            const terminal = document.getElementById('terminal-output');
+            
+            try {
+                // Start EventSource connection
+                currentEventSource = new EventSource(`http://localhost:8081/api/stream/${clientId}`);
+                
+                currentEventSource.onmessage = function(event) {
+                    const message = event.data;
+                    
+                    // Skip heartbeat messages
+                    if (message === '[heartbeat]') return;
+                    
+                    // Add message to terminal
+                    terminal.innerHTML += message + '\n';
+                    terminal.scrollTop = terminal.scrollHeight;
+                    
+                    // Check for completion indicators
+                    if (message.includes('Agent execution completed') || 
+                        message.includes('All command variants failed')) {
+                        // Execution finished
+                        document.getElementById('agent-status').textContent = 
+                            message.includes('completed') ? 'Completed' : 'Failed';
+                        document.getElementById('agent-status').className = 
+                            `status-badge status-${message.includes('completed') ? 'completed' : 'failed'}`;
+                        document.getElementById('execute-btn').disabled = false;
+                        document.getElementById('stop-btn').style.display = 'none';
+                        
+                        // Refresh process list
+                        refreshProcesses();
+                    }
+                };
+                
+                currentEventSource.onerror = function(event) {
+                    terminal.innerHTML += '\n❌ Stream connection lost\n';
+                    document.getElementById('execute-btn').disabled = false;
+                    document.getElementById('stop-btn').style.display = 'none';
+                    
+                    if (currentEventSource) {
+                        currentEventSource.close();
+                        currentEventSource = null;
+                    }
+                };
+                
+                currentEventSource.onopen = function(event) {
+                    terminal.innerHTML += '🔗 Stream connection established\n\n';
+                    terminal.scrollTop = terminal.scrollHeight;
+                };
+                
+            } catch (error) {
+                terminal.innerHTML += `❌ Failed to start stream: ${error.message}\n`;
+                document.getElementById('execute-btn').disabled = false;
+                document.getElementById('stop-btn').style.display = 'none';
+            }
         }
         
         // Poll for process completion

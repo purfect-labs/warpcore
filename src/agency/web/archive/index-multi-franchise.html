@@ -1,0 +1,568 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>🌊 WARPCORE Multi-Franchise Command Center</title>
+    <style>
+        :root {
+            --bg-primary: #0a0a0a;
+            --bg-secondary: #1a1a1a;
+            --accent-purple: #8b5cf6;
+            --accent-blue: #3b82f6;
+            --accent-green: #10b981;
+            --accent-red: #ef4444;
+            --text-primary: #f8fafc;
+            --text-secondary: #94a3b8;
+            --border-color: #374151;
+        }
+
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        body {
+            background: linear-gradient(135deg, var(--bg-primary) 0%, #1e1e2e 100%);
+            color: var(--text-primary);
+            font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
+            min-height: 100vh;
+        }
+
+        .header {
+            background: rgba(139, 92, 246, 0.1);
+            backdrop-filter: blur(20px);
+            border-bottom: 1px solid var(--border-color);
+            padding: 1rem 2rem;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+        }
+
+        .logo {
+            font-size: 1.5rem;
+            font-weight: 700;
+            background: linear-gradient(135deg, var(--accent-purple), var(--accent-blue));
+            background-clip: text;
+            -webkit-background-clip: text;
+            -webkit-text-fill-color: transparent;
+        }
+
+        .franchise-selector {
+            display: flex;
+            gap: 0.5rem;
+            background: var(--bg-secondary);
+            border-radius: 0.75rem;
+            padding: 0.25rem;
+            border: 1px solid var(--border-color);
+        }
+
+        .franchise-tab {
+            padding: 0.5rem 1rem;
+            border-radius: 0.5rem;
+            background: transparent;
+            border: none;
+            color: var(--text-secondary);
+            cursor: pointer;
+            font-weight: 500;
+            transition: all 0.2s ease;
+            position: relative;
+            display: flex;
+            align-items: center;
+            gap: 0.5rem;
+        }
+
+        .franchise-tab.active {
+            background: var(--accent-purple);
+            color: white;
+            box-shadow: 0 4px 12px rgba(139, 92, 246, 0.3);
+        }
+
+        .franchise-tab:hover:not(.active) {
+            background: rgba(139, 92, 246, 0.1);
+            color: var(--text-primary);
+        }
+
+        .main-content {
+            display: grid;
+            grid-template-columns: 300px 1fr;
+            gap: 2rem;
+            padding: 2rem;
+            min-height: calc(100vh - 80px);
+        }
+
+        .sidebar {
+            background: var(--bg-secondary);
+            border-radius: 1rem;
+            border: 1px solid var(--border-color);
+            padding: 1.5rem;
+        }
+
+        .agent-list {
+            display: flex;
+            flex-direction: column;
+            gap: 0.5rem;
+        }
+
+        .agent-item {
+            padding: 0.75rem;
+            background: rgba(139, 92, 246, 0.05);
+            border: 1px solid transparent;
+            border-radius: 0.5rem;
+            cursor: pointer;
+            transition: all 0.2s ease;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+        }
+
+        .agent-item:hover {
+            background: rgba(139, 92, 246, 0.1);
+            border-color: var(--accent-purple);
+        }
+
+        .agent-item.selected {
+            background: var(--accent-purple);
+            color: white;
+        }
+
+        .agent-badge {
+            background: rgba(139, 92, 246, 0.2);
+            color: var(--accent-purple);
+            font-size: 0.75rem;
+            padding: 0.25rem 0.5rem;
+            border-radius: 0.25rem;
+            font-weight: 500;
+        }
+
+        .content-area {
+            background: var(--bg-secondary);
+            border-radius: 1rem;
+            border: 1px solid var(--border-color);
+            display: flex;
+            flex-direction: column;
+        }
+
+        .content-header {
+            padding: 1.5rem;
+            border-bottom: 1px solid var(--border-color);
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+        }
+
+        .execute-section {
+            padding: 1.5rem;
+            flex: 1;
+        }
+
+        .input-group {
+            margin-bottom: 1rem;
+        }
+
+        .input-group label {
+            display: block;
+            margin-bottom: 0.5rem;
+            color: var(--text-secondary);
+            font-weight: 500;
+        }
+
+        .input-group input, .input-group textarea {
+            width: 100%;
+            padding: 0.75rem;
+            background: var(--bg-primary);
+            border: 1px solid var(--border-color);
+            border-radius: 0.5rem;
+            color: var(--text-primary);
+            font-family: inherit;
+        }
+
+        .input-group textarea {
+            resize: vertical;
+            min-height: 100px;
+        }
+
+        .execute-btn {
+            background: linear-gradient(135deg, var(--accent-purple), var(--accent-blue));
+            color: white;
+            border: none;
+            padding: 0.75rem 2rem;
+            border-radius: 0.5rem;
+            font-weight: 600;
+            cursor: pointer;
+            transition: all 0.2s ease;
+            display: flex;
+            align-items: center;
+            gap: 0.5rem;
+        }
+
+        .execute-btn:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 8px 25px rgba(139, 92, 246, 0.3);
+        }
+
+        .execute-btn:disabled {
+            opacity: 0.5;
+            cursor: not-allowed;
+            transform: none;
+        }
+
+        .output-section {
+            margin-top: 2rem;
+            background: var(--bg-primary);
+            border-radius: 0.5rem;
+            border: 1px solid var(--border-color);
+        }
+
+        .output-header {
+            padding: 1rem;
+            border-bottom: 1px solid var(--border-color);
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+        }
+
+        .output-content {
+            padding: 1rem;
+            font-family: 'Monaco', 'Menlo', monospace;
+            font-size: 0.875rem;
+            line-height: 1.5;
+            max-height: 400px;
+            overflow-y: auto;
+        }
+
+        .status-indicator {
+            display: inline-block;
+            width: 8px;
+            height: 8px;
+            border-radius: 50%;
+            margin-right: 0.5rem;
+        }
+
+        .status-idle { background-color: var(--text-secondary); }
+        .status-running { background-color: var(--accent-blue); animation: pulse 1s infinite; }
+        .status-success { background-color: var(--accent-green); }
+        .status-error { background-color: var(--accent-red); }
+
+        @keyframes pulse {
+            0%, 100% { opacity: 1; }
+            50% { opacity: 0.5; }
+        }
+
+        .franchise-info {
+            margin-bottom: 1.5rem;
+            padding: 1rem;
+            background: rgba(139, 92, 246, 0.05);
+            border-radius: 0.5rem;
+            border: 1px solid rgba(139, 92, 246, 0.2);
+        }
+
+        .loading {
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            padding: 2rem;
+            color: var(--text-secondary);
+        }
+
+        .spinner {
+            width: 20px;
+            height: 20px;
+            border: 2px solid transparent;
+            border-top: 2px solid var(--accent-purple);
+            border-radius: 50%;
+            animation: spin 1s linear infinite;
+            margin-right: 0.5rem;
+        }
+
+        @keyframes spin {
+            0% { transform: rotate(0deg); }
+            100% { transform: rotate(360deg); }
+        }
+    </style>
+</head>
+<body>
+    <div class="header">
+        <div class="logo">🌊 WARPCORE Multi-Franchise Command Center</div>
+        <div class="franchise-selector" id="franchiseSelector">
+            <!-- Franchise tabs will be loaded here -->
+        </div>
+    </div>
+
+    <div class="main-content">
+        <div class="sidebar">
+            <div class="franchise-info" id="franchiseInfo">
+                <div class="loading">
+                    <div class="spinner"></div>
+                    Loading franchises...
+                </div>
+            </div>
+            <div class="agent-list" id="agentList">
+                <!-- Agents will be loaded here -->
+            </div>
+        </div>
+
+        <div class="content-area">
+            <div class="content-header">
+                <div>
+                    <h2 id="selectedAgentTitle">Select an Agent</h2>
+                    <p id="selectedAgentDescription">Choose a franchise and agent to execute</p>
+                </div>
+                <div>
+                    <span class="status-indicator status-idle" id="statusIndicator"></span>
+                    <span id="statusText">Ready</span>
+                </div>
+            </div>
+
+            <div class="execute-section">
+                <div class="input-group">
+                    <label for="workflowId">Workflow ID (optional)</label>
+                    <input type="text" id="workflowId" placeholder="e.g., wf_security_audit_001">
+                </div>
+
+                <div class="input-group">
+                    <label for="customPrompt">Custom Prompt</label>
+                    <textarea id="customPrompt" placeholder="Enter your custom prompt or instructions for the agent..."></textarea>
+                </div>
+
+                <button class="execute-btn" id="executeBtn" disabled>
+                    🚀 Execute Agent
+                </button>
+
+                <div class="output-section" id="outputSection" style="display: none;">
+                    <div class="output-header">
+                        <h3>Execution Output</h3>
+                        <button onclick="clearOutput()">Clear</button>
+                    </div>
+                    <div class="output-content" id="outputContent"></div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <script>
+        let currentFranchise = 'staff';
+        let selectedAgent = null;
+        let executionStatus = 'idle';
+
+        // Initialize the application
+        async function init() {
+            await loadFranchises();
+            await loadAgents(currentFranchise);
+        }
+
+        // Load available franchises
+        async function loadFranchises() {
+            try {
+                const response = await fetch('/api/franchises');
+                const data = await response.json();
+                
+                const selector = document.getElementById('franchiseSelector');
+                selector.innerHTML = '';
+                
+                data.franchises.forEach((franchise, index) => {
+                    const tab = document.createElement('button');
+                    tab.className = `franchise-tab ${index === 0 ? 'active' : ''}`;
+                    tab.textContent = `${getFranchiseIcon(franchise)} ${franchise.toUpperCase()}`;
+                    tab.onclick = () => switchFranchise(franchise);
+                    selector.appendChild(tab);
+                });
+                
+                if (data.franchises.length > 0) {
+                    currentFranchise = data.franchises[0];
+                    updateFranchiseInfo();
+                }
+            } catch (error) {
+                console.error('Error loading franchises:', error);
+            }
+        }
+
+        // Load agents for a specific franchise
+        async function loadAgents(franchise) {
+            try {
+                const response = await fetch(`/api/agents/${franchise}`);
+                const data = await response.json();
+                
+                const agentList = document.getElementById('agentList');
+                agentList.innerHTML = '';
+                
+                if (data.agents && data.agents.length > 0) {
+                    data.agents.forEach(agent => {
+                        const item = document.createElement('div');
+                        item.className = 'agent-item';
+                        item.onclick = () => selectAgent(agent);
+                        item.innerHTML = `
+                            <div>
+                                <div style="font-weight: 600;">${agent.agent_name}</div>
+                                <div style="font-size: 0.8rem; color: var(--text-secondary);">Position: ${agent.workflow_position}</div>
+                            </div>
+                            <div class="agent-badge">${agent.step_prefix || 'N/A'}</div>
+                        `;
+                        agentList.appendChild(item);
+                    });
+                } else {
+                    agentList.innerHTML = '<div style="text-align: center; color: var(--text-secondary); padding: 2rem;">No agents found for this franchise</div>';
+                }
+            } catch (error) {
+                console.error('Error loading agents:', error);
+                document.getElementById('agentList').innerHTML = '<div style="text-align: center; color: var(--accent-red); padding: 2rem;">Error loading agents</div>';
+            }
+        }
+
+        // Switch franchise
+        async function switchFranchise(franchise) {
+            currentFranchise = franchise;
+            selectedAgent = null;
+            
+            // Update UI
+            document.querySelectorAll('.franchise-tab').forEach(tab => {
+                tab.classList.remove('active');
+                if (tab.textContent.includes(franchise.toUpperCase())) {
+                    tab.classList.add('active');
+                }
+            });
+            
+            document.querySelectorAll('.agent-item').forEach(item => {
+                item.classList.remove('selected');
+            });
+            
+            updateFranchiseInfo();
+            updateSelectedAgent();
+            await loadAgents(franchise);
+        }
+
+        // Select agent
+        function selectAgent(agent) {
+            selectedAgent = agent;
+            
+            document.querySelectorAll('.agent-item').forEach(item => {
+                item.classList.remove('selected');
+            });
+            event.target.closest('.agent-item').classList.add('selected');
+            
+            updateSelectedAgent();
+        }
+
+        // Update franchise info
+        function updateFranchiseInfo() {
+            const info = document.getElementById('franchiseInfo');
+            const descriptions = {
+                'staff': 'Software development and architecture agents',
+                'patrol': 'Security analysis and vulnerability assessment agents',
+                'framer': 'Content creation and data analysis agents',
+                'apex': 'Strategic leadership and planning agents'
+            };
+            
+            info.innerHTML = `
+                <div style="font-weight: 600; margin-bottom: 0.5rem;">${getFranchiseIcon(currentFranchise)} ${currentFranchise.toUpperCase()} FRANCHISE</div>
+                <div style="font-size: 0.9rem; color: var(--text-secondary);">${descriptions[currentFranchise] || 'Specialized AI agents'}</div>
+            `;
+        }
+
+        // Update selected agent display
+        function updateSelectedAgent() {
+            const title = document.getElementById('selectedAgentTitle');
+            const description = document.getElementById('selectedAgentDescription');
+            const executeBtn = document.getElementById('executeBtn');
+            
+            if (selectedAgent) {
+                title.textContent = selectedAgent.agent_name;
+                description.textContent = `${currentFranchise.toUpperCase()} franchise • Position ${selectedAgent.workflow_position} • ${selectedAgent.version}`;
+                executeBtn.disabled = false;
+            } else {
+                title.textContent = 'Select an Agent';
+                description.textContent = `Choose an agent from the ${currentFranchise.toUpperCase()} franchise`;
+                executeBtn.disabled = true;
+            }
+        }
+
+        // Execute agent
+        async function executeAgent() {
+            if (!selectedAgent) return;
+            
+            const workflowId = document.getElementById('workflowId').value;
+            const customPrompt = document.getElementById('customPrompt').value;
+            
+            if (!customPrompt.trim()) {
+                alert('Please enter a custom prompt');
+                return;
+            }
+            
+            setExecutionStatus('running', 'Executing agent...');
+            
+            const payload = {
+                agent_id: selectedAgent.id,
+                franchise: currentFranchise,
+                workflow_id: workflowId || null,
+                custom_prompt: customPrompt
+            };
+            
+            try {
+                const response = await fetch('/api/execute-agent', {
+                    method: 'POST',
+                    headers: {
+                        'Content-Type': 'application/json'
+                    },
+                    body: JSON.stringify(payload)
+                });
+                
+                const result = await response.json();
+                
+                if (result.status === 'success') {
+                    setExecutionStatus('success', 'Agent executed successfully');
+                    showOutput(result);
+                } else {
+                    setExecutionStatus('error', `Error: ${result.message}`);
+                    showOutput(result);
+                }
+            } catch (error) {
+                setExecutionStatus('error', `Execution failed: ${error.message}`);
+                showOutput({ error: error.message });
+            }
+        }
+
+        // Set execution status
+        function setExecutionStatus(status, text) {
+            executionStatus = status;
+            const indicator = document.getElementById('statusIndicator');
+            const statusText = document.getElementById('statusText');
+            
+            indicator.className = `status-indicator status-${status}`;
+            statusText.textContent = text;
+        }
+
+        // Show execution output
+        function showOutput(data) {
+            const outputSection = document.getElementById('outputSection');
+            const outputContent = document.getElementById('outputContent');
+            
+            outputSection.style.display = 'block';
+            outputContent.textContent = JSON.stringify(data, null, 2);
+        }
+
+        // Clear output
+        function clearOutput() {
+            document.getElementById('outputSection').style.display = 'none';
+            document.getElementById('outputContent').textContent = '';
+        }
+
+        // Get franchise icon
+        function getFranchiseIcon(franchise) {
+            const icons = {
+                'staff': '🏢',
+                'patrol': '🛡️', 
+                'framer': '🎨',
+                'apex': '👑'
+            };
+            return icons[franchise] || '🤖';
+        }
+
+        // Event listeners
+        document.getElementById('executeBtn').addEventListener('click', executeAgent);
+
+        // Initialize the app
+        init();
+    </script>
+</body>
+</html>

@@ -226,22 +226,45 @@ class WARPCOREAPIServer:
         
         @self.app.websocket("/ws/{client_id}")
         async def websocket_endpoint(websocket: WebSocket, client_id: str):
-            await websocket.accept()
-            self.connections[client_id] = websocket
-            
             try:
-                # Send initial status (cached, won't spam commands)
-                await self.send_initial_status(client_id)
+                await websocket.accept()
+                self.connections[client_id] = websocket
                 
-                # Auto-login on page load to show auth logs
-                await self.auto_authenticate_on_load()
+                # Send simple connection confirmation
+                await websocket.send_json({
+                    "type": "connection_established",
+                    "client_id": client_id,
+                    "message": "WebSocket connected successfully"
+                })
+                
+                # Try original initialization with error handling
+                try:
+                    await self.send_initial_status(client_id)
+                    await self.auto_authenticate_on_load()
+                except Exception as init_error:
+                    await websocket.send_json({
+                        "type": "initialization_error",
+                        "error": str(init_error),
+                        "message": "WebSocket connected but initialization failed"
+                    })
                 
                 while True:
                     data = await websocket.receive_text()
                     message = json.loads(data)
-                    await self.handle_websocket_message(client_id, message)
+                    try:
+                        await self.handle_websocket_message(client_id, message)
+                    except Exception as msg_error:
+                        await websocket.send_json({
+                            "type": "message_error",
+                            "error": str(msg_error),
+                            "original_message": message
+                        })
                     
             except WebSocketDisconnect:
+                if client_id in self.connections:
+                    del self.connections[client_id]
+            except Exception as ws_error:
+                logging.error(f"WebSocket error for client {client_id}: {str(ws_error)}")
                 if client_id in self.connections:
                     del self.connections[client_id]
         
@@ -331,7 +354,7 @@ class WARPCOREAPIServer:
         
         @self.app.post("/api/license/activate")
         async def activate_license(request: LicenseActivateRequest, background_tasks: BackgroundTasks):
-            """Activate a license key"""
+            """Activate a license key (async for production)"""
             try:
                 license_controller = self.controller_registry.get_license_controller()
                 if license_controller:
@@ -346,9 +369,28 @@ class WARPCOREAPIServer:
             except Exception as e:
                 return {"success": False, "error": str(e)}
         
+        @self.app.post("/api/license/activate-sync")
+        async def activate_license_sync(request: LicenseActivateRequest):
+            """Activate a license key synchronously for development - actually activates immediately"""
+            try:
+                print(f"ROUTE DEBUG: activate-sync called with {request.license_key}")
+                license_controller = self.controller_registry.get_license_controller()
+                print(f"ROUTE DEBUG: license_controller = {license_controller}")
+                if license_controller:
+                    # Call activation method directly (synchronously) for development
+                    print("ROUTE DEBUG: About to call controller.activate_license")
+                    result = await license_controller.activate_license(request.license_key, request.user_email)
+                    print(f"ROUTE DEBUG: Controller returned: {result}")
+                    return result
+                else:
+                    return {"success": False, "error": "License controller not available"}
+            except Exception as e:
+                print(f"ROUTE DEBUG: Exception caught: {str(e)} - type: {type(e)}")
+                return {"success": False, "error": str(e)}
+        
         @self.app.post("/api/license/generate-trial")
         async def generate_trial_license(request: TrialLicenseRequest, background_tasks: BackgroundTasks):
-            """Generate a trial license"""
+            """Generate a trial license (async for production)"""
             try:
                 license_controller = self.controller_registry.get_license_controller()
                 if license_controller:
@@ -358,6 +400,20 @@ class WARPCOREAPIServer:
                         request.days
                     )
                     return {"success": True, "message": "Trial license generation started"}
+                else:
+                    return {"success": False, "error": "License controller not available"}
+            except Exception as e:
+                return {"success": False, "error": str(e)}
+        
+        @self.app.post("/api/license/generate-trial-sync")
+        async def generate_trial_license_sync(request: TrialLicenseRequest):
+            """Generate a trial license synchronously for development - returns the actual key"""
+            try:
+                license_controller = self.controller_registry.get_license_controller()
+                if license_controller:
+                    # Call the generation method directly (synchronously) for development
+                    result = await license_controller.generate_trial_license(request.user_email, request.days)
+                    return result
                 else:
                     return {"success": False, "error": "License controller not available"}
             except Exception as e:
@@ -2305,6 +2361,10 @@ def create_app():
     """Create and return the FastAPI app"""
     warpcore_app = WARPCOREAPIServer()
     return warpcore_app.app
+
+
+# Global app instance for uvicorn
+app = create_app()
 
 
 def run_server(host: str = "127.0.0.1", port: int = 8000):

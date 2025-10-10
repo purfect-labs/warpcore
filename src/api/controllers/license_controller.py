@@ -132,9 +132,12 @@ class LicenseController(BaseController):
             }
     
     async def activate_license(self, license_key: str, user_email: str = None) -> Dict[str, Any]:
-        """Activate license via orchestrator"""
+        """Activate license via orchestrator - PAP compliant"""
+        self.logger.error("FIRST LINE: activate_license called")
         try:
+            self.logger.error(f"CONTROLLER DEBUG: Starting activation for {user_email}")
             watermark = self.config.get_watermark_config()
+            self.logger.error(f"CONTROLLER DEBUG: watermark = {watermark}")
             
             if not self._orchestrator_wired:
                 return {
@@ -144,7 +147,9 @@ class LicenseController(BaseController):
                 }
             
             # Use orchestrator for complex activation workflow
+            print("CONTROLLER DEBUG: About to call orchestrator")
             result = await self.orchestrator.orchestrate_license_activation(license_key, user_email)
+            print(f"CONTROLLER DEBUG: Orchestrator returned: {result}")
             
             # Add controller processing metadata
             if result.get("success"):
@@ -167,6 +172,10 @@ class LicenseController(BaseController):
             return result
             
         except Exception as e:
+            import traceback
+            print(f"CONTROLLER EXCEPTION DEBUG: Exception type: {type(e)}")
+            print(f"CONTROLLER EXCEPTION DEBUG: Exception message: {str(e)}")
+            print(f"CONTROLLER EXCEPTION DEBUG: Full traceback:\n{traceback.format_exc()}")
             watermark = self.config.get_watermark_config()
             return {
                 "success": False,
@@ -216,7 +225,7 @@ class LicenseController(BaseController):
             }
     
     async def generate_trial_license(self, user_email: str, days: int = None) -> Dict[str, Any]:
-        """Generate trial license via orchestrator"""
+        """Generate trial license via orchestrator - PAP compliant"""
         try:
             watermark = self.config.get_watermark_config()
             
@@ -229,8 +238,6 @@ class LicenseController(BaseController):
             
             # Use orchestrator for trial generation with business rules
             result = await self.orchestrator.orchestrate_trial_license_generation(user_email, days)
-            
-            # Add controller processing metadata
             if result.get("success"):
                 result["controller_processed"] = True
                 result["pap_flow_completed"] = True

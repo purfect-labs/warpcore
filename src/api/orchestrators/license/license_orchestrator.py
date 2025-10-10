@@ -92,8 +92,14 @@ class LicenseOrchestrator:
     async def orchestrate_license_activation(self, license_key: str, user_email: str = None) -> Dict[str, Any]:
         """Orchestrate complex license activation workflow"""
         try:
-            watermark = self.config.get_watermark_config()
-            self.logger.info(f"WARP ORCHESTRATOR: Starting license activation for {user_email}")
+            # Safe config access 
+            try:
+                watermark = self.config.get_watermark_config() or {}
+            except Exception as e:
+                watermark = {"enabled": True}
+                print(f"WARN: Watermark config access failed: {e}")
+            
+            print(f"WARP ORCHESTRATOR: Starting license activation for {user_email}")
             
             # Step 1: Validate license key first
             validation_result = await self.orchestrate_license_validation(license_key)
@@ -101,7 +107,7 @@ class LicenseOrchestrator:
                 return {
                     "success": False,
                     "error": f"License validation failed: {validation_result.get('error')}",
-                    "orchestrator_watermark": watermark["orchestrator"]
+                    "orchestrator_watermark": "WarpCore License Orchestrator"
                 }
             
             # Step 2: Check for existing license (deactivate if needed)
@@ -113,7 +119,7 @@ class LicenseOrchestrator:
                 return {
                     "success": False,
                     "error": "License provider not available in orchestrator",
-                    "orchestrator_watermark": watermark["orchestrator"]
+                    "orchestrator_watermark": "WarpCore License Orchestrator"
                 }
             
             activation_result = await self._execute_with_safety_gates(
@@ -129,7 +135,7 @@ class LicenseOrchestrator:
             if activation_result.get("success"):
                 activation_result["orchestrated"] = True
                 activation_result["orchestration_steps"] = ["validate", "cleanup", "activate", "cache_clear"]
-                activation_result["orchestrator_watermark"] = watermark["orchestrator"]
+                activation_result["orchestrator_watermark"] = "WarpCore License Orchestrator"
             
             return activation_result
             
@@ -137,7 +143,7 @@ class LicenseOrchestrator:
             return {
                 "success": False,
                 "error": f"License activation orchestration failed: {str(e)}",
-                "orchestrator_watermark": self.config.get_watermark_config()["orchestrator"]
+                "orchestrator_watermark": "WarpCore License Orchestrator"
             }
     
     async def orchestrate_license_validation(self, license_key: str) -> Dict[str, Any]:
@@ -166,6 +172,7 @@ class LicenseOrchestrator:
         """Orchestrate trial license generation with business rules"""
         try:
             watermark = self.config.get_watermark_config()
+            branding = self.config.get_branding_config()
             trial_config = self.config.get_trial_config()
             
             # Use config default if no days specified
@@ -183,7 +190,7 @@ class LicenseOrchestrator:
                 return {
                     "success": False,
                     "error": "License provider not available in orchestrator",
-                    "orchestrator_watermark": watermark["orchestrator"]
+                    "orchestrator_watermark": "WarpCore License Orchestrator"
                 }
             
             generation_result = await self._execute_with_safety_gates(
@@ -196,7 +203,7 @@ class LicenseOrchestrator:
             if generation_result.get("success"):
                 generation_result["orchestrated"] = True
                 generation_result["trial_config_applied"] = trial_config
-                generation_result["orchestrator_watermark"] = watermark["orchestrator"]
+                generation_result["orchestrator_watermark"] = "WarpCore License Orchestrator"
             
             return generation_result
             
@@ -204,13 +211,14 @@ class LicenseOrchestrator:
             return {
                 "success": False,
                 "error": f"Trial generation orchestration failed: {str(e)}",
-                "orchestrator_watermark": self.config.get_watermark_config()["orchestrator"]
+                "orchestrator_watermark": "WarpCore License Orchestrator"
             }
     
     async def orchestrate_full_license_generation(self, user_email: str, user_name: str, days: int, features: List[str]) -> Dict[str, Any]:
         """Orchestrate full license generation with feature validation"""
         try:
             watermark = self.config.get_watermark_config()
+            branding = self.config.get_branding_config()
             self.logger.info(f"WARP ORCHESTRATOR: Generating full license for {user_email} with features {features}")
             
             # Step 1: Validate requested features against available features
@@ -222,7 +230,7 @@ class LicenseOrchestrator:
                 return {
                     "success": False,
                     "error": "License provider not available in orchestrator",
-                    "orchestrator_watermark": watermark["orchestrator"]
+                    "orchestrator_watermark": "WarpCore License Orchestrator"
                 }
             
             generation_result = await self._execute_with_safety_gates(
@@ -235,7 +243,7 @@ class LicenseOrchestrator:
             if generation_result.get("success"):
                 generation_result["orchestrated"] = True
                 generation_result["features_validated"] = True
-                generation_result["orchestrator_watermark"] = watermark["orchestrator"]
+                generation_result["orchestrator_watermark"] = "WarpCore License Orchestrator"
             
             return generation_result
             
@@ -243,13 +251,14 @@ class LicenseOrchestrator:
             return {
                 "success": False,
                 "error": f"Full license generation orchestration failed: {str(e)}",
-                "orchestrator_watermark": self.config.get_watermark_config()["orchestrator"]
+                "orchestrator_watermark": "WarpCore License Orchestrator"
             }
     
     async def orchestrate_license_cleanup(self) -> Dict[str, Any]:
         """Orchestrate license cleanup operations"""
         try:
             watermark = self.config.get_watermark_config()
+            branding = self.config.get_branding_config()
             
             # Get current license status first
             status_result = await self.orchestrate_license_status_check()
@@ -270,26 +279,27 @@ class LicenseOrchestrator:
                         "success": True,
                         "message": "License cleanup completed",
                         "deactivated": deactivation_result.get("success", False),
-                        "orchestrator_watermark": watermark["orchestrator"]
+                        "orchestrator_watermark": "WarpCore License Orchestrator"
                     }
             
             return {
                 "success": True,
                 "message": "No cleanup needed",
-                "orchestrator_watermark": watermark["orchestrator"]
+                "orchestrator_watermark": "WarpCore License Orchestrator"
             }
             
         except Exception as e:
             return {
                 "success": False,
                 "error": f"License cleanup orchestration failed: {str(e)}",
-                "orchestrator_watermark": self.config.get_watermark_config()["orchestrator"]
+                "orchestrator_watermark": "WarpCore License Orchestrator"
             }
     
     async def orchestrate_custom_license_generation(self, user_email: str, user_name: str, days: int, features: list, license_type: str) -> Dict[str, Any]:
         """Orchestrate custom license generation with business rules and validation"""
         try:
             watermark = self.config.get_watermark_config()
+            branding = self.config.get_branding_config()
             self.logger.info(f"WARP ORCHESTRATOR: Generating custom license for {user_email} ({license_type}, {days} days)")
             
             # Step 1: Validate features against available features
@@ -315,7 +325,7 @@ class LicenseOrchestrator:
                 return {
                     "success": False,
                     "error": "License provider not available in orchestrator",
-                    "orchestrator_watermark": watermark["orchestrator"]
+                    "orchestrator_watermark": "WarpCore License Orchestrator"
                 }
             
             # Use the existing full license generation method
@@ -333,7 +343,7 @@ class LicenseOrchestrator:
                 generation_result["license_type_validated"] = license_type
                 generation_result["requested_features"] = features
                 generation_result["validated_features"] = valid_features
-                generation_result["orchestrator_watermark"] = watermark["orchestrator"]
+                generation_result["orchestrator_watermark"] = "WarpCore License Orchestrator"
                 
                 # Update license type in result if different from provider result
                 if "license_type" in generation_result:
@@ -346,7 +356,7 @@ class LicenseOrchestrator:
             return {
                 "success": False,
                 "error": f"Custom license generation orchestration failed: {str(e)}",
-                "orchestrator_watermark": self.config.get_watermark_config()["orchestrator"]
+                "orchestrator_watermark": "WarpCore License Orchestrator"
             }
     
     async def _execute_with_safety_gates(self, operation: str, func, *args, **kwargs) -> Dict[str, Any]:
@@ -405,6 +415,7 @@ class LicenseOrchestrator:
         """Orchestrate production-grade secure license generation with enhanced security"""
         try:
             watermark = self.config.get_watermark_config()
+            branding = self.config.get_branding_config()
             self.logger.info(f"WARP ORCHESTRATOR: Generating secure license for {user_email} with hardware binding: {hardware_binding}")
             
             # Step 1: Enhanced feature validation for secure licenses
@@ -429,7 +440,7 @@ class LicenseOrchestrator:
                 return {
                     "success": False,
                     "error": "License provider not available in orchestrator",
-                    "orchestrator_watermark": watermark["orchestrator"]
+                    "orchestrator_watermark": "WarpCore License Orchestrator"
                 }
             
             # Try secure generation method first, fallback to standard if not available
@@ -459,7 +470,7 @@ class LicenseOrchestrator:
                 generation_result["requested_features"] = features
                 generation_result["approved_features"] = secure_features
                 generation_result["hardware_binding_requested"] = hardware_binding
-                generation_result["orchestrator_watermark"] = watermark["orchestrator"]
+                generation_result["orchestrator_watermark"] = "WarpCore License Orchestrator"
             
             return generation_result
             
@@ -467,12 +478,13 @@ class LicenseOrchestrator:
             return {
                 "success": False,
                 "error": f"Secure license generation orchestration failed: {str(e)}",
-                "orchestrator_watermark": self.config.get_watermark_config()["orchestrator"]
+                "orchestrator_watermark": "WarpCore License Orchestrator"
             }
     
     async def get_orchestrator_status(self) -> Dict[str, Any]:
         """Get orchestrator status"""
         watermark = self.config.get_watermark_config()
+        branding = self.config.get_branding_config()
         
         return {
             "success": True,
@@ -482,7 +494,7 @@ class LicenseOrchestrator:
             "executor_registry_wired": bool(self.executor_registry),
             "cache_entries": len(self._license_cache),
             "cache_duration_minutes": self._cache_duration,
-            "orchestrator_watermark": watermark["orchestrator"],
+            "orchestrator_watermark": "WarpCore License Orchestrator",
             "config_loaded": True,
             "secure_license_support": True
         }

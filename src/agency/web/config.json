@@ -1,0 +1,19 @@
+{
+  "api_server": {
+    "host": "localhost",
+    "port": 8081
+  },
+  "web_server": {
+    "host": "localhost", 
+    "port": 8082
+  },
+  "streaming": {
+    "timeout": 300,
+    "heartbeat_interval": 30
+  },
+  "paths": {
+    "base_dir": "../..",
+    "data_dir": "../../.data",
+    "franchise_dir": "../../agents/franchise"
+  }
+}

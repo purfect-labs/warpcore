@@ -1,0 +1,826 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>🌊 WARPCORE Agency Command Center</title>
+    <style>
+        :root {
+            --bg-primary: #0a0a0a;
+            --bg-secondary: #1a1a1a;
+            --bg-tertiary: #2a2a2a;
+            --accent-purple: #8b5cf6;
+            --accent-blue: #3b82f6;
+            --accent-green: #10b981;
+            --accent-red: #ef4444;
+            --accent-orange: #f59e0b;
+            --text-primary: #f8fafc;
+            --text-secondary: #94a3b8;
+            --border-color: #374151;
+        }
+
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        body {
+            background: linear-gradient(135deg, var(--bg-primary) 0%, #1e1e2e 100%);
+            color: var(--text-primary);
+            font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
+            height: 100vh;
+            overflow: hidden;
+        }
+
+        .header {
+            background: rgba(139, 92, 246, 0.1);
+            backdrop-filter: blur(20px);
+            border-bottom: 1px solid var(--border-color);
+            padding: 1rem 2rem;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            height: 60px;
+        }
+
+        .logo {
+            font-size: 1.2rem;
+            font-weight: 700;
+            background: linear-gradient(135deg, var(--accent-purple), var(--accent-blue));
+            background-clip: text;
+            -webkit-background-clip: text;
+            -webkit-text-fill-color: transparent;
+        }
+
+        .status-bar {
+            display: flex;
+            align-items: center;
+            gap: 1rem;
+        }
+
+        .main-layout {
+            display: grid;
+            grid-template-columns: 300px 1fr 400px;
+            height: calc(100vh - 60px);
+        }
+
+        .left-panel {
+            background: var(--bg-secondary);
+            border-right: 1px solid var(--border-color);
+            display: flex;
+            flex-direction: column;
+        }
+
+        .franchise-tabs {
+            display: flex;
+            background: var(--bg-tertiary);
+            border-bottom: 1px solid var(--border-color);
+        }
+
+        .franchise-tab {
+            flex: 1;
+            padding: 0.75rem 0.5rem;
+            background: transparent;
+            border: none;
+            color: var(--text-secondary);
+            cursor: pointer;
+            font-weight: 500;
+            font-size: 0.8rem;
+            text-align: center;
+            transition: all 0.2s ease;
+            border-right: 1px solid var(--border-color);
+        }
+
+        .franchise-tab:last-child {
+            border-right: none;
+        }
+
+        .franchise-tab.active {
+            background: var(--accent-purple);
+            color: white;
+        }
+
+        .franchise-tab:hover:not(.active) {
+            background: rgba(139, 92, 246, 0.1);
+        }
+
+        .agents-container {
+            flex: 1;
+            padding: 1rem;
+            overflow-y: auto;
+        }
+
+        .franchise-info {
+            margin-bottom: 1rem;
+            padding: 0.75rem;
+            background: rgba(139, 92, 246, 0.05);
+            border-radius: 0.5rem;
+            border: 1px solid rgba(139, 92, 246, 0.2);
+            font-size: 0.85rem;
+        }
+
+        .agents-grid {
+            display: grid;
+            grid-template-columns: 1fr 1fr;
+            gap: 0.5rem;
+        }
+
+        .agent-btn {
+            padding: 0.75rem;
+            background: var(--bg-tertiary);
+            border: 1px solid var(--border-color);
+            border-radius: 0.5rem;
+            cursor: pointer;
+            transition: all 0.2s ease;
+            text-align: center;
+            font-size: 0.8rem;
+            color: var(--text-primary);
+            position: relative;
+            overflow: hidden;
+        }
+
+        .agent-btn:hover {
+            background: rgba(139, 92, 246, 0.1);
+            border-color: var(--accent-purple);
+            transform: translateY(-1px);
+        }
+
+        .agent-btn.running {
+            background: rgba(59, 130, 246, 0.1);
+            border-color: var(--accent-blue);
+            animation: pulse 2s infinite;
+        }
+
+        .agent-btn.running::before {
+            content: "●";
+            color: var(--accent-blue);
+            position: absolute;
+            top: 0.25rem;
+            right: 0.25rem;
+            font-size: 0.6rem;
+            animation: blink 1s infinite;
+        }
+
+        @keyframes pulse {
+            0%, 100% { box-shadow: 0 0 5px rgba(59, 130, 246, 0.3); }
+            50% { box-shadow: 0 0 15px rgba(59, 130, 246, 0.6); }
+        }
+
+        @keyframes blink {
+            0%, 50% { opacity: 1; }
+            51%, 100% { opacity: 0.3; }
+        }
+
+        .agent-name {
+            font-weight: 600;
+            margin-bottom: 0.25rem;
+            font-size: 0.75rem;
+        }
+
+        .agent-position {
+            font-size: 0.65rem;
+            color: var(--text-secondary);
+        }
+
+        .center-panel {
+            background: var(--bg-secondary);
+            display: flex;
+            flex-direction: column;
+        }
+
+        .execution-header {
+            padding: 1rem;
+            border-bottom: 1px solid var(--border-color);
+            background: var(--bg-tertiary);
+        }
+
+        .execution-form {
+            padding: 1rem;
+            flex: 1;
+            overflow-y: auto;
+        }
+
+        .input-group {
+            margin-bottom: 1rem;
+        }
+
+        .input-group label {
+            display: block;
+            margin-bottom: 0.5rem;
+            color: var(--text-secondary);
+            font-weight: 500;
+            font-size: 0.85rem;
+        }
+
+        .input-group input, .input-group textarea {
+            width: 100%;
+            padding: 0.75rem;
+            background: var(--bg-primary);
+            border: 1px solid var(--border-color);
+            border-radius: 0.5rem;
+            color: var(--text-primary);
+            font-family: inherit;
+            font-size: 0.9rem;
+        }
+
+        .input-group textarea {
+            resize: vertical;
+            min-height: 120px;
+        }
+
+        .execute-btn {
+            background: linear-gradient(135deg, var(--accent-purple), var(--accent-blue));
+            color: white;
+            border: none;
+            padding: 0.75rem 1.5rem;
+            border-radius: 0.5rem;
+            font-weight: 600;
+            cursor: pointer;
+            transition: all 0.2s ease;
+            width: 100%;
+            font-size: 0.9rem;
+        }
+
+        .execute-btn:hover:not(:disabled) {
+            transform: translateY(-2px);
+            box-shadow: 0 8px 25px rgba(139, 92, 246, 0.3);
+        }
+
+        .execute-btn:disabled {
+            opacity: 0.5;
+            cursor: not-allowed;
+            transform: none;
+        }
+
+        .right-panel {
+            background: var(--bg-secondary);
+            border-left: 1px solid var(--border-color);
+            display: flex;
+            flex-direction: column;
+        }
+
+        .console-header {
+            padding: 1rem;
+            border-bottom: 1px solid var(--border-color);
+            background: var(--bg-tertiary);
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+        }
+
+        .console-title {
+            font-weight: 600;
+            font-size: 0.9rem;
+        }
+
+        .console-controls {
+            display: flex;
+            gap: 0.5rem;
+        }
+
+        .console-btn {
+            background: var(--bg-primary);
+            border: 1px solid var(--border-color);
+            color: var(--text-secondary);
+            padding: 0.25rem 0.5rem;
+            border-radius: 0.25rem;
+            font-size: 0.75rem;
+            cursor: pointer;
+            transition: all 0.2s ease;
+        }
+
+        .console-btn:hover {
+            background: rgba(139, 92, 246, 0.1);
+            border-color: var(--accent-purple);
+        }
+
+        .console-content {
+            flex: 1;
+            padding: 1rem;
+            font-family: 'Monaco', 'Menlo', monospace;
+            font-size: 0.75rem;
+            line-height: 1.4;
+            overflow-y: auto;
+            background: var(--bg-primary);
+        }
+
+        .console-line {
+            margin-bottom: 0.5rem;
+            padding: 0.25rem 0.5rem;
+            border-radius: 0.25rem;
+        }
+
+        .console-line.success {
+            background: rgba(16, 185, 129, 0.1);
+            border-left: 3px solid var(--accent-green);
+        }
+
+        .console-line.error {
+            background: rgba(239, 68, 68, 0.1);
+            border-left: 3px solid var(--accent-red);
+        }
+
+        .console-line.info {
+            background: rgba(59, 130, 246, 0.1);
+            border-left: 3px solid var(--accent-blue);
+        }
+
+        .console-line.warning {
+            background: rgba(245, 158, 11, 0.1);
+            border-left: 3px solid var(--accent-orange);
+        }
+
+        .timestamp {
+            color: var(--text-secondary);
+            font-size: 0.65rem;
+            margin-right: 0.5rem;
+        }
+
+        .process-list {
+            background: var(--bg-tertiary);
+            border-bottom: 1px solid var(--border-color);
+            padding: 0.75rem;
+            max-height: 150px;
+            overflow-y: auto;
+        }
+
+        .process-item {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            padding: 0.5rem;
+            background: var(--bg-primary);
+            border-radius: 0.25rem;
+            margin-bottom: 0.5rem;
+            font-size: 0.75rem;
+        }
+
+        .process-info {
+            flex: 1;
+        }
+
+        .process-name {
+            font-weight: 600;
+            color: var(--accent-blue);
+        }
+
+        .process-details {
+            color: var(--text-secondary);
+            font-size: 0.65rem;
+        }
+
+        .kill-btn {
+            background: var(--accent-red);
+            color: white;
+            border: none;
+            padding: 0.25rem 0.5rem;
+            border-radius: 0.25rem;
+            font-size: 0.65rem;
+            cursor: pointer;
+        }
+
+        .status-indicator {
+            display: inline-block;
+            width: 8px;
+            height: 8px;
+            border-radius: 50%;
+            margin-right: 0.5rem;
+        }
+
+        .status-idle { background-color: var(--text-secondary); }
+        .status-running { background-color: var(--accent-blue); animation: pulse-dot 1s infinite; }
+        .status-success { background-color: var(--accent-green); }
+        .status-error { background-color: var(--accent-red); }
+
+        @keyframes pulse-dot {
+            0%, 100% { opacity: 1; }
+            50% { opacity: 0.3; }
+        }
+
+        .loading {
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            padding: 2rem;
+            color: var(--text-secondary);
+        }
+
+        .spinner {
+            width: 16px;
+            height: 16px;
+            border: 2px solid transparent;
+            border-top: 2px solid var(--accent-purple);
+            border-radius: 50%;
+            animation: spin 1s linear infinite;
+            margin-right: 0.5rem;
+        }
+
+        @keyframes spin {
+            0% { transform: rotate(0deg); }
+            100% { transform: rotate(360deg); }
+        }
+
+        ::-webkit-scrollbar {
+            width: 6px;
+        }
+
+        ::-webkit-scrollbar-track {
+            background: var(--bg-tertiary);
+        }
+
+        ::-webkit-scrollbar-thumb {
+            background: var(--border-color);
+            border-radius: 3px;
+        }
+
+        ::-webkit-scrollbar-thumb:hover {
+            background: var(--accent-purple);
+        }
+    </style>
+</head>
+<body>
+    <div class="header">
+        <div class="logo">🌊 WARPCORE Agency Command Center</div>
+        <div class="status-bar">
+            <span class="status-indicator status-idle" id="globalStatus"></span>
+            <span id="globalStatusText">Ready</span>
+        </div>
+    </div>
+
+    <div class="main-layout">
+        <!-- Left Panel: Franchise Tabs + Agents -->
+        <div class="left-panel">
+            <div class="franchise-tabs" id="franchiseTabs">
+                <!-- Franchise tabs will be loaded here -->
+            </div>
+            
+            <div class="agents-container">
+                <div class="franchise-info" id="franchiseInfo">
+                    <div class="loading">
+                        <div class="spinner"></div>
+                        Loading...
+                    </div>
+                </div>
+                
+                <div class="agents-grid" id="agentsGrid">
+                    <!-- Agent buttons will be loaded here -->
+                </div>
+            </div>
+        </div>
+
+        <!-- Center Panel: Execution Form -->
+        <div class="center-panel">
+            <div class="execution-header">
+                <h3 id="selectedAgent">Select an Agent</h3>
+                <p id="selectedDetails">Choose a franchise and agent to execute</p>
+            </div>
+            
+            <div class="execution-form">
+                <div class="input-group">
+                    <label for="workflowId">Workflow ID (optional)</label>
+                    <input type="text" id="workflowId" placeholder="e.g., wf_security_audit_001">
+                </div>
+
+                <div class="input-group">
+                    <label for="customPrompt">Custom Prompt *</label>
+                    <textarea id="customPrompt" placeholder="Enter your instructions for the agent..."></textarea>
+                </div>
+
+                <button class="execute-btn" id="executeBtn" disabled>
+                    🚀 Execute Agent
+                </button>
+            </div>
+        </div>
+
+        <!-- Right Panel: Live Console -->
+        <div class="right-panel">
+            <div class="console-header">
+                <div class="console-title">📊 Live Console</div>
+                <div class="console-controls">
+                    <button class="console-btn" onclick="clearConsole()">Clear</button>
+                    <button class="console-btn" onclick="refreshProcesses()">Refresh</button>
+                </div>
+            </div>
+            
+            <div class="process-list" id="processList">
+                <!-- Running processes will be displayed here -->
+            </div>
+            
+            <div class="console-content" id="consoleContent">
+                <div class="console-line info">
+                    <span class="timestamp">${new Date().toLocaleTimeString()}</span>
+                    WARPCORE Agency Console initialized
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <script>
+        let currentFranchise = 'staff';
+        let selectedAgent = null;
+        let runningProcesses = new Set();
+        let consoleLines = [];
+
+        // Initialize
+        async function init() {
+            await loadFranchises();
+            await loadAgents(currentFranchise);
+            startProcessMonitoring();
+        }
+
+        // Load franchises and create tabs
+        async function loadFranchises() {
+            try {
+                const response = await fetch('/api/franchises');
+                const data = await response.json();
+                
+                const tabsContainer = document.getElementById('franchiseTabs');
+                tabsContainer.innerHTML = '';
+                
+                data.franchises.forEach((franchise, index) => {
+                    const tab = document.createElement('button');
+                    tab.className = `franchise-tab ${index === 0 ? 'active' : ''}`;
+                    tab.textContent = `${getFranchiseIcon(franchise)} ${franchise.toUpperCase()}`;
+                    tab.onclick = () => switchFranchise(franchise);
+                    tabsContainer.appendChild(tab);
+                });
+                
+                if (data.franchises.length > 0) {
+                    currentFranchise = data.franchises[0];
+                    updateFranchiseInfo();
+                }
+            } catch (error) {
+                addConsoleLog('error', 'Failed to load franchises: ' + error.message);
+            }
+        }
+
+        // Load agents for franchise
+        async function loadAgents(franchise) {
+            try {
+                const response = await fetch(`/api/agents/${franchise}`);
+                const data = await response.json();
+                
+                const grid = document.getElementById('agentsGrid');
+                grid.innerHTML = '';
+                
+                if (data.agents && data.agents.length > 0) {
+                    data.agents.forEach(agent => {
+                        const btn = document.createElement('button');
+                        btn.className = 'agent-btn';
+                        btn.onclick = () => selectAgent(agent);
+                        
+                        // Check if agent is running
+                        if (runningProcesses.has(agent.id)) {
+                            btn.classList.add('running');
+                        }
+                        
+                        btn.innerHTML = `
+                            <div class="agent-name">${agent.agent_name}</div>
+                            <div class="agent-position">Pos: ${agent.workflow_position}</div>
+                        `;
+                        
+                        grid.appendChild(btn);
+                    });
+                    
+                    addConsoleLog('success', `Loaded ${data.agents.length} agents for ${franchise} franchise`);
+                } else {
+                    grid.innerHTML = '<div style="text-align: center; color: var(--text-secondary); padding: 2rem; font-size: 0.8rem;">No agents found</div>';
+                }
+            } catch (error) {
+                addConsoleLog('error', 'Failed to load agents: ' + error.message);
+            }
+        }
+
+        // Switch franchise
+        async function switchFranchise(franchise) {
+            currentFranchise = franchise;
+            selectedAgent = null;
+            
+            // Update tabs
+            document.querySelectorAll('.franchise-tab').forEach(tab => {
+                tab.classList.remove('active');
+                if (tab.textContent.includes(franchise.toUpperCase())) {
+                    tab.classList.add('active');
+                }
+            });
+            
+            updateFranchiseInfo();
+            updateSelectedAgent();
+            await loadAgents(franchise);
+            
+            addConsoleLog('info', `Switched to ${franchise} franchise`);
+        }
+
+        // Select agent
+        function selectAgent(agent) {
+            selectedAgent = agent;
+            
+            // Update UI
+            document.querySelectorAll('.agent-btn').forEach(btn => {
+                btn.style.background = 'var(--bg-tertiary)';
+                btn.style.borderColor = 'var(--border-color)';
+            });
+            
+            event.target.closest('.agent-btn').style.background = 'rgba(139, 92, 246, 0.2)';
+            event.target.closest('.agent-btn').style.borderColor = 'var(--accent-purple)';
+            
+            updateSelectedAgent();
+            addConsoleLog('info', `Selected agent: ${agent.agent_name}`);
+        }
+
+        // Update franchise info
+        function updateFranchiseInfo() {
+            const info = document.getElementById('franchiseInfo');
+            const descriptions = {
+                'staff': 'Software development and architecture agents',
+                'patrol': 'Security analysis and vulnerability assessment agents',
+                'framer': 'Content creation and data analysis agents',
+                'apex': 'Strategic leadership and planning agents'
+            };
+            
+            info.innerHTML = `
+                <div style="font-weight: 600; margin-bottom: 0.5rem;">${getFranchiseIcon(currentFranchise)} ${currentFranchise.toUpperCase()} FRANCHISE</div>
+                <div style="color: var(--text-secondary);">${descriptions[currentFranchise] || 'Specialized AI agents'}</div>
+            `;
+        }
+
+        // Update selected agent display
+        function updateSelectedAgent() {
+            const title = document.getElementById('selectedAgent');
+            const details = document.getElementById('selectedDetails');
+            const executeBtn = document.getElementById('executeBtn');
+            
+            if (selectedAgent) {
+                title.textContent = selectedAgent.agent_name;
+                details.textContent = `${currentFranchise.toUpperCase()} • Position ${selectedAgent.workflow_position} • ${selectedAgent.version}`;
+                executeBtn.disabled = false;
+            } else {
+                title.textContent = 'Select an Agent';
+                details.textContent = `Choose an agent from the ${currentFranchise.toUpperCase()} franchise`;
+                executeBtn.disabled = true;
+            }
+        }
+
+        // Execute agent
+        async function executeAgent() {
+            if (!selectedAgent) return;
+            
+            const workflowId = document.getElementById('workflowId').value;
+            const customPrompt = document.getElementById('customPrompt').value.trim();
+            
+            if (!customPrompt) {
+                addConsoleLog('error', 'Please enter a custom prompt');
+                return;
+            }
+            
+            setGlobalStatus('running', 'Executing agent...');
+            
+            const payload = {
+                agent_id: selectedAgent.id,
+                franchise: currentFranchise,
+                workflow_id: workflowId || null,
+                custom_prompt: customPrompt
+            };
+            
+            try {
+                const response = await fetch('/api/execute-agent', {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify(payload)
+                });
+                
+                const result = await response.json();
+                
+                if (result.status === 'success') {
+                    setGlobalStatus('success', 'Agent executed successfully');
+                    addConsoleLog('success', `Executed ${selectedAgent.agent_name} (PID: ${result.process_id})`);
+                    
+                    // Mark agent as running
+                    runningProcesses.add(selectedAgent.id);
+                    updateAgentRunningState(selectedAgent.id, true);
+                    
+                    // Clear form
+                    document.getElementById('customPrompt').value = '';
+                    document.getElementById('workflowId').value = '';
+                } else {
+                    setGlobalStatus('error', 'Execution failed');
+                    addConsoleLog('error', `Failed to execute agent: ${result.message}`);
+                }
+            } catch (error) {
+                setGlobalStatus('error', 'Execution failed');
+                addConsoleLog('error', `Execution error: ${error.message}`);
+            }
+        }
+
+        // Update agent running state
+        function updateAgentRunningState(agentId, isRunning) {
+            document.querySelectorAll('.agent-btn').forEach(btn => {
+                const agentName = btn.querySelector('.agent-name').textContent;
+                if (agentName === agentId || btn.onclick.toString().includes(agentId)) {
+                    if (isRunning) {
+                        btn.classList.add('running');
+                    } else {
+                        btn.classList.remove('running');
+                    }
+                }
+            });
+        }
+
+        // Start process monitoring
+        function startProcessMonitoring() {
+            setInterval(refreshProcesses, 3000);
+        }
+
+        // Refresh running processes
+        async function refreshProcesses() {
+            try {
+                const response = await fetch('/api/running-processes');
+                const data = await response.json();
+                
+                const processList = document.getElementById('processList');
+                
+                if (data.running_processes && data.running_processes.length > 0) {
+                    processList.innerHTML = data.running_processes.map(proc => `
+                        <div class="process-item">
+                            <div class="process-info">
+                                <div class="process-name">${proc.agent_id}</div>
+                                <div class="process-details">PID: ${proc.pid} • ${new Date(proc.start_time).toLocaleTimeString()}</div>
+                            </div>
+                            <button class="kill-btn" onclick="stopProcess('${proc.workflow_id}')">Stop</button>
+                        </div>
+                    `).join('');
+                    
+                    // Update running processes set
+                    runningProcesses.clear();
+                    data.running_processes.forEach(proc => {
+                        runningProcesses.add(proc.agent_id);
+                    });
+                } else {
+                    processList.innerHTML = '<div style="text-align: center; color: var(--text-secondary); padding: 1rem; font-size: 0.75rem;">No running processes</div>';
+                    runningProcesses.clear();
+                }
+            } catch (error) {
+                addConsoleLog('warning', 'Failed to refresh processes: ' + error.message);
+            }
+        }
+
+        // Stop process
+        async function stopProcess(workflowId) {
+            try {
+                const response = await fetch(`/api/stop-workflow/${workflowId}`, { method: 'POST' });
+                const result = await response.json();
+                
+                if (result.status === 'success') {
+                    addConsoleLog('info', `Stopped workflow: ${workflowId}`);
+                    refreshProcesses();
+                }
+            } catch (error) {
+                addConsoleLog('error', 'Failed to stop process: ' + error.message);
+            }
+        }
+
+        // Console functions
+        function addConsoleLog(type, message) {
+            const timestamp = new Date().toLocaleTimeString();
+            const line = document.createElement('div');
+            line.className = `console-line ${type}`;
+            line.innerHTML = `<span class="timestamp">${timestamp}</span>${message}`;
+            
+            const console = document.getElementById('consoleContent');
+            console.appendChild(line);
+            console.scrollTop = console.scrollHeight;
+            
+            // Keep only last 100 lines
+            const lines = console.querySelectorAll('.console-line');
+            if (lines.length > 100) {
+                lines[0].remove();
+            }
+        }
+
+        function clearConsole() {
+            document.getElementById('consoleContent').innerHTML = '';
+            addConsoleLog('info', 'Console cleared');
+        }
+
+        function setGlobalStatus(status, text) {
+            const indicator = document.getElementById('globalStatus');
+            const statusText = document.getElementById('globalStatusText');
+            
+            indicator.className = `status-indicator status-${status}`;
+            statusText.textContent = text;
+        }
+
+        function getFranchiseIcon(franchise) {
+            const icons = { 'staff': '🏢', 'patrol': '🛡️', 'framer': '🎨', 'apex': '👑' };
+            return icons[franchise] || '🤖';
+        }
+
+        // Event listeners
+        document.getElementById('executeBtn').addEventListener('click', executeAgent);
+
+        // Initialize
+        init();
+    </script>
+</body>
+</html>

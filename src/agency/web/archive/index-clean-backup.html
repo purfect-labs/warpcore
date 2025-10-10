@@ -1,0 +1,993 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>WARPCORE Agency - Clean Dashboard</title>
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+        
+        body {
+            font-family: 'Monaco', 'Consolas', 'Courier New', monospace;
+            background: linear-gradient(135deg, #1a1a2e 0%, #16213e 50%, #0f3460 100%);
+            color: #ffffff;
+            height: 100vh;
+            overflow: hidden;
+        }
+        
+        .header {
+            background: rgba(0,0,0,0.8);
+            padding: 1rem 2rem;
+            border-bottom: 2px solid #00ff88;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            backdrop-filter: blur(10px);
+        }
+        
+        .header h1 {
+            font-size: 1.8rem;
+            background: linear-gradient(45deg, #00ff88, #00ccff);
+            -webkit-background-clip: text;
+            -webkit-text-fill-color: transparent;
+            background-clip: text;
+        }
+        
+        .header-stats {
+            display: flex;
+            gap: 2rem;
+            font-size: 0.9rem;
+            color: #00ccff;
+        }
+        
+        .main-container {
+            display: flex;
+            height: calc(100vh - 80px);
+        }
+        
+        /* Left Panel - Franchise Tabs */
+        .left-panel {
+            width: 200px;
+            background: rgba(0,0,0,0.4);
+            border-right: 2px solid #333;
+            display: flex;
+            flex-direction: column;
+        }
+        
+        .franchise-tabs {
+            padding: 1rem 0;
+        }
+        
+        .franchise-tab {
+            display: block;
+            width: 100%;
+            padding: 1rem 1.5rem;
+            background: none;
+            border: none;
+            color: #ccc;
+            text-align: left;
+            cursor: pointer;
+            transition: all 0.3s ease;
+            border-left: 4px solid transparent;
+            font-family: inherit;
+            font-size: 0.9rem;
+            text-transform: uppercase;
+            letter-spacing: 1px;
+        }
+        
+        .franchise-tab:hover {
+            background: rgba(0,255,136,0.1);
+            color: #00ff88;
+            border-left-color: #00ff88;
+        }
+        
+        .franchise-tab.active {
+            background: rgba(0,255,136,0.2);
+            color: #00ff88;
+            border-left-color: #00ff88;
+            font-weight: bold;
+        }
+        
+        .franchise-tab .tab-count {
+            display: block;
+            font-size: 0.7rem;
+            opacity: 0.7;
+            margin-top: 0.2rem;
+            font-weight: normal;
+        }
+        
+        /* Center Panel - Agent List */
+        .center-panel {
+            flex: 1;
+            background: rgba(0,0,0,0.2);
+            display: flex;
+            flex-direction: column;
+            overflow: hidden;
+        }
+        
+        .panel-header {
+            padding: 1rem 2rem;
+            background: rgba(0,0,0,0.3);
+            border-bottom: 1px solid #333;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+        }
+        
+        .panel-title {
+            font-size: 1.2rem;
+            color: #00ff88;
+        }
+        
+        .search-box {
+            padding: 0.5rem 1rem;
+            background: rgba(0,0,0,0.5);
+            border: 1px solid #333;
+            border-radius: 20px;
+            color: #fff;
+            width: 250px;
+            outline: none;
+        }
+        
+        .search-box:focus {
+            border-color: #00ff88;
+        }
+        
+        .agent-list {
+            flex: 1;
+            overflow-y: auto;
+            padding: 1rem;
+        }
+        
+        .agent-item {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            padding: 1rem 1.5rem;
+            margin-bottom: 0.5rem;
+            background: rgba(255,255,255,0.05);
+            border-radius: 6px;
+            border-left: 4px solid #333;
+            cursor: pointer;
+            transition: all 0.3s ease;
+        }
+        
+        .agent-item:hover {
+            background: rgba(255,255,255,0.1);
+            border-left-color: #00ff88;
+            transform: translateX(5px);
+        }
+        
+        .agent-item.selected {
+            background: rgba(0,255,136,0.1);
+            border-left-color: #00ff88;
+        }
+        
+        .agent-info {
+            flex: 1;
+        }
+        
+        .agent-name {
+            font-size: 1rem;
+            font-weight: bold;
+            color: #ffffff;
+            margin-bottom: 0.2rem;
+        }
+        
+        .agent-id {
+            font-size: 0.8rem;
+            color: #00ccff;
+            opacity: 0.8;
+        }
+        
+        .agent-actions {
+            display: flex;
+            gap: 0.5rem;
+        }
+        
+        .action-btn {
+            padding: 0.4rem 0.8rem;
+            background: rgba(0,204,255,0.2);
+            border: 1px solid #00ccff;
+            color: #00ccff;
+            border-radius: 4px;
+            cursor: pointer;
+            font-size: 0.8rem;
+            transition: all 0.3s ease;
+        }
+        
+        .action-btn:hover {
+            background: #00ccff;
+            color: #000;
+        }
+        
+        .action-btn.execute {
+            background: rgba(0,255,136,0.2);
+            border-color: #00ff88;
+            color: #00ff88;
+        }
+        
+        .action-btn.execute:hover {
+            background: #00ff88;
+            color: #000;
+        }
+        
+        /* Right Panel - Console & Process Manager */
+        .right-panel {
+            width: 400px;
+            background: rgba(0,0,0,0.4);
+            border-left: 2px solid #333;
+            display: flex;
+            flex-direction: column;
+        }
+        
+        .console-tabs {
+            display: flex;
+            background: rgba(0,0,0,0.3);
+            border-bottom: 1px solid #333;
+        }
+        
+        .console-tab {
+            flex: 1;
+            padding: 0.8rem;
+            background: none;
+            border: none;
+            color: #ccc;
+            cursor: pointer;
+            transition: all 0.3s ease;
+            font-family: inherit;
+            font-size: 0.9rem;
+        }
+        
+        .console-tab:hover {
+            background: rgba(255,255,255,0.1);
+            color: #fff;
+        }
+        
+        .console-tab.active {
+            background: #00ccff;
+            color: #000;
+            font-weight: bold;
+        }
+        
+        .console-content {
+            flex: 1;
+            display: none;
+            flex-direction: column;
+            overflow: hidden;
+        }
+        
+        .console-content.active {
+            display: flex;
+        }
+        
+        .console-output {
+            flex: 1;
+            padding: 1rem;
+            font-family: 'Monaco', 'Consolas', monospace;
+            font-size: 0.8rem;
+            line-height: 1.4;
+            overflow-y: auto;
+            background: rgba(0,0,0,0.6);
+            color: #e0e0e0;
+            white-space: pre-wrap;
+        }
+        
+        .process-list {
+            flex: 1;
+            overflow-y: auto;
+            padding: 1rem;
+        }
+        
+        .process-item {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            padding: 0.8rem;
+            margin-bottom: 0.5rem;
+            background: rgba(255,255,255,0.05);
+            border-radius: 4px;
+            border-left: 4px solid #333;
+        }
+        
+        .process-item.running {
+            border-left-color: #00ff88;
+            background: rgba(0,255,136,0.1);
+        }
+        
+        .process-item.error {
+            border-left-color: #ff6b6b;
+            background: rgba(255,107,107,0.1);
+        }
+        
+        .process-info {
+            flex: 1;
+        }
+        
+        .process-name {
+            font-size: 0.9rem;
+            font-weight: bold;
+            color: #ffffff;
+        }
+        
+        .process-status {
+            font-size: 0.7rem;
+            opacity: 0.8;
+            margin-top: 0.2rem;
+        }
+        
+        .process-actions {
+            display: flex;
+            gap: 0.3rem;
+        }
+        
+        .process-btn {
+            padding: 0.3rem 0.6rem;
+            background: rgba(255,255,255,0.1);
+            border: 1px solid #555;
+            color: #ccc;
+            border-radius: 3px;
+            cursor: pointer;
+            font-size: 0.7rem;
+            transition: all 0.3s ease;
+        }
+        
+        .process-btn:hover {
+            background: rgba(255,255,255,0.2);
+            color: #fff;
+        }
+        
+        .process-btn.kill {
+            border-color: #ff6b6b;
+            color: #ff6b6b;
+        }
+        
+        .process-btn.kill:hover {
+            background: #ff6b6b;
+            color: #000;
+        }
+        
+        /* Execute Modal */
+        .modal-overlay {
+            position: fixed;
+            top: 0;
+            left: 0;
+            right: 0;
+            bottom: 0;
+            background: rgba(0,0,0,0.9);
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            z-index: 10000;
+            opacity: 0;
+            visibility: hidden;
+            transition: all 0.3s ease;
+        }
+        
+        .modal-overlay.show {
+            opacity: 1;
+            visibility: visible;
+        }
+        
+        .modal-content {
+            background: rgba(0,0,0,0.95);
+            border: 2px solid #00ff88;
+            border-radius: 12px;
+            padding: 2rem;
+            max-width: 600px;
+            width: 90%;
+            max-height: 80vh;
+            overflow-y: auto;
+        }
+        
+        .modal-header {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-bottom: 1.5rem;
+            padding-bottom: 1rem;
+            border-bottom: 1px solid #333;
+        }
+        
+        .modal-title {
+            color: #00ff88;
+            font-size: 1.5rem;
+        }
+        
+        .close-btn {
+            background: #ff6b6b;
+            color: white;
+            border: none;
+            width: 30px;
+            height: 30px;
+            border-radius: 50%;
+            cursor: pointer;
+            font-size: 16px;
+            transition: all 0.3s ease;
+        }
+        
+        .close-btn:hover {
+            background: #ff5252;
+            transform: rotate(90deg);
+        }
+        
+        .form-group {
+            margin-bottom: 1.5rem;
+        }
+        
+        .form-label {
+            display: block;
+            margin-bottom: 0.5rem;
+            color: #00ccff;
+            font-weight: bold;
+        }
+        
+        .form-input, .form-textarea {
+            width: 100%;
+            padding: 0.8rem;
+            background: rgba(255,255,255,0.1);
+            border: 1px solid #333;
+            border-radius: 6px;
+            color: #fff;
+            font-family: inherit;
+            outline: none;
+        }
+        
+        .form-textarea {
+            height: 150px;
+            resize: vertical;
+            font-family: 'Monaco', 'Consolas', monospace;
+        }
+        
+        .form-input:focus, .form-textarea:focus {
+            border-color: #00ff88;
+        }
+        
+        .execute-btn {
+            background: linear-gradient(45deg, #00ff88, #00ccff);
+            color: #000;
+            border: none;
+            padding: 1rem 2rem;
+            border-radius: 6px;
+            cursor: pointer;
+            font-weight: bold;
+            font-size: 1rem;
+            transition: all 0.3s ease;
+            width: 100%;
+        }
+        
+        .execute-btn:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 5px 15px rgba(0,255,136,0.3);
+        }
+        
+        .execute-btn:disabled {
+            opacity: 0.5;
+            cursor: not-allowed;
+            transform: none;
+        }
+        
+        /* Scrollbar styling */
+        ::-webkit-scrollbar {
+            width: 8px;
+        }
+        
+        ::-webkit-scrollbar-track {
+            background: rgba(0,0,0,0.3);
+        }
+        
+        ::-webkit-scrollbar-thumb {
+            background: #00ff88;
+            border-radius: 4px;
+        }
+        
+        ::-webkit-scrollbar-thumb:hover {
+            background: #00ccff;
+        }
+        
+        /* Loading states */
+        .loading {
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            padding: 4rem;
+            font-size: 1.2rem;
+            color: #00ff88;
+        }
+        
+        .spinner {
+            width: 20px;
+            height: 20px;
+            border: 2px solid #333;
+            border-top: 2px solid #00ff88;
+            border-radius: 50%;
+            animation: spin 1s linear infinite;
+            margin-right: 1rem;
+        }
+        
+        @keyframes spin {
+            0% { transform: rotate(0deg); }
+            100% { transform: rotate(360deg); }
+        }
+        
+        /* Status indicators */
+        .status-indicator {
+            display: inline-block;
+            width: 8px;
+            height: 8px;
+            border-radius: 50%;
+            margin-right: 0.5rem;
+        }
+        
+        .status-running {
+            background: #00ff88;
+            animation: pulse 1.5s ease-in-out infinite alternate;
+        }
+        
+        .status-idle {
+            background: #666;
+        }
+        
+        .status-error {
+            background: #ff6b6b;
+        }
+        
+        @keyframes pulse {
+            0% { opacity: 1; }
+            100% { opacity: 0.3; }
+        }
+    </style>
+</head>
+<body>
+    <div class="header">
+        <h1>🚀 WARPCORE Agency</h1>
+        <div class="header-stats">
+            <div>Franchises: <span id="franchiseCount">0</span></div>
+            <div>Agents: <span id="agentCount">0</span></div>
+            <div>Running: <span id="runningCount">0</span></div>
+        </div>
+    </div>
+    
+    <div class="main-container">
+        <!-- Left Panel - Franchise Tabs -->
+        <div class="left-panel">
+            <div class="franchise-tabs" id="franchiseTabs">
+                <!-- Franchise tabs will be populated here -->
+            </div>
+        </div>
+        
+        <!-- Center Panel - Agent List -->
+        <div class="center-panel">
+            <div class="panel-header">
+                <h2 class="panel-title" id="panelTitle">Select a Franchise</h2>
+                <input type="text" class="search-box" placeholder="Search agents..." id="searchBox">
+            </div>
+            <div class="agent-list" id="agentList">
+                <div class="loading">
+                    <div class="spinner"></div>
+                    Loading agents...
+                </div>
+            </div>
+        </div>
+        
+        <!-- Right Panel - Console & Process Manager -->
+        <div class="right-panel">
+            <div class="console-tabs">
+                <button class="console-tab active" onclick="showConsoleTab('logs')">Logs</button>
+                <button class="console-tab" onclick="showConsoleTab('processes')">Processes</button>
+            </div>
+            
+            <div class="console-content active" id="logsTab">
+                <div class="console-output" id="consoleOutput">
+[${new Date().toISOString()}] WARPCORE Agency Console Ready
+[${new Date().toISOString()}] Waiting for agent execution...
+                </div>
+            </div>
+            
+            <div class="console-content" id="processesTab">
+                <div class="process-list" id="processList">
+                    <div style="text-align: center; padding: 2rem; color: #666;">
+                        No running processes
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+    
+    <!-- Execute Agent Modal -->
+    <div class="modal-overlay" id="executeModal">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h3 class="modal-title">Execute Agent</h3>
+                <button class="close-btn" onclick="closeExecuteModal()">&times;</button>
+            </div>
+            <div class="modal-body">
+                <div class="form-group">
+                    <label class="form-label">Agent</label>
+                    <input type="text" class="form-input" id="selectedAgent" readonly>
+                </div>
+                <div class="form-group">
+                    <label class="form-label">Franchise</label>
+                    <input type="text" class="form-input" id="selectedFranchise" readonly>
+                </div>
+                <div class="form-group">
+                    <label class="form-label">Custom Prompt (Optional)</label>
+                    <textarea class="form-textarea" id="customPrompt" placeholder="Enter custom prompt or leave empty to use agent's default prompt..."></textarea>
+                </div>
+                <button class="execute-btn" onclick="executeAgent()" id="executeBtn">
+                    Execute Agent
+                </button>
+            </div>
+        </div>
+    </div>
+    
+    <script>
+        class WARPCOREAgency {
+            constructor() {
+                this.baseURL = 'http://localhost:8081';
+                this.franchises = [];
+                this.currentFranchise = null;
+                this.agents = [];
+                this.runningProcesses = new Map();
+                this.selectedAgent = null;
+                
+                this.init();
+            }
+            
+            async init() {
+                try {
+                    await this.loadFranchises();
+                    this.bindEvents();
+                    this.startProcessMonitoring();
+                    this.log('Agency dashboard initialized successfully');
+                } catch (error) {
+                    this.log(`ERROR: Failed to initialize dashboard - ${error.message}`, 'error');
+                    console.error('Initialization error:', error);
+                }
+            }
+            
+            async loadFranchises() {
+                try {
+                    const response = await fetch(`${this.baseURL}/api/franchises`);
+                    if (!response.ok) throw new Error(`HTTP ${response.status}`);
+                    
+                    this.franchises = await response.json();
+                    this.updateStats();
+                    this.renderFranchiseTabs();
+                    
+                    if (this.franchises.length > 0) {
+                        this.selectFranchise(this.franchises[0]);
+                    }
+                } catch (error) {
+                    this.log(`ERROR: Failed to load franchises - ${error.message}`, 'error');
+                    throw error;
+                }
+            }
+            
+            async loadAgents(franchise) {
+                try {
+                    const response = await fetch(`${this.baseURL}/api/agents?franchise=${franchise}`);
+                    if (!response.ok) throw new Error(`HTTP ${response.status}`);
+                    
+                    this.agents = await response.json();
+                    this.renderAgentList();
+                    this.log(`Loaded ${this.agents.length} agents from ${franchise} franchise`);
+                } catch (error) {
+                    this.log(`ERROR: Failed to load agents for ${franchise} - ${error.message}`, 'error');
+                    document.getElementById('agentList').innerHTML = `
+                        <div style="text-align: center; padding: 2rem; color: #ff6b6b;">
+                            Failed to load agents: ${error.message}
+                        </div>
+                    `;
+                }
+            }
+            
+            renderFranchiseTabs() {
+                const container = document.getElementById('franchiseTabs');
+                container.innerHTML = this.franchises.map(franchise => `
+                    <button class="franchise-tab" data-franchise="${franchise}" onclick="agency.selectFranchise('${franchise}')">
+                        ${franchise.toUpperCase()}
+                        <span class="tab-count" id="count-${franchise}">0 agents</span>
+                    </button>
+                `).join('');
+            }
+            
+            async selectFranchise(franchise) {
+                this.currentFranchise = franchise;
+                
+                // Update active tab
+                document.querySelectorAll('.franchise-tab').forEach(tab => {
+                    tab.classList.toggle('active', tab.dataset.franchise === franchise);
+                });
+                
+                // Update panel title
+                document.getElementById('panelTitle').textContent = `${franchise.toUpperCase()} Agents`;
+                
+                // Show loading state
+                document.getElementById('agentList').innerHTML = `
+                    <div class="loading">
+                        <div class="spinner"></div>
+                        Loading ${franchise} agents...
+                    </div>
+                `;
+                
+                await this.loadAgents(franchise);
+            }
+            
+            renderAgentList() {
+                const container = document.getElementById('agentList');
+                
+                if (this.agents.length === 0) {
+                    container.innerHTML = `
+                        <div style="text-align: center; padding: 2rem; color: #666;">
+                            No agents found in ${this.currentFranchise} franchise
+                        </div>
+                    `;
+                    return;
+                }
+                
+                container.innerHTML = this.agents.map(agent => `
+                    <div class="agent-item" data-agent="${agent}" onclick="agency.selectAgent('${agent}')">
+                        <div class="agent-info">
+                            <div class="agent-name">${agent}</div>
+                            <div class="agent-id">${this.currentFranchise}/${agent}</div>
+                        </div>
+                        <div class="agent-actions">
+                            <button class="action-btn" onclick="agency.viewAgentPrompt('${agent}'); event.stopPropagation();">View</button>
+                            <button class="action-btn execute" onclick="agency.openExecuteModal('${agent}'); event.stopPropagation();">Execute</button>
+                        </div>
+                    </div>
+                `).join('');
+                
+                // Update franchise count
+                document.getElementById(`count-${this.currentFranchise}`).textContent = `${this.agents.length} agents`;
+                this.updateStats();
+            }
+            
+            selectAgent(agent) {
+                this.selectedAgent = agent;
+                
+                // Update visual selection
+                document.querySelectorAll('.agent-item').forEach(item => {
+                    item.classList.toggle('selected', item.dataset.agent === agent);
+                });
+                
+                this.log(`Selected agent: ${this.currentFranchise}/${agent}`);
+            }
+            
+            async viewAgentPrompt(agent) {
+                try {
+                    const response = await fetch(`${this.baseURL}/api/agent/${agent}/prompt?franchise=${this.currentFranchise}`);
+                    if (!response.ok) throw new Error(`HTTP ${response.status}`);
+                    
+                    const prompt = await response.text();
+                    this.log(`=== ${agent.toUpperCase()} PROMPT ===`);
+                    this.log(prompt);
+                    this.log(`=== END PROMPT ===`);
+                } catch (error) {
+                    this.log(`ERROR: Failed to load prompt for ${agent} - ${error.message}`, 'error');
+                }
+            }
+            
+            openExecuteModal(agent) {
+                this.selectedAgent = agent;
+                document.getElementById('selectedAgent').value = agent;
+                document.getElementById('selectedFranchise').value = this.currentFranchise;
+                document.getElementById('customPrompt').value = '';
+                document.getElementById('executeModal').classList.add('show');
+            }
+            
+            closeExecuteModal() {
+                document.getElementById('executeModal').classList.remove('show');
+            }
+            
+            async executeAgent() {
+                if (!this.selectedAgent || !this.currentFranchise) return;
+                
+                const executeBtn = document.getElementById('executeBtn');
+                const customPrompt = document.getElementById('customPrompt').value.trim();
+                
+                executeBtn.disabled = true;
+                executeBtn.textContent = 'Executing...';
+                
+                try {
+                    const payload = {
+                        franchise: this.currentFranchise,
+                        prompt: customPrompt || undefined
+                    };
+                    
+                    const response = await fetch(`${this.baseURL}/api/agent/${this.selectedAgent}/execute`, {
+                        method: 'POST',
+                        headers: {
+                            'Content-Type': 'application/json'
+                        },
+                        body: JSON.stringify(payload)
+                    });
+                    
+                    if (!response.ok) throw new Error(`HTTP ${response.status}`);
+                    
+                    const result = await response.json();
+                    this.log(`Started execution of ${this.selectedAgent} - Process ID: ${result.process_id}`);
+                    
+                    // Add to running processes
+                    this.runningProcesses.set(result.process_id, {
+                        agent: this.selectedAgent,
+                        franchise: this.currentFranchise,
+                        startTime: new Date(),
+                        status: 'running'
+                    });
+                    
+                    this.updateProcessList();
+                    this.updateStats();
+                    this.closeExecuteModal();
+                    
+                } catch (error) {
+                    this.log(`ERROR: Failed to execute ${this.selectedAgent} - ${error.message}`, 'error');
+                } finally {
+                    executeBtn.disabled = false;
+                    executeBtn.textContent = 'Execute Agent';
+                }
+            }
+            
+            async killProcess(processId) {
+                try {
+                    const response = await fetch(`${this.baseURL}/api/process/${processId}/stop`, {
+                        method: 'POST'
+                    });
+                    
+                    if (!response.ok) throw new Error(`HTTP ${response.status}`);
+                    
+                    this.log(`Stopped process ${processId}`);
+                    
+                    if (this.runningProcesses.has(processId)) {
+                        this.runningProcesses.get(processId).status = 'stopped';
+                        this.updateProcessList();
+                        this.updateStats();
+                    }
+                    
+                } catch (error) {
+                    this.log(`ERROR: Failed to stop process ${processId} - ${error.message}`, 'error');
+                }
+            }
+            
+            updateProcessList() {
+                const container = document.getElementById('processList');
+                
+                if (this.runningProcesses.size === 0) {
+                    container.innerHTML = `
+                        <div style="text-align: center; padding: 2rem; color: #666;">
+                            No running processes
+                        </div>
+                    `;
+                    return;
+                }
+                
+                const processes = Array.from(this.runningProcesses.entries());
+                container.innerHTML = processes.map(([pid, process]) => `
+                    <div class="process-item ${process.status}">
+                        <div class="process-info">
+                            <div class="process-name">
+                                <span class="status-indicator status-${process.status}"></span>
+                                ${process.franchise}/${process.agent}
+                            </div>
+                            <div class="process-status">
+                                PID: ${pid} | ${process.status.toUpperCase()} | ${process.startTime.toLocaleTimeString()}
+                            </div>
+                        </div>
+                        <div class="process-actions">
+                            <button class="process-btn" onclick="agency.viewProcessOutput('${pid}')">View</button>
+                            ${process.status === 'running' ? `<button class="process-btn kill" onclick="agency.killProcess('${pid}')">Kill</button>` : ''}
+                        </div>
+                    </div>
+                `).join('');
+            }
+            
+            async viewProcessOutput(processId) {
+                try {
+                    const response = await fetch(`${this.baseURL}/api/process/${processId}/output`);
+                    if (!response.ok) throw new Error(`HTTP ${response.status}`);
+                    
+                    const output = await response.text();
+                    this.log(`=== PROCESS ${processId} OUTPUT ===`);
+                    this.log(output);
+                    this.log(`=== END OUTPUT ===`);
+                } catch (error) {
+                    this.log(`ERROR: Failed to get output for process ${processId} - ${error.message}`, 'error');
+                }
+            }
+            
+            startProcessMonitoring() {
+                // Poll for running processes every 5 seconds
+                setInterval(async () => {
+                    try {
+                        const response = await fetch(`${this.baseURL}/api/processes`);
+                        if (response.ok) {
+                            const processes = await response.json();
+                            
+                            // Update process statuses
+                            for (const [pid, process] of this.runningProcesses.entries()) {
+                                if (!processes.includes(pid) && process.status === 'running') {
+                                    process.status = 'completed';
+                                }
+                            }
+                            
+                            this.updateProcessList();
+                            this.updateStats();
+                        }
+                    } catch (error) {
+                        // Ignore polling errors
+                    }
+                }, 5000);
+            }
+            
+            updateStats() {
+                document.getElementById('franchiseCount').textContent = this.franchises.length;
+                document.getElementById('agentCount').textContent = this.agents.length;
+                
+                const runningCount = Array.from(this.runningProcesses.values())
+                    .filter(p => p.status === 'running').length;
+                document.getElementById('runningCount').textContent = runningCount;
+            }
+            
+            bindEvents() {
+                // Search functionality
+                document.getElementById('searchBox').addEventListener('input', (e) => {
+                    this.filterAgents(e.target.value);
+                });
+                
+                // Close modal on escape
+                document.addEventListener('keydown', (e) => {
+                    if (e.key === 'Escape') {
+                        this.closeExecuteModal();
+                    }
+                });
+                
+                // Close modal when clicking outside
+                document.getElementById('executeModal').addEventListener('click', (e) => {
+                    if (e.target === e.currentTarget) {
+                        this.closeExecuteModal();
+                    }
+                });
+            }
+            
+            filterAgents(searchTerm) {
+                const term = searchTerm.toLowerCase();
+                document.querySelectorAll('.agent-item').forEach(item => {
+                    const agentName = item.dataset.agent.toLowerCase();
+                    const visible = agentName.includes(term);
+                    item.style.display = visible ? 'flex' : 'none';
+                });
+            }
+            
+            log(message, type = 'info') {
+                const output = document.getElementById('consoleOutput');
+                const timestamp = new Date().toISOString();
+                const prefix = type === 'error' ? 'ERROR' : 'INFO';
+                const color = type === 'error' ? '#ff6b6b' : '#00ff88';
+                
+                output.innerHTML += `<div style="color: ${color}">[${timestamp}] ${prefix}: ${message}</div>\n`;
+                output.scrollTop = output.scrollHeight;
+            }
+        }
+        
+        // Console tab switching
+        function showConsoleTab(tabName) {
+            document.querySelectorAll('.console-tab').forEach(tab => tab.classList.remove('active'));
+            document.querySelectorAll('.console-content').forEach(content => content.classList.remove('active'));
+            
+            event.target.classList.add('active');
+            document.getElementById(tabName + 'Tab').classList.add('active');
+        }
+        
+        // Initialize the agency when page loads
+        let agency;
+        document.addEventListener('DOMContentLoaded', () => {
+            agency = new WARPCOREAgency();
+        });
+    </script>
+</body>
+</html>

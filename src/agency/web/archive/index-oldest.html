@@ -1,0 +1,2783 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>The Agency - UR Agent Execution</title>
+    <style>
+        :root {
+            /* Purfect Labs inspired colors */
+            --bg-primary: #0a0a0a;
+            --bg-secondary: #1a1a1a;
+            --bg-card: #2a2a2a;
+            --text-primary: #ffffff;
+            --text-secondary: #b0b0b0;
+            --text-muted: #808080;
+            --accent-purple: #8b5cf6;
+            --accent-blue: #3b82f6;
+            --accent-green: #10b981;
+            --accent-orange: #f59e0b;
+            --accent-red: #ef4444;
+            --border-subtle: #404040;
+            --border-focus: #8b5cf6;
+            --shadow: rgba(0, 0, 0, 0.5);
+        }
+        
+        * {
+            box-sizing: border-box;
+        }
+        
+        body {
+            font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, "Inter", sans-serif;
+            margin: 0;
+            padding: 0;
+            background: linear-gradient(135deg, var(--bg-primary) 0%, var(--bg-secondary) 100%);
+            color: var(--text-primary);
+            line-height: 1.6;
+            height: 100vh;
+            overflow: hidden;
+        }
+        
+        .app-container {
+            display: flex;
+            flex-direction: column;
+            height: 100vh;
+        }
+        
+        header {
+            background: var(--bg-secondary);
+            border-bottom: 2px solid var(--border-subtle);
+            padding: 1rem 2rem;
+            box-shadow: 0 2px 10px var(--shadow);
+            position: relative;
+            z-index: 100;
+        }
+        
+        .header-content {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+        }
+        
+        .logo {
+            display: flex;
+            align-items: center;
+            gap: 12px;
+        }
+        
+        .logo h1 {
+            font-size: 1.5rem;
+            font-weight: 700;
+            margin: 0;
+            background: linear-gradient(135deg, var(--accent-purple), var(--accent-blue));
+            -webkit-background-clip: text;
+            -webkit-text-fill-color: transparent;
+            background-clip: text;
+        }
+        
+        .logo-accent {
+            color: var(--accent-purple);
+            font-weight: 800;
+        }
+        
+        .main-content {
+            flex: 1;
+            display: grid;
+            grid-template-columns: 350px 1fr 300px;
+            gap: 1rem;
+            padding: 1rem;
+            overflow: hidden;
+        }
+        
+        .panel {
+            background: var(--bg-card);
+            border: 1px solid var(--border-subtle);
+            border-radius: 12px;
+            display: flex;
+            flex-direction: column;
+            box-shadow: 0 4px 20px var(--shadow);
+            overflow: hidden;
+        }
+        
+        .panel-header {
+            padding: 1rem 1.5rem;
+            border-bottom: 1px solid var(--border-subtle);
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            background: var(--bg-secondary);
+        }
+        
+        .panel-header h2 {
+            margin: 0;
+            font-size: 1rem;
+            font-weight: 600;
+            color: var(--text-primary);
+        }
+        
+        .panel-content {
+            flex: 1;
+            padding: 1.5rem;
+            overflow-y: auto;
+        }
+        
+        .panel-content::-webkit-scrollbar {
+            width: 6px;
+        }
+        
+        .panel-content::-webkit-scrollbar-track {
+            background: var(--bg-secondary);
+        }
+        
+        .panel-content::-webkit-scrollbar-thumb {
+            background: var(--border-subtle);
+            border-radius: 3px;
+        }
+        
+        .panel-content::-webkit-scrollbar-thumb:hover {
+            background: var(--accent-purple);
+        }
+        
+        .form-group {
+            margin-bottom: 1.5rem;
+        }
+        
+        label {
+            display: block;
+            margin-bottom: 0.5rem;
+            font-weight: 600;
+            color: var(--text-secondary);
+            font-size: 0.875rem;
+            text-transform: uppercase;
+            letter-spacing: 0.5px;
+        }
+        
+        input[type="text"], 
+        textarea,
+        select {
+            width: 100%;
+            padding: 0.875rem;
+            background: var(--bg-secondary);
+            border: 2px solid var(--border-subtle);
+            border-radius: 8px;
+            color: var(--text-primary);
+            font-size: 14px;
+            transition: border-color 0.2s, box-shadow 0.2s;
+        }
+        
+        input[type="text"]:focus,
+        textarea:focus,
+        select:focus {
+            border-color: var(--border-focus);
+            outline: none;
+            box-shadow: 0 0 0 3px rgba(139, 92, 246, 0.1);
+        }
+        
+        select {
+            cursor: pointer;
+        }
+        
+        select option {
+            background: var(--bg-secondary);
+            color: var(--text-primary);
+        }
+        
+        .btn {
+            background: linear-gradient(135deg, var(--accent-purple), var(--accent-blue));
+            color: white;
+            border: none;
+            border-radius: 8px;
+            padding: 0.75rem 1.25rem;
+            font-size: 0.875rem;
+            font-weight: 600;
+            cursor: pointer;
+            transition: all 0.2s;
+            text-transform: uppercase;
+            letter-spacing: 0.5px;
+        }
+        
+        .btn:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 4px 15px rgba(139, 92, 246, 0.3);
+        }
+        
+        .btn:disabled {
+            opacity: 0.5;
+            cursor: not-allowed;
+            transform: none;
+        }
+        
+        .btn-secondary {
+            background: var(--bg-secondary);
+            border: 2px solid var(--border-subtle);
+            color: var(--text-secondary);
+        }
+        
+        .btn-secondary:hover {
+            border-color: var(--accent-purple);
+            color: var(--text-primary);
+        }
+        
+        .btn-danger {
+            background: linear-gradient(135deg, var(--accent-red), #dc2626);
+        }
+        
+        .btn-danger:hover {
+            box-shadow: 0 4px 15px rgba(239, 68, 68, 0.3);
+        }
+        
+        .agent-grid {
+            display: flex;
+            flex-direction: column;
+            gap: 0.25rem;
+        }
+        
+        .agent-button {
+            position: relative;
+            background: linear-gradient(135deg, var(--bg-secondary) 0%, var(--bg-card) 100%);
+            border: 1px solid var(--border-subtle);
+            border-radius: 6px;
+            padding: 0.375rem 0.5rem;
+            cursor: pointer;
+            transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+            overflow: hidden;
+        }
+        
+        .agent-button::before {
+            content: '';
+            position: absolute;
+            top: 0;
+            left: -100%;
+            width: 100%;
+            height: 100%;
+            background: linear-gradient(90deg, transparent, rgba(139, 92, 246, 0.3), transparent);
+            transition: left 0.6s;
+        }
+        
+        .agent-button:hover::before {
+            left: 100%;
+        }
+        
+        .agent-button:hover {
+            border-color: var(--accent-purple);
+            transform: translateY(-2px) scale(1.02);
+            box-shadow: 0 8px 25px rgba(139, 92, 246, 0.3);
+        }
+        
+        .agent-button.selected {
+            border-color: var(--accent-purple);
+            background: linear-gradient(135deg, rgba(139, 92, 246, 0.2), rgba(59, 130, 246, 0.1));
+            box-shadow: 0 0 20px rgba(139, 92, 246, 0.4), inset 0 1px 0 rgba(255, 255, 255, 0.1);
+            transform: translateY(-2px);
+        }
+        
+        .agent-button.selected::after {
+            content: '✦';
+            position: absolute;
+            top: 0.5rem;
+            right: 0.5rem;
+            color: var(--accent-purple);
+            font-size: 0.75rem;
+            animation: sparkle 2s infinite;
+        }
+        
+        .agent-header {
+            display: flex;
+            align-items: center;
+            gap: 0.375rem;
+            margin-bottom: 0;
+        }
+        
+        .agent-icon {
+            width: 16px;
+            height: 16px;
+            border-radius: 3px;
+            background: linear-gradient(135deg, var(--accent-purple), var(--accent-blue));
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 0.5rem;
+            font-weight: 700;
+            color: white;
+            flex-shrink: 0;
+        }
+        
+        .agent-name {
+            font-size: 0.75rem;
+            font-weight: 600;
+            color: var(--text-primary);
+            margin: 0;
+            flex: 1;
+            white-space: nowrap;
+            overflow: hidden;
+            text-overflow: ellipsis;
+        }
+        
+        .agent-meta {
+            display: flex;
+            align-items: center;
+            gap: 0.5rem;
+            font-size: 0.75rem;
+            color: var(--text-muted);
+            margin-top: 0.25rem;
+        }
+        
+        .agent-badge {
+            background: rgba(139, 92, 246, 0.2);
+            color: var(--accent-purple);
+            padding: 0.125rem 0.375rem;
+            border-radius: 10px;
+            font-size: 0.65rem;
+            font-weight: 600;
+            text-transform: uppercase;
+            letter-spacing: 0.5px;
+        }
+        
+        .agent-step {
+            background: rgba(59, 130, 246, 0.2);
+            color: var(--accent-blue);
+            padding: 0.125rem 0.375rem;
+            border-radius: 10px;
+            font-size: 0.65rem;
+            font-weight: 600;
+        }
+        
+        @keyframes sparkle {
+            0%, 100% { opacity: 1; transform: scale(1) rotate(0deg); }
+            50% { opacity: 0.5; transform: scale(1.2) rotate(180deg); }
+        }
+        
+        .terminal {
+            background: #000000;
+            border: 2px solid var(--border-subtle);
+            border-radius: 8px;
+            padding: 1rem;
+            font-family: 'JetBrains Mono', 'Fira Code', 'Cascadia Code', monospace;
+            font-size: 13px;
+            line-height: 1.4;
+            color: #00ff41;
+            height: 300px;
+            overflow-y: auto;
+            white-space: pre-wrap;
+        }
+        
+        .terminal::-webkit-scrollbar {
+            width: 6px;
+        }
+        
+        .terminal::-webkit-scrollbar-track {
+            background: #000;
+        }
+        
+        .terminal::-webkit-scrollbar-thumb {
+            background: #00ff41;
+            border-radius: 3px;
+        }
+        
+        .status-badge {
+            display: inline-flex;
+            align-items: center;
+            padding: 0.375rem 0.75rem;
+            border-radius: 20px;
+            font-size: 0.75rem;
+            font-weight: 700;
+            text-transform: uppercase;
+            letter-spacing: 0.5px;
+        }
+        
+        .status-running {
+            background: rgba(59, 130, 246, 0.2);
+            color: var(--accent-blue);
+            border: 1px solid var(--accent-blue);
+        }
+        
+        .status-completed {
+            background: rgba(16, 185, 129, 0.2);
+            color: var(--accent-green);
+            border: 1px solid var(--accent-green);
+        }
+        
+        .status-failed {
+            background: rgba(239, 68, 68, 0.2);
+            color: var(--accent-red);
+            border: 1px solid var(--accent-red);
+        }
+        
+        .status-ready {
+            background: rgba(139, 92, 246, 0.2);
+            color: var(--accent-purple);
+            border: 1px solid var(--accent-purple);
+        }
+        
+        .execution-controls {
+            display: flex;
+            gap: 0.75rem;
+            margin: 1.5rem 0;
+        }
+        
+        .agent-details {
+            margin: 1rem 0;
+            padding: 1rem;
+            background: var(--bg-secondary);
+            border-radius: 8px;
+            border: 1px solid var(--border-subtle);
+        }
+        
+        .agent-details p {
+            margin: 0.5rem 0;
+            font-size: 0.875rem;
+            color: var(--text-secondary);
+        }
+        
+        .agent-details strong {
+            color: var(--text-primary);
+        }
+        
+        .process-card {
+            background: var(--bg-secondary);
+            border: 2px solid var(--border-subtle);
+            border-radius: 8px;
+            padding: 1rem;
+            margin-bottom: 0.75rem;
+        }
+        
+        .process-header {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+        }
+        
+        .process-info h4 {
+            margin: 0;
+            color: var(--text-primary);
+            font-size: 0.95rem;
+        }
+        
+        .process-info p {
+            margin: 0.25rem 0 0 0;
+            font-size: 0.8rem;
+            color: var(--text-muted);
+        }
+        
+        @keyframes pulse {
+            0% { opacity: 1; }
+            50% { opacity: 0.6; }
+            100% { opacity: 1; }
+        }
+        
+        .running {
+            animation: pulse 2s infinite;
+        }
+        
+        .gradient-text {
+            background: linear-gradient(135deg, var(--accent-purple), var(--accent-blue));
+            -webkit-background-clip: text;
+            -webkit-text-fill-color: transparent;
+            background-clip: text;
+        }
+        
+        .agent-prompt-container {
+            position: relative;
+            margin-top: 0.5rem;
+        }
+        
+        .agent-prompt {
+            background: var(--bg-primary);
+            border: 2px solid var(--border-subtle);
+            border-radius: 8px;
+            padding: 1rem;
+            font-family: 'JetBrains Mono', 'Fira Code', 'Cascadia Code', monospace;
+            font-size: 0.8rem;
+            line-height: 1.4;
+            color: var(--text-secondary);
+            max-height: 120px;
+            overflow-y: auto;
+            white-space: pre-wrap;
+            word-wrap: break-word;
+            transition: max-height 0.3s ease;
+        }
+        
+        .agent-prompt.expanded {
+            max-height: 400px;
+        }
+        
+        .agent-prompt::-webkit-scrollbar {
+            width: 4px;
+        }
+        
+        .agent-prompt::-webkit-scrollbar-track {
+            background: var(--bg-primary);
+        }
+        
+        .agent-prompt::-webkit-scrollbar-thumb {
+            background: var(--accent-purple);
+            border-radius: 2px;
+        }
+        
+        #toggle-prompt {
+            position: absolute;
+            top: 0.5rem;
+            right: 0.5rem;
+            padding: 0.375rem 0.75rem;
+            font-size: 0.7rem;
+        }
+        
+        /* Streamlined Form Layout */
+        .form-row {
+            display: grid;
+            grid-template-columns: 1fr 1fr;
+            gap: 1rem;
+            margin-bottom: 1rem;
+        }
+        
+        .form-col {
+            display: flex;
+            flex-direction: column;
+        }
+        
+        .form-col label {
+            margin-bottom: 0.5rem;
+            font-size: 0.75rem;
+        }
+        
+        .quick-config {
+            background: var(--bg-primary);
+            border: 1px solid var(--border-subtle);
+            border-radius: 8px;
+            padding: 1rem;
+            margin-top: 1rem;
+        }
+        
+        .agent-summary {
+            background: linear-gradient(135deg, rgba(139, 92, 246, 0.1), rgba(59, 130, 246, 0.05));
+            border: 1px solid var(--accent-purple);
+            border-radius: 8px;
+            padding: 1rem;
+            margin-bottom: 1rem;
+            font-size: 0.875rem;
+        }
+        
+        .agent-summary h3 {
+            margin: 0 0 0.5rem 0;
+            color: var(--accent-purple);
+            font-size: 1rem;
+        }
+        
+        .collapsible-section {
+            margin-bottom: 1rem;
+        }
+        
+        .section-toggle {
+            width: 100%;
+            background: var(--bg-secondary);
+            border: 2px solid var(--border-subtle);
+            border-radius: 8px;
+            padding: 0.75rem 1rem;
+            color: var(--text-primary);
+            font-size: 0.875rem;
+            font-weight: 600;
+            cursor: pointer;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            transition: all 0.2s;
+        }
+        
+        .section-toggle:hover {
+            border-color: var(--accent-purple);
+            background: var(--bg-card);
+        }
+        
+        .toggle-icon {
+            transition: transform 0.2s;
+            color: var(--accent-purple);
+        }
+        
+        .section-toggle.expanded .toggle-icon {
+            transform: rotate(180deg);
+        }
+        
+        .section-content {
+            overflow: hidden;
+            transition: max-height 0.3s ease;
+        }
+        
+        .section-content.collapsed {
+            max-height: 0;
+        }
+        
+        .section-content.expanded {
+            max-height: 500px;
+            padding-top: 1rem;
+        }
+        
+        .btn:disabled {
+            opacity: 0.4;
+            cursor: not-allowed;
+            transform: none !important;
+            box-shadow: none !important;
+        }
+        
+        /* Purple Triangle Starter */
+        .starter-control {
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            min-height: 200px;
+        }
+        
+        .triangle-starter {
+            display: flex;
+            align-items: center;
+            gap: 1rem;
+            cursor: pointer;
+            transition: all 0.3s ease;
+            padding: 1rem 2rem;
+            border-radius: 12px;
+            border: 2px solid transparent;
+        }
+        
+        .triangle-starter:hover {
+            background: rgba(139, 92, 246, 0.1);
+            border-color: var(--accent-purple);
+            transform: scale(1.05);
+        }
+        
+        .triangle {
+            width: 0;
+            height: 0;
+            border-left: 20px solid var(--accent-purple);
+            border-top: 15px solid transparent;
+            border-bottom: 15px solid transparent;
+            transform: rotate(0deg);
+            transition: all 0.3s ease;
+        }
+        
+        .triangle-starter:hover .triangle {
+            transform: rotate(90deg) scale(1.2);
+            border-left-color: var(--accent-blue);
+        }
+        
+        .starter-text {
+            font-size: 1.2rem;
+            font-weight: 600;
+            color: var(--text-primary);
+            background: linear-gradient(135deg, var(--accent-purple), var(--accent-blue));
+            -webkit-background-clip: text;
+            -webkit-text-fill-color: transparent;
+            background-clip: text;
+        }
+        
+        /* Execution Header Layout */
+        .execution-header {
+            background: var(--bg-primary);
+            border: 1px solid var(--border-subtle);
+            border-radius: 12px;
+            padding: 1.5rem;
+        }
+        
+        .execution-controls {
+            display: flex;
+            gap: 1.5rem;
+            margin-bottom: 2rem;
+            justify-content: center;
+            align-items: center;
+        }
+        
+        .quick-controls {
+            display: flex;
+            align-items: end;
+            gap: 2rem;
+            justify-content: space-between;
+        }
+        
+        .workflow-control {
+            flex: 1;
+        }
+        
+        .compact-select {
+            padding: 0.5rem 0.75rem;
+            font-size: 0.875rem;
+            min-width: 200px;
+        }
+        
+        /* Mode Toggle */
+        .mode-toggle-container {
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            gap: 0.5rem;
+        }
+        
+        .mode-label {
+            font-size: 0.75rem;
+            margin: 0;
+            color: var(--text-secondary);
+        }
+        
+        .mode-toggle {
+            position: relative;
+            width: 60px;
+            height: 28px;
+            background: var(--bg-secondary);
+            border: 2px solid var(--border-subtle);
+            border-radius: 14px;
+            cursor: pointer;
+            transition: all 0.3s ease;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+        }
+        
+        .mode-toggle:hover {
+            border-color: var(--accent-purple);
+        }
+        
+        .mode-toggle.custom {
+            background: linear-gradient(135deg, var(--accent-purple), var(--accent-blue));
+            border-color: var(--accent-purple);
+        }
+        
+        .toggle-slider {
+            position: absolute;
+            left: 2px;
+            top: 2px;
+            width: 20px;
+            height: 20px;
+            background: var(--accent-purple);
+            border-radius: 50%;
+            transition: all 0.3s ease;
+            box-shadow: 0 2px 4px rgba(0,0,0,0.2);
+        }
+        
+        .mode-toggle.custom .toggle-slider {
+            left: 34px;
+            background: white;
+        }
+        
+        .mode-text {
+            font-size: 0.65rem;
+            font-weight: 700;
+            color: var(--text-primary);
+            text-transform: uppercase;
+            letter-spacing: 0.5px;
+            z-index: 1;
+        }
+        
+        .mode-toggle.custom .mode-text {
+            color: white;
+        }
+        
+        .btn-sm {
+            padding: 0.5rem 1rem;
+            font-size: 0.75rem;
+        }
+        
+        /* Better Execute Button */
+        .btn-execute {
+            background: linear-gradient(135deg, #10b981, #059669);
+            border: none;
+            border-radius: 50px;
+            padding: 0.75rem 2rem;
+            font-size: 0.9rem;
+            font-weight: 700;
+            color: white;
+            cursor: pointer;
+            transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+            display: flex;
+            align-items: center;
+            gap: 0.5rem;
+            box-shadow: 0 4px 15px rgba(16, 185, 129, 0.3);
+            text-transform: uppercase;
+            letter-spacing: 0.5px;
+        }
+        
+        .btn-execute:hover:not(:disabled) {
+            transform: translateY(-2px) scale(1.02);
+            box-shadow: 0 8px 25px rgba(16, 185, 129, 0.4);
+            background: linear-gradient(135deg, #059669, #047857);
+        }
+        
+        .btn-execute:active:not(:disabled) {
+            transform: translateY(0) scale(0.98);
+        }
+        
+        .btn-execute:disabled {
+            opacity: 0.3;
+            cursor: not-allowed;
+            transform: none !important;
+            box-shadow: none !important;
+            background: #6b7280;
+        }
+        
+        .execute-icon {
+            font-size: 1rem;
+        }
+        
+        .execute-text {
+            font-weight: 800;
+            letter-spacing: 1px;
+        }
+        
+        /* Better Stop Button */
+        .btn-stop {
+            background: linear-gradient(135deg, #ef4444, #dc2626);
+            border: none;
+            border-radius: 50px;
+            padding: 0.6rem 1.5rem;
+            font-size: 0.8rem;
+            font-weight: 700;
+            color: white;
+            cursor: pointer;
+            transition: all 0.3s ease;
+            display: flex;
+            align-items: center;
+            gap: 0.4rem;
+            box-shadow: 0 3px 12px rgba(239, 68, 68, 0.3);
+            text-transform: uppercase;
+            letter-spacing: 0.5px;
+        }
+        
+        .btn-stop:hover {
+            transform: translateY(-1px);
+            box-shadow: 0 6px 20px rgba(239, 68, 68, 0.4);
+            background: linear-gradient(135deg, #dc2626, #b91c1c);
+        }
+        
+        .stop-icon {
+            font-size: 0.9rem;
+        }
+        
+        .stop-text {
+            font-weight: 800;
+        }
+        
+        /* Header Controls */
+        .header-controls {
+            display: flex;
+            align-items: center;
+            gap: 1rem;
+        }
+        
+        /* Tiny Agent Chip */
+        .agent-chip {
+            position: relative;
+            display: inline-flex;
+            align-items: center;
+            gap: 0.25rem;
+            background: linear-gradient(135deg, rgba(139, 92, 246, 0.2), rgba(59, 130, 246, 0.1));
+            border: 1px solid var(--accent-purple);
+            border-radius: 12px;
+            padding: 0.25rem 0.5rem;
+            font-size: 0.7rem;
+            font-weight: 600;
+            cursor: pointer;
+            transition: all 0.2s ease;
+            z-index: 10;
+        }
+        
+        .agent-chip:hover {
+            transform: scale(1.05);
+            box-shadow: 0 4px 15px rgba(139, 92, 246, 0.3);
+            border-color: var(--accent-blue);
+        }
+        
+        .agent-icon {
+            font-size: 0.8rem;
+        }
+        
+        .agent-name-mini {
+            color: var(--text-primary);
+            max-width: 60px;
+            overflow: hidden;
+            text-overflow: ellipsis;
+            white-space: nowrap;
+        }
+        
+        .agent-position {
+            background: var(--accent-purple);
+            color: white;
+            border-radius: 8px;
+            padding: 0.1rem 0.3rem;
+            font-size: 0.6rem;
+            font-weight: 700;
+            min-width: 16px;
+            text-align: center;
+        }
+        
+        /* Hover Card */
+        .agent-hover-card {
+            position: absolute;
+            top: calc(100% + 4px);
+            right: 0;
+            background: var(--bg-card);
+            border: 1px solid var(--accent-purple);
+            border-radius: 8px;
+            padding: 0.75rem;
+            min-width: 200px;
+            max-width: 220px;
+            box-shadow: 0 4px 20px rgba(0, 0, 0, 0.4);
+            opacity: 0;
+            visibility: hidden;
+            transform: translateY(-5px) scale(0.95);
+            transition: all 0.15s ease;
+            z-index: 1000;
+        }
+        
+        .agent-chip:hover .agent-hover-card {
+            opacity: 1;
+            visibility: visible;
+            transform: translateY(0) scale(1);
+        }
+        
+        .card-header {
+            display: flex;
+            align-items: center;
+            gap: 0.3rem;
+            margin-bottom: 0.5rem;
+            padding-bottom: 0.3rem;
+            border-bottom: 1px solid var(--border-subtle);
+        }
+        
+        .card-icon {
+            font-size: 0.9rem;
+        }
+        
+        .card-title {
+            font-size: 0.8rem;
+            font-weight: 700;
+            color: var(--text-primary);
+            flex: 1;
+        }
+        
+        .card-version {
+            font-size: 0.6rem;
+            background: rgba(139, 92, 246, 0.2);
+            color: var(--accent-purple);
+            padding: 0.1rem 0.3rem;
+            border-radius: 4px;
+            font-weight: 600;
+        }
+        
+        .card-content {
+            display: flex;
+            flex-direction: column;
+            gap: 0.3rem;
+        }
+        
+        .card-row {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            font-size: 0.65rem;
+        }
+        
+        .card-label {
+            color: var(--text-secondary);
+            font-weight: 500;
+        }
+        
+        .card-value {
+            color: var(--text-primary);
+            font-weight: 600;
+            max-width: 100px;
+            text-align: right;
+            overflow: hidden;
+            text-overflow: ellipsis;
+            white-space: nowrap;
+        }
+        
+        /* Workflow Graph Visualization */
+        .workflow-controls {
+            display: flex;
+            align-items: center;
+            gap: 0.5rem;
+        }
+        
+        .btn-sequence {
+            background: linear-gradient(135deg, var(--accent-orange), #ea580c);
+            border: none;
+            border-radius: 15px;
+            padding: 0.3rem 0.75rem;
+            font-size: 0.65rem;
+            font-weight: 700;
+            color: white;
+            cursor: pointer;
+            transition: all 0.2s ease;
+            text-transform: uppercase;
+            letter-spacing: 0.5px;
+        }
+        
+        .btn-sequence:hover {
+            transform: translateY(-1px);
+            box-shadow: 0 4px 12px rgba(245, 158, 11, 0.4);
+        }
+        
+        .btn-sequence.active {
+            background: linear-gradient(135deg, #10b981, #059669);
+        }
+        
+        .btn-xs {
+            padding: 0.25rem 0.5rem;
+            font-size: 0.6rem;
+        }
+        
+        .workflow-graph {
+            min-height: 400px;
+            background: var(--bg-primary);
+            border: 1px solid var(--border-subtle);
+            border-radius: 8px;
+            padding: 1rem;
+            overflow-y: auto;
+        }
+        
+        .loading-workflow {
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            height: 200px;
+            color: var(--text-muted);
+            font-style: italic;
+        }
+        
+        .workflow-flow {
+            display: flex;
+            flex-direction: column;
+            gap: 0.5rem;
+        }
+        
+        .workflow-stage {
+            display: flex;
+            flex-direction: column;
+            gap: 0.3rem;
+        }
+        
+        .stage-title {
+            font-size: 0.65rem;
+            font-weight: 600;
+            color: var(--text-secondary);
+            text-transform: uppercase;
+            letter-spacing: 0.5px;
+            margin-bottom: 0.3rem;
+        }
+        
+        .agent-nodes {
+            display: flex;
+            flex-wrap: wrap;
+            gap: 0.3rem;
+            align-items: center;
+        }
+        
+        .workflow-agent {
+            display: flex;
+            align-items: center;
+            gap: 0.2rem;
+            background: var(--bg-secondary);
+            border: 1px solid var(--border-subtle);
+            border-radius: 12px;
+            padding: 0.25rem 0.4rem;
+            cursor: pointer;
+            transition: all 0.2s ease;
+            font-size: 0.65rem;
+            font-weight: 500;
+        }
+        
+        .workflow-agent:hover {
+            border-color: var(--accent-purple);
+            transform: scale(1.02);
+            box-shadow: 0 2px 8px rgba(139, 92, 246, 0.3);
+        }
+        
+        .workflow-agent.selected {
+            border-color: var(--accent-purple);
+            background: rgba(139, 92, 246, 0.2);
+            color: var(--text-primary);
+        }
+        
+        .workflow-agent.running {
+            border-color: var(--accent-blue);
+            background: rgba(59, 130, 246, 0.2);
+            animation: pulse 2s infinite;
+        }
+        
+        .workflow-agent.completed {
+            border-color: var(--accent-green);
+            background: rgba(16, 185, 129, 0.2);
+        }
+        
+        .agent-icon-mini {
+            font-size: 0.7rem;
+        }
+        
+        .agent-position-mini {
+            background: var(--accent-purple);
+            color: white;
+            border-radius: 6px;
+            padding: 0.05rem 0.2rem;
+            font-size: 0.5rem;
+            font-weight: 600;
+            min-width: 12px;
+            text-align: center;
+        }
+        
+        .flow-arrow {
+            color: var(--text-muted);
+            font-size: 0.8rem;
+            margin: 0.2rem 0;
+            text-align: center;
+        }
+        
+        .sequence-controls {
+            background: var(--bg-primary);
+            border: 1px solid var(--border-subtle);
+            border-radius: 8px;
+            padding: 1rem;
+            margin-top: 1rem;
+        }
+        
+        .sequence-header {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-bottom: 0.75rem;
+        }
+        
+        .sequence-title {
+            font-size: 0.75rem;
+            font-weight: 600;
+            color: var(--text-primary);
+        }
+        
+        .sequence-status {
+            font-size: 0.65rem;
+            padding: 0.2rem 0.4rem;
+            background: rgba(16, 185, 129, 0.2);
+            color: var(--accent-green);
+            border-radius: 10px;
+            font-weight: 600;
+        }
+        
+        .sequence-options {
+            display: flex;
+            flex-direction: column;
+            gap: 0.5rem;
+        }
+        
+        .sequence-option {
+            display: flex;
+            align-items: center;
+            gap: 0.5rem;
+            font-size: 0.7rem;
+            color: var(--text-secondary);
+            cursor: pointer;
+        }
+        
+        .sequence-option input[type="checkbox"] {
+            width: auto;
+            margin: 0;
+            accent-color: var(--accent-purple);
+        }
+        
+        /* Streaming & Process Management */
+        .monitor-controls {
+            display: flex;
+            align-items: center;
+            gap: 0.5rem;
+        }
+        
+        .btn-stream {
+            background: linear-gradient(135deg, var(--accent-red), #dc2626);
+            border: none;
+            border-radius: 15px;
+            padding: 0.3rem 0.75rem;
+            font-size: 0.65rem;
+            font-weight: 700;
+            color: white;
+            cursor: pointer;
+            transition: all 0.2s ease;
+            text-transform: uppercase;
+            letter-spacing: 0.5px;
+        }
+        
+        .btn-stream:hover {
+            transform: translateY(-1px);
+            box-shadow: 0 4px 12px rgba(239, 68, 68, 0.4);
+        }
+        
+        .btn-stream.active {
+            background: linear-gradient(135deg, #10b981, #059669);
+            animation: pulse 2s infinite;
+        }
+        
+        .stream-section {
+            margin-bottom: 1rem;
+        }
+        
+        .stream-header {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-bottom: 0.5rem;
+            padding-bottom: 0.25rem;
+            border-bottom: 1px solid var(--border-subtle);
+        }
+        
+        .stream-title {
+            font-size: 0.75rem;
+            font-weight: 600;
+            color: var(--text-primary);
+        }
+        
+        .stream-status {
+            font-size: 0.65rem;
+            padding: 0.15rem 0.4rem;
+            background: rgba(128, 128, 128, 0.2);
+            color: var(--text-muted);
+            border-radius: 10px;
+            font-weight: 600;
+        }
+        
+        .stream-status.active {
+            background: rgba(239, 68, 68, 0.2);
+            color: var(--accent-red);
+            animation: pulse 1.5s infinite;
+        }
+        
+        .live-terminal {
+            background: #000000;
+            border: 1px solid var(--border-subtle);
+            border-radius: 6px;
+            padding: 0.75rem;
+            font-family: 'JetBrains Mono', 'Fira Code', 'Cascadia Code', monospace;
+            font-size: 0.7rem;
+            line-height: 1.3;
+            color: #00ff41;
+            height: 150px;
+            overflow-y: auto;
+            white-space: pre-wrap;
+            word-wrap: break-word;
+        }
+        
+        .live-terminal::-webkit-scrollbar {
+            width: 4px;
+        }
+        
+        .live-terminal::-webkit-scrollbar-track {
+            background: #000;
+        }
+        
+        .live-terminal::-webkit-scrollbar-thumb {
+            background: #00ff41;
+            border-radius: 2px;
+        }
+        
+        .stream-welcome {
+            color: var(--text-muted);
+            font-style: italic;
+            text-align: center;
+            padding: 2rem 0;
+        }
+        
+        .process-section {
+            margin-bottom: 1rem;
+        }
+        
+        .process-header {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-bottom: 0.75rem;
+            padding-bottom: 0.25rem;
+            border-bottom: 1px solid var(--border-subtle);
+        }
+        
+        .process-title {
+            font-size: 0.75rem;
+            font-weight: 600;
+            color: var(--text-primary);
+        }
+        
+        .process-stats {
+            display: flex;
+            gap: 0.75rem;
+        }
+        
+        .stat-item {
+            font-size: 0.6rem;
+            color: var(--text-secondary);
+            background: var(--bg-primary);
+            padding: 0.2rem 0.4rem;
+            border-radius: 8px;
+            border: 1px solid var(--border-subtle);
+        }
+        
+        .process-list {
+            display: flex;
+            flex-direction: column;
+            gap: 0.5rem;
+            max-height: 200px;
+            overflow-y: auto;
+        }
+        
+        .no-processes {
+            text-align: center;
+            color: var(--text-muted);
+            font-style: italic;
+            padding: 1rem 0;
+            font-size: 0.7rem;
+        }
+        
+        .process-item {
+            background: var(--bg-primary);
+            border: 1px solid var(--border-subtle);
+            border-radius: 6px;
+            padding: 0.5rem;
+            font-size: 0.65rem;
+            transition: all 0.2s ease;
+        }
+        
+        .process-item:hover {
+            border-color: var(--accent-purple);
+            transform: translateY(-1px);
+        }
+        
+        .process-item.running {
+            border-color: var(--accent-blue);
+            background: rgba(59, 130, 246, 0.1);
+        }
+        
+        .process-item-header {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-bottom: 0.25rem;
+        }
+        
+        .process-name {
+            font-weight: 600;
+            color: var(--text-primary);
+        }
+        
+        .process-actions {
+            display: flex;
+            gap: 0.25rem;
+        }
+        
+        .btn-micro {
+            padding: 0.15rem 0.3rem;
+            font-size: 0.55rem;
+            border-radius: 4px;
+            border: none;
+            cursor: pointer;
+            font-weight: 600;
+            transition: all 0.2s ease;
+        }
+        
+        .btn-kill {
+            background: var(--accent-red);
+            color: white;
+        }
+        
+        .btn-kill:hover {
+            background: #dc2626;
+        }
+        
+        .btn-view {
+            background: var(--accent-blue);
+            color: white;
+        }
+        
+        .btn-view:hover {
+            background: #2563eb;
+        }
+        
+        .process-meta {
+            color: var(--text-muted);
+            font-size: 0.6rem;
+            line-height: 1.2;
+        }
+        
+        .quick-actions {
+            display: flex;
+            gap: 0.3rem;
+            flex-wrap: wrap;
+        }
+        
+        .btn-action {
+            flex: 1;
+            background: var(--bg-secondary);
+            border: 1px solid var(--border-subtle);
+            border-radius: 6px;
+            padding: 0.4rem 0.2rem;
+            font-size: 0.6rem;
+            font-weight: 600;
+            color: var(--text-secondary);
+            cursor: pointer;
+            transition: all 0.2s ease;
+            text-align: center;
+        }
+        
+        .btn-action:hover {
+            border-color: var(--accent-purple);
+            color: var(--text-primary);
+            transform: translateY(-1px);
+        }
+        
+        /* Terminal Styling */
+        .log-line {
+            font-family: 'Monaco', 'Menlo', 'Ubuntu Mono', monospace;
+            font-size: 11px;
+            line-height: 1.4;
+            margin: 1px 0;
+            padding: 2px 4px;
+            border-radius: 2px;
+        }
+        
+        .log-line.log-error {
+            background: rgba(239, 68, 68, 0.1);
+            color: #ef4444;
+        }
+        
+        .log-line.log-warn {
+            background: rgba(245, 158, 11, 0.1);
+            color: #f59e0b;
+        }
+        
+        .log-line.log-info {
+            background: rgba(59, 130, 246, 0.1);
+            color: #3b82f6;
+        }
+        
+        .log-line .timestamp {
+            color: #666;
+            font-size: 10px;
+        }
+        
+        .log-line .level {
+            font-weight: 600;
+            font-size: 10px;
+        }
+        
+        /* History Modal Styles */
+        .history-modal {
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            background: rgba(0, 0, 0, 0.7);
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            z-index: 10000;
+        }
+        
+        .history-content {
+            background: white;
+            border-radius: 8px;
+            max-width: 600px;
+            max-height: 70vh;
+            width: 90%;
+            overflow: hidden;
+            box-shadow: 0 20px 40px rgba(0, 0, 0, 0.3);
+        }
+        
+        .history-header {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            padding: 20px;
+            border-bottom: 1px solid rgba(139, 69, 195, 0.2);
+            background: rgba(139, 69, 195, 0.05);
+        }
+        
+        .history-header h3 {
+            margin: 0;
+            color: #8b45c3;
+        }
+        
+        .close-btn {
+            background: none;
+            border: none;
+            font-size: 24px;
+            cursor: pointer;
+            color: #666;
+            padding: 0;
+            width: 30px;
+            height: 30px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            border-radius: 15px;
+            transition: background-color 0.2s;
+        }
+        
+        .close-btn:hover {
+            background: rgba(139, 69, 195, 0.1);
+        }
+        
+        .history-list {
+            max-height: 400px;
+            overflow-y: auto;
+            padding: 10px;
+        }
+        
+        .history-item {
+            padding: 12px;
+            margin: 8px 0;
+            border-radius: 6px;
+            border-left: 4px solid transparent;
+            background: rgba(139, 69, 195, 0.05);
+        }
+        
+        .history-item.success {
+            border-left-color: #22c55e;
+        }
+        
+        .history-item.error {
+            border-left-color: #ef4444;
+        }
+        
+        .history-item.running {
+            border-left-color: #f59e0b;
+        }
+        
+        .history-info {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-bottom: 6px;
+        }
+        
+        .history-workflow {
+            font-weight: 600;
+            color: #8b45c3;
+        }
+        
+        .history-time {
+            color: #666;
+            font-size: 12px;
+        }
+        
+        .history-details {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            font-size: 12px;
+        }
+        
+        .history-duration {
+            color: #666;
+        }
+        
+        .history-status {
+            padding: 2px 8px;
+            border-radius: 12px;
+            font-weight: 500;
+            text-transform: uppercase;
+            font-size: 10px;
+        }
+    </style>
+</head>
+<body>
+    <div class="app-container">
+        <header>
+            <div class="header-content">
+                <div class="logo">
+                    <h1>The <span class="logo-accent">Agency</span> - <span class="gradient-text">UR</span> Agent Execution</h1>
+                </div>
+            </div>
+        </header>
+        
+        <div class="main-content">
+            <!-- Left Panel: Workflow Visualization -->
+            <div class="panel">
+                <div class="panel-header">
+                    <h2>🔄 <span class="gradient-text">UR</span> Workflow</h2>
+                    <div class="workflow-controls">
+                        <button class="btn-sequence" id="sequence-btn" onclick="toggleSequence()">▶️ SEQ</button>
+                        <button class="btn-secondary btn-xs" onclick="loadWorkflow()">REFRESH</button>
+                    </div>
+                </div>
+                <div class="panel-content">
+                    <div class="workflow-graph" id="workflow-graph">
+                        <div class="loading-workflow">Loading workflow...</div>
+                    </div>
+                    <div class="sequence-controls" id="sequence-controls" style="display: none;">
+                        <div class="sequence-header">
+                            <span class="sequence-title">🎯 Sequence Mode</span>
+                            <span class="sequence-status" id="sequence-status">Ready</span>
+                        </div>
+                        <div class="sequence-options">
+                            <label class="sequence-option">
+                                <input type="checkbox" id="auto-advance" checked>
+                                <span>Auto-advance</span>
+                            </label>
+                            <label class="sequence-option">
+                                <input type="checkbox" id="loop-workflow">
+                                <span>Loop workflow</span>
+                            </label>
+                        </div>
+                    </div>
+                </div>
+            </div>
+            
+            <!-- Center Panel: Agent Execution -->
+            <div class="panel">
+                <div class="panel-header">
+                    <h2 id="center-title">⚡ Select <span class="gradient-text">UR</span> Agent</h2>
+                    <div class="header-controls">
+                        <!-- Tiny Agent Info Button (hidden by default) -->
+                        <div class="agent-chip" id="agent-chip" style="display: none;">
+                            <span class="agent-icon" id="agent-icon">🤖</span>
+                            <span class="agent-name-mini" id="agent-name-mini">Agent</span>
+                            <span class="agent-position" id="agent-position">0</span>
+                            
+                            <!-- Hover Card -->
+                            <div class="agent-hover-card" id="agent-hover-card">
+                                <div class="card-header">
+                                    <span class="card-icon">🤖</span>
+                                    <span class="card-title" id="card-title">Agent Name</span>
+                                    <span class="card-version" id="card-version">v1.0.0</span>
+                                </div>
+                                <div class="card-content">
+                                    <div class="card-row">
+                                        <span class="card-label">Position:</span>
+                                        <span class="card-value" id="card-position">0</span>
+                                    </div>
+                                    <div class="card-row">
+                                        <span class="card-label">Dependencies:</span>
+                                        <span class="card-value" id="card-dependencies">None</span>
+                                    </div>
+                                    <div class="card-row">
+                                        <span class="card-label">Outputs to:</span>
+                                        <span class="card-value" id="card-outputs">None</span>
+                                    </div>
+                                    <div class="card-row">
+                                        <span class="card-label">Rules:</span>
+                                        <span class="card-value" id="card-rules">0 validation, 0 success</span>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                        <span class="status-badge status-ready" id="agent-status">Ready</span>
+                    </div>
+                </div>
+                <div class="panel-content">
+                    <!-- Minimal Starter Section -->
+                    <div id="starter-section">
+                        <div class="starter-control">
+                            <div class="triangle-starter" id="triangle-starter" onclick="toggleExecutionPanel()">
+                                <div class="triangle"></div>
+                                <span class="starter-text">Start Execution</span>
+                            </div>
+                        </div>
+                    </div>
+                    
+                    <!-- Hidden Quick Execute Section -->
+                    <div id="quick-execute" style="display: none; margin-bottom: 2rem;">
+                        <div class="execution-header">
+                            <div class="execution-controls">
+                                <button class="btn-execute" id="execute-btn" onclick="executeAgent()" disabled>
+                                    <span class="execute-icon">▶️</span>
+                                    <span class="execute-text">RUN</span>
+                                </button>
+                                <button class="btn-stop" id="stop-btn" onclick="stopAgent()" style="display: none;">
+                                    <span class="stop-icon">⏹️</span>
+                                    <span class="stop-text">STOP</span>
+                                </button>
+                            </div>
+                            
+                            <div class="quick-controls">
+                                <div class="workflow-control">
+                                    <label for="workflow-id">Workflow</label>
+                                    <select id="workflow-id" class="compact-select">
+                                        <option value="">🆕 New workflow</option>
+                                    </select>
+                                </div>
+                                <div class="mode-toggle-container">
+                                    <label class="mode-label">Mode</label>
+                                    <div class="mode-toggle" id="mode-toggle" onclick="toggleMode()">
+                                        <div class="toggle-slider"></div>
+                                        <span class="mode-text" id="mode-text">AUTO</span>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                    
+                    <!-- Hidden Agent Details Section -->
+                    <div id="agent-config" style="display: none;">
+                        
+                        <div class="collapsible-section">
+                            <button class="section-toggle" onclick="toggleSection('agent-details-section')">
+                                📋 Agent Details <span class="toggle-icon">▼</span>
+                            </button>
+                            <div id="agent-details-section" class="section-content collapsed">
+                                <div class="agent-details" id="agent-details"></div>
+                            </div>
+                        </div>
+                        
+                        <div class="collapsible-section">
+                            <button class="section-toggle" onclick="toggleSection('prompt-section')">
+                                📝 Agent Prompt <span class="toggle-icon">▼</span>
+                            </button>
+                            <div id="prompt-section" class="section-content collapsed">
+                                <div class="agent-prompt" id="agent-prompt-display">Loading prompt...</div>
+                            </div>
+                        </div>
+                    </div>
+                    
+                    <!-- Hidden Custom Settings -->
+                    <div id="custom-config" style="display: none;">
+                        <div class="form-group">
+                            <label for="context-directory">📁 Context Directory</label>
+                            <input type="text" id="context-directory" value="/Users/shawn_meredith/code/pets/warpcore">
+                        </div>
+                        
+                        <div class="form-group">
+                            <label for="custom-prompt">✏️ Custom Prompt Override</label>
+                            <textarea id="custom-prompt" rows="3" placeholder="Optional - override the agent's default prompt"></textarea>
+                        </div>
+                    </div>
+                    
+                    <!-- Hidden Terminal -->
+                    <div class="terminal" id="terminal-output" style="display: none;">The Agency - UR Agent Execution Terminal
+> Status: Ready
+> Data Source: Real agent specifications and execution logs
+> Select an agent to view details and execute...</div>
+                </div>
+            </div>
+            
+            <!-- Right Panel: Streaming & Process Management -->
+            <div class="panel">
+                <div class="panel-header">
+                    <h2>📊 <span class="gradient-text">UR</span> Live Monitor</h2>
+                    <div class="monitor-controls">
+                        <button class="btn-stream" id="streamToggle" onclick="toggleStreaming()">▶️ Stream</button>
+                        <button class="btn-secondary btn-xs" id="syncState" onclick="syncState()">🔄 Sync</button>
+                    </div>
+                </div>
+                <div class="panel-content">
+                    <!-- Live Stream Section -->
+                    <div class="stream-section">
+                        <div class="stream-header">
+                            <span class="stream-title">🔴 Live Output</span>
+                            <span class="stream-status" id="stream-status">Idle</span>
+                        </div>
+                        <div class="live-terminal" id="liveTerminal">
+                            <div class="stream-welcome">Live stream ready - execute an agent to see output</div>
+                        </div>
+                    </div>
+                    
+                    <!-- Process Management Section -->
+                    <div class="process-section">
+                        <div class="process-header">
+                            <span class="process-title">⚙️ Process Manager</span>
+                            <div class="process-stats">
+                                <span class="stat-item">Active: <span id="activeCount">0</span></span>
+                                <span class="stat-item">Total: <span id="totalCount">0</span></span>
+                            </div>
+                        </div>
+                        <div class="process-list" id="processList">
+                            <div class="no-processes">No active processes</div>
+                        </div>
+                    </div>
+                    
+                    <!-- Quick Actions -->
+                    <div class="quick-actions">
+                        <button class="btn-action" onclick="killAllProcesses()">💫 Kill All</button>
+                        <button class="btn-action" onclick="showHistory()">📈 History</button>
+                        <button class="btn-action" onclick="exportLogs()">📄 Export</button>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+    
+    <script>
+        let selectedAgent = null;
+        let currentEventSource = null;
+        let currentWorkflowId = null;
+        
+        let executionMode = 'auto'; // Track mode state
+        let executionPanelVisible = false; // Track panel state
+        
+        // Load available agents and workflow IDs on page load
+        document.addEventListener('DOMContentLoaded', function() {
+            loadWorkflow();
+            refreshProcesses();
+            loadWorkflowIds();
+        });
+        
+        // Streaming and Process Management Variables
+        let streamingEnabled = false;
+        let liveStream = null;
+        let processStats = { active: 0, total: 0 };
+        let executionHistory = [];
+        
+        // Toggle live streaming
+        function toggleStreaming() {
+            const button = document.getElementById('streamToggle');
+            const terminal = document.getElementById('liveTerminal');
+            
+            if (!streamingEnabled) {
+                startStreaming();
+                button.textContent = '⏸️ Pause';
+                button.classList.add('active');
+                terminal.style.display = 'block';
+            } else {
+                stopStreaming();
+                button.textContent = '▶️ Stream';
+                button.classList.remove('active');
+            }
+        }
+        
+        // Start streaming from EventSource
+        function startStreaming() {
+            if (liveStream) return;
+            
+            streamingEnabled = true;
+            const terminal = document.getElementById('liveTerminal');
+            
+            try {
+                liveStream = new EventSource('http://localhost:8081/api/stream');
+                
+                liveStream.onmessage = function(event) {
+                    const data = JSON.parse(event.data);
+                    appendToTerminal(data);
+                };
+                
+                liveStream.onerror = function(event) {
+                    console.error('Streaming error:', event);
+                    appendToTerminal({ 
+                        timestamp: new Date().toISOString(), 
+                        level: 'error', 
+                        message: 'Stream connection lost' 
+                    });
+                };
+            } catch (error) {
+                console.error('Failed to start streaming:', error);
+                appendToTerminal({ 
+                    timestamp: new Date().toISOString(), 
+                    level: 'error', 
+                    message: 'Failed to start streaming' 
+                });
+            }
+        }
+        
+        // Stop streaming
+        function stopStreaming() {
+            streamingEnabled = false;
+            if (liveStream) {
+                liveStream.close();
+                liveStream = null;
+            }
+        }
+        
+        // Append message to terminal
+        function appendToTerminal(data) {
+            const terminal = document.getElementById('liveTerminal');
+            const time = new Date(data.timestamp).toLocaleTimeString();
+            const level = data.level || 'info';
+            const message = data.message || JSON.stringify(data);
+            
+            const line = document.createElement('div');
+            line.className = `log-line log-${level}`;
+            line.innerHTML = `<span class="timestamp">[${time}]</span> <span class="level">${level.toUpperCase()}</span> ${message}`;
+            
+            terminal.appendChild(line);
+            terminal.scrollTop = terminal.scrollHeight;
+            
+            // Keep only last 1000 lines
+            if (terminal.children.length > 1000) {
+                terminal.removeChild(terminal.firstChild);
+            }
+        }
+        
+        // Sync execution state with backend
+        async function syncState() {
+            const button = document.getElementById('syncState');
+            button.textContent = '🔄 Syncing...';
+            
+            try {
+                const response = await fetch('http://localhost:8081/health');
+                const data = await response.json();
+                
+                // Update process stats
+                updateProcessStats(data.stats || { active: 0, total: 0 });
+                
+                // Refresh processes
+                await refreshProcesses();
+                
+                button.textContent = '✅ Synced';
+                setTimeout(() => {
+                    button.textContent = '🔄 Sync';
+                }, 1000);
+            } catch (error) {
+                console.error('Sync failed:', error);
+                button.textContent = '❌ Failed';
+                setTimeout(() => {
+                    button.textContent = '🔄 Sync';
+                }, 2000);
+            }
+        }
+        
+        // Update process stats display
+        function updateProcessStats(stats) {
+            processStats = stats;
+            document.getElementById('activeCount').textContent = stats.active;
+            document.getElementById('totalCount').textContent = stats.total;
+        }
+        
+        // Refresh running processes list
+        async function refreshProcesses() {
+            try {
+                const response = await fetch('http://localhost:8081/api/running-processes');
+                const data = await response.json();
+                const processes = data.running_processes || [];
+                
+                const processList = document.getElementById('processList');
+                processList.innerHTML = '';
+                
+                if (processes.length === 0) {
+                    processList.innerHTML = '<div class="process-item empty">No running processes</div>';
+                    updateProcessStats({ active: 0, total: 0 });
+                    return;
+                }
+                
+                let activeCount = 0;
+                processes.forEach(process => {
+                    if (process.status === 'running') activeCount++;
+                    
+                    const item = document.createElement('div');
+                    item.className = `process-item ${process.status}`;
+                    
+                    // Calculate runtime from start_time
+                    const startTime = new Date(process.start_time);
+                    const runtime = Date.now() - startTime.getTime();
+                    
+                    item.innerHTML = `
+                        <div class="process-header">
+                            <span class="process-name">${process.agent_id}</span>
+                            <span class="process-status status-${process.status}">${process.status}</span>
+                        </div>
+                        <div class="process-meta">
+                            <span class="process-id">PID: ${process.pid}</span>
+                            <span class="process-time">${formatDuration(runtime)}</span>
+                            <button class="kill-btn" onclick="killProcess('${process.workflow_id}')" ${process.status !== 'running' ? 'disabled' : ''}>❌</button>
+                        </div>
+                    `;
+                    processList.appendChild(item);
+                });
+                
+                updateProcessStats({ active: activeCount, total: processes.length });
+            } catch (error) {
+                console.error('Failed to refresh processes:', error);
+                const processList = document.getElementById('processList');
+                processList.innerHTML = '<div class="process-item error">Failed to load processes</div>';
+            }
+        }
+        
+        // Kill a specific process
+        async function killProcess(workflowId) {
+            if (!confirm(`Kill workflow ${workflowId}?`)) return;
+            
+            try {
+                const response = await fetch(`http://localhost:8081/api/stop-workflow/${workflowId}`, { method: 'POST' });
+                if (response.ok) {
+                    appendToTerminal({ 
+                        timestamp: new Date().toISOString(), 
+                        level: 'warn', 
+                        message: `Workflow ${workflowId} terminated` 
+                    });
+                    await refreshProcesses();
+                } else {
+                    throw new Error('Failed to kill workflow');
+                }
+            } catch (error) {
+                console.error('Failed to kill workflow:', error);
+                alert('Failed to kill workflow');
+            }
+        }
+        
+        // Kill all running processes
+        async function killAllProcesses() {
+            if (!confirm('Kill all running processes?')) return;
+            
+            try {
+                const response = await fetch('http://localhost:8081/api/stop-all-workflows', { method: 'POST' });
+                if (response.ok) {
+                    appendToTerminal({ 
+                        timestamp: new Date().toISOString(), 
+                        level: 'warn', 
+                        message: 'All processes terminated' 
+                    });
+                    await refreshProcesses();
+                } else {
+                    throw new Error('Failed to kill processes');
+                }
+            } catch (error) {
+                console.error('Failed to kill all processes:', error);
+                alert('Failed to kill all processes');
+            }
+        }
+        
+        // Format duration from milliseconds
+        function formatDuration(ms) {
+            if (!ms) return '0s';
+            
+            const seconds = Math.floor(ms / 1000);
+            if (seconds < 60) return `${seconds}s`;
+            
+            const minutes = Math.floor(seconds / 60);
+            if (minutes < 60) return `${minutes}m ${seconds % 60}s`;
+            
+            const hours = Math.floor(minutes / 60);
+            return `${hours}h ${minutes % 60}m`;
+        }
+        
+        // Show execution history
+        async function showHistory() {
+            try {
+                const response = await fetch('http://localhost:8081/api/history');
+                const history = await response.json();
+                
+                // Create modal for history display
+                const modal = document.createElement('div');
+                modal.className = 'history-modal';
+                modal.innerHTML = `
+                    <div class="history-content">
+                        <div class="history-header">
+                            <h3>Execution History</h3>
+                            <button onclick="closeHistory()" class="close-btn">×</button>
+                        </div>
+                        <div class="history-list">
+                            ${history.map(item => `
+                                <div class="history-item ${item.status}">
+                                    <div class="history-info">
+                                        <span class="history-workflow">${item.workflow}</span>
+                                        <span class="history-time">${new Date(item.timestamp).toLocaleString()}</span>
+                                    </div>
+                                    <div class="history-details">
+                                        <span class="history-duration">${formatDuration(item.duration)}</span>
+                                        <span class="history-status status-${item.status}">${item.status}</span>
+                                    </div>
+                                </div>
+                            `).join('')}
+                        </div>
+                    </div>
+                `;
+                
+                document.body.appendChild(modal);
+                
+            } catch (error) {
+                console.error('Failed to load history:', error);
+                alert('Failed to load execution history');
+            }
+        }
+        
+        // Close history modal
+        function closeHistory() {
+            const modal = document.querySelector('.history-modal');
+            if (modal) {
+                modal.remove();
+            }
+        }
+        
+        // Export logs to file
+        async function exportLogs() {
+            try {
+                const response = await fetch('http://localhost:8081/api/logs/export');
+                const blob = await response.blob();
+                
+                const url = window.URL.createObjectURL(blob);
+                const a = document.createElement('a');
+                a.style.display = 'none';
+                a.href = url;
+                a.download = `agency_logs_${new Date().toISOString().split('T')[0]}.log`;
+                document.body.appendChild(a);
+                a.click();
+                window.URL.revokeObjectURL(url);
+                document.body.removeChild(a);
+                
+            } catch (error) {
+                console.error('Failed to export logs:', error);
+                alert('Failed to export logs');
+            }
+        }
+        
+        // Clear terminal display
+        function clearTerminal() {
+            const terminal = document.getElementById('liveTerminal');
+            terminal.innerHTML = '';
+        }
+        
+        // Integration with existing execution functions
+        // Override executeWorkflow to integrate with streaming
+        const originalExecuteWorkflow = window.executeWorkflow;
+        window.executeWorkflow = async function() {
+            // Start streaming if not already active
+            if (!streamingEnabled) {
+                toggleStreaming();
+            }
+            
+            // Refresh processes before execution
+            await refreshProcesses();
+            
+            // Call original function
+            if (originalExecuteWorkflow) {
+                const result = await originalExecuteWorkflow();
+                
+                // Refresh processes after execution
+                setTimeout(() => refreshProcesses(), 1000);
+                
+                return result;
+            }
+        };
+        
+        // Auto-refresh processes every 5 seconds
+        setInterval(() => {
+            if (document.getElementById('processList')) {
+                refreshProcesses();
+            }
+        }, 5000);
+        
+        // Workflow visualization and sequencing variables
+        let workflowData = null;
+        let sequenceActive = false;
+        let currentSequenceIndex = 0;
+        let sequenceAgents = [];
+        
+        async function loadWorkflow() {
+            const workflowGraph = document.getElementById('workflow-graph');
+            workflowGraph.innerHTML = '<div class="loading-workflow">Loading workflow...</div>';
+            
+            try {
+                const response = await fetch('http://localhost:8081/api/agents');
+                const data = await response.json();
+                
+                if (data.status === 'success' && data.agents) {
+                    workflowData = data.agents;
+                    renderWorkflowGraph(workflowData);
+                } else {
+                    workflowGraph.innerHTML = '<div class="loading-workflow">Failed to load workflow</div>';
+                }
+            } catch (error) {
+                workflowGraph.innerHTML = '<div class="loading-workflow">Error loading workflow</div>';
+                console.error('Error loading workflow:', error);
+            }
+        }
+        
+        function renderWorkflowGraph(agents) {
+            const workflowGraph = document.getElementById('workflow-graph');
+            
+            // Group agents by workflow position
+            const stages = {};
+            agents.forEach(agent => {
+                const pos = agent.workflow_position;
+                if (!stages[pos]) stages[pos] = [];
+                stages[pos].push(agent);
+            });
+            
+            // Sort stages by position
+            const sortedPositions = Object.keys(stages).sort((a, b) => parseInt(a) - parseInt(b));
+            
+            let html = '<div class="workflow-flow">';
+            
+            sortedPositions.forEach((position, index) => {
+                const stageAgents = stages[position];
+                const stageName = position === '-1' ? 'Bootstrap' : 
+                                position === '0' ? 'Orchestration' :
+                                position === '1' ? 'Analysis' :
+                                position === '2' ? 'Requirements' :
+                                position === '3' ? 'Validation' :
+                                position === '4' ? 'Implementation' :
+                                position === '5' ? 'Completion' : `Stage ${position}`;
+                
+                html += `
+                    <div class="workflow-stage">
+                        <div class="stage-title">${stageName}</div>
+                        <div class="agent-nodes">
+                `;
+                
+                stageAgents.forEach(agent => {
+                    const cleanName = agent.id.charAt(0).toUpperCase() + agent.id.slice(1);
+                    const emoji = getAgentEmoji(agent.id);
+                    
+                    html += `
+                        <div class="workflow-agent" data-agent-id="${agent.id}" onclick="selectWorkflowAgent('${agent.id}')">
+                            <span class="agent-icon-mini">${emoji}</span>
+                            <span>${cleanName}</span>
+                            <span class="agent-position-mini">${position}</span>
+                        </div>
+                    `;
+                });
+                
+                html += '</div></div>';
+                
+                // Add arrow if not last stage
+                if (index < sortedPositions.length - 1) {
+                    html += '<div class="flow-arrow">↓</div>';
+                }
+            });
+            
+            html += '</div>';
+            workflowGraph.innerHTML = html;
+        }
+        
+        function getAgentEmoji(agentId) {
+            const emojiMap = {
+                'origin': '🚀',
+                'boss': '👑',
+                'pathfinder': '🔍',
+                'oracle': '🔮',
+                'architect': '🏗️',
+                'enforcer': '⚖️',
+                'craftsman': '🔨',
+                'craftbuddy': '🤝',
+                'gatekeeper': '🚪',
+                'mama_bear': '🐻',
+                'harmony': '🎭'
+            };
+            return emojiMap[agentId] || '🤖';
+        }
+        
+        function selectWorkflowAgent(agentId) {
+            // Find the agent in the loaded data
+            const agent = workflowData.find(a => a.id === agentId);
+            if (agent) {
+                selectAgent(agent);
+                
+                // Update workflow visualization
+                document.querySelectorAll('.workflow-agent').forEach(el => {
+                    el.classList.remove('selected');
+                });
+                document.querySelector(`[data-agent-id="${agentId}"]`).classList.add('selected');
+            }
+        }
+        
+        function toggleSequence() {
+            const sequenceBtn = document.getElementById('sequence-btn');
+            const sequenceControls = document.getElementById('sequence-controls');
+            
+            if (!sequenceActive) {
+                sequenceActive = true;
+                sequenceBtn.classList.add('active');
+                sequenceBtn.innerHTML = '⏸️ SEQ';
+                sequenceControls.style.display = 'block';
+                startSequence();
+            } else {
+                sequenceActive = false;
+                sequenceBtn.classList.remove('active');
+                sequenceBtn.innerHTML = '▶️ SEQ';
+                sequenceControls.style.display = 'none';
+                stopSequence();
+            }
+        }
+        
+        function startSequence() {
+            if (!workflowData) return;
+            
+            // Create sequence from workflow order
+            sequenceAgents = workflowData
+                .filter(agent => agent.workflow_position >= 0) // Exclude bootstrap (-1)
+                .sort((a, b) => a.workflow_position - b.workflow_position);
+            
+            currentSequenceIndex = 0;
+            document.getElementById('sequence-status').textContent = 'Running';
+            document.getElementById('sequence-status').style.background = 'rgba(59, 130, 246, 0.2)';
+            document.getElementById('sequence-status').style.color = 'var(--accent-blue)';
+            
+            runSequenceStep();
+        }
+        
+        function runSequenceStep() {
+            if (!sequenceActive || currentSequenceIndex >= sequenceAgents.length) {
+                if (document.getElementById('loop-workflow').checked && sequenceActive) {
+                    currentSequenceIndex = 0; // Loop back
+                    setTimeout(runSequenceStep, 2000);
+                } else {
+                    stopSequence();
+                }
+                return;
+            }
+            
+            const currentAgent = sequenceAgents[currentSequenceIndex];
+            
+            // Update UI
+            selectWorkflowAgent(currentAgent.id);
+            
+            // Mark as running in workflow
+            document.querySelectorAll('.workflow-agent').forEach(el => {
+                el.classList.remove('running', 'completed');
+            });
+            document.querySelector(`[data-agent-id="${currentAgent.id}"]`).classList.add('running');
+            
+            // Auto-advance if enabled
+            if (document.getElementById('auto-advance').checked) {
+                setTimeout(() => {
+                    // Mark as completed
+                    document.querySelector(`[data-agent-id="${currentAgent.id}"]`).classList.remove('running');
+                    document.querySelector(`[data-agent-id="${currentAgent.id}"]`).classList.add('completed');
+                    
+                    currentSequenceIndex++;
+                    runSequenceStep();
+                }, 3000); // 3 second delay between agents
+            }
+        }
+        
+        function stopSequence() {
+            sequenceActive = false;
+            currentSequenceIndex = 0;
+            
+            document.getElementById('sequence-status').textContent = 'Ready';
+            document.getElementById('sequence-status').style.background = 'rgba(16, 185, 129, 0.2)';
+            document.getElementById('sequence-status').style.color = 'var(--accent-green)';
+            
+            // Reset workflow visualization
+            document.querySelectorAll('.workflow-agent').forEach(el => {
+                el.classList.remove('running', 'completed');
+            });
+        }
+        
+        function toggleExecutionPanel() {
+            const starterSection = document.getElementById('starter-section');
+            const quickExecute = document.getElementById('quick-execute');
+            const terminal = document.getElementById('terminal-output');
+            
+            if (!executionPanelVisible) {
+                starterSection.style.display = 'none';
+                quickExecute.style.display = 'block';
+                terminal.style.display = 'block';
+                executionPanelVisible = true;
+            } else {
+                starterSection.style.display = 'block';
+                quickExecute.style.display = 'none';
+                terminal.style.display = 'none';
+                document.getElementById('agent-config').style.display = 'none';
+                document.getElementById('custom-config').style.display = 'none';
+                executionPanelVisible = false;
+            }
+        }
+        
+        function toggleMode() {
+            const modeToggle = document.getElementById('mode-toggle');
+            const modeText = document.getElementById('mode-text');
+            const customConfig = document.getElementById('custom-config');
+            const agentConfig = document.getElementById('agent-config');
+            
+            if (executionMode === 'auto') {
+                executionMode = 'custom';
+                modeToggle.classList.add('custom');
+                modeText.textContent = 'CUSTOM';
+                customConfig.style.display = 'block';
+                // Show agent details in custom mode
+                if (selectedAgent) {
+                    agentConfig.style.display = 'block';
+                }
+            } else {
+                executionMode = 'auto';
+                modeToggle.classList.remove('custom');
+                modeText.textContent = 'AUTO';
+                customConfig.style.display = 'none';
+                // Hide agent details in auto mode
+                agentConfig.style.display = 'none';
+            }
+        }
+        
+        async function loadWorkflowIds() {
+            const workflowSelect = document.getElementById('workflow-id');
+            
+            try {
+                const response = await fetch('http://localhost:8081/api/workflow-ids');
+                const data = await response.json();
+                
+                if (data.status === 'success' && data.workflow_ids && data.workflow_ids.length > 0) {
+                    // Clear existing options except the first (new workflow)
+                    workflowSelect.innerHTML = '<option value="">New workflow (auto-generate)</option>';
+                    
+                    data.workflow_ids.forEach(workflowId => {
+                        const option = document.createElement('option');
+                        option.value = workflowId;
+                        option.textContent = workflowId;
+                        workflowSelect.appendChild(option);
+                    });
+                } else {
+                    console.log('No workflow IDs found or API error:', data.message);
+                }
+            } catch (error) {
+                console.error('Error loading workflow IDs:', error);
+            }
+        }
+        
+        
+        async function selectAgent(agent) {
+            selectedAgent = agent;
+            
+            // Highlight the selected agent in workflow
+            document.querySelectorAll('.workflow-agent').forEach(button => {
+                button.classList.remove('selected');
+                if (button.getAttribute('data-agent-id') === agent.id) {
+                    button.classList.add('selected');
+                }
+            });
+            
+            // Update center panel with clean agent name
+            const cleanName = agent.id.charAt(0).toUpperCase() + agent.id.slice(1);
+            document.getElementById('center-title').innerHTML = `⚡ <span class="gradient-text">UR</span> ${cleanName}`;
+            
+            // Auto-show execution panel when agent selected
+            if (!executionPanelVisible) {
+                toggleExecutionPanel();
+            }
+            
+            // Enable execute button
+            document.getElementById('execute-btn').disabled = false;
+            
+            // Only show agent config if in custom mode
+            if (executionMode === 'custom') {
+                document.getElementById('agent-config').style.display = 'block';
+            }
+            
+            // Show and populate tiny agent chip
+            const agentChip = document.getElementById('agent-chip');
+            agentChip.style.display = 'inline-flex';
+            
+            // Update chip content
+            document.getElementById('agent-name-mini').textContent = cleanName;
+            document.getElementById('agent-position').textContent = agent.workflow_position;
+            
+            // Update hover card content
+            document.getElementById('card-title').textContent = cleanName;
+            document.getElementById('card-version').textContent = `v${agent.version}`;
+            document.getElementById('card-position').textContent = agent.workflow_position;
+            document.getElementById('card-dependencies').textContent = agent.dependencies.join(', ') || 'None';
+            document.getElementById('card-outputs').textContent = agent.outputs_to.join(', ') || 'None';
+            document.getElementById('card-rules').textContent = `${agent.validation_rules} validation, ${agent.success_criteria} success`;
+            
+            // Update terminal with simplified info
+            const terminalInfo = [
+                `The Agency - UR Agent Execution Terminal`,
+                `> Agent: ${cleanName} (${agent.id}) - READY`,
+                `> Position: ${agent.workflow_position} | Rules: ${agent.validation_rules} validation, ${agent.success_criteria} success`,
+                `> Click EXECUTE to run or expand sections below for details`
+            ].join('\n');
+            
+            document.getElementById('terminal-output').innerHTML = terminalInfo;
+            document.getElementById('agent-status').textContent = 'Ready';
+            document.getElementById('agent-status').className = 'status-badge status-ready';
+            
+            // Load agent details and prompt
+            try {
+                const response = await fetch(`http://localhost:8081/api/agent-specs/${agent.id}`);
+                const data = await response.json();
+                
+                if (data.status === 'success') {
+                    const agentSpecs = data.agent_specifications;
+                    const agentDetails = document.getElementById('agent-details');
+                    
+                    agentDetails.innerHTML = `
+                        <p><strong>Agent ID:</strong> ${agentSpecs.agent_info.agent_id}</p>
+                        <p><strong>Version:</strong> ${agentSpecs.agent_info.agent_version}</p>
+                        <p><strong>Position:</strong> ${agentSpecs.agent_info.workflow_position}</p>
+                        <p><strong>Dependencies:</strong> ${agentSpecs.agent_info.dependencies.join(', ') || 'None'}</p>
+                        <p><strong>Outputs to:</strong> ${agentSpecs.agent_info.outputs_to.join(', ') || 'None'}</p>
+                        <p><strong>Rules:</strong> ${agentSpecs.validation_rules.length} validation, ${agentSpecs.success_criteria.length} success</p>
+                    `;
+                } else {
+                    document.getElementById('agent-details').innerHTML = `
+                        <p style="color: var(--accent-red);">Failed to load agent details: ${data.message}</p>
+                    `;
+                }
+                
+                // Load agent prompt
+                const promptResponse = await fetch(`http://localhost:8081/api/agents/${agent.id}/prompt`);
+                const promptData = await promptResponse.json();
+                
+                if (promptData.status === 'success') {
+                    const promptDisplay = document.getElementById('agent-prompt-display');
+                    promptDisplay.textContent = promptData.prompt;
+                    
+                    // Update terminal with agent info and prompt preview
+                    const terminal = document.getElementById('terminal-output');
+                    const promptPreview = promptData.prompt.length > 200 ? 
+                        promptData.prompt.substring(0, 200) + '...[truncated]' : 
+                        promptData.prompt;
+                    
+                    const terminalInfo = [
+                        `The Agency - UR Agent Execution Terminal`,
+                        `> Selected Agent: ${cleanName} (${agent.id})`,
+                        `> Version: ${agent.version} | Position: ${agent.workflow_position}`,
+                        `> Dependencies: ${agent.dependencies.join(', ') || 'None'}`,
+                        `> Outputs to: ${agent.outputs_to.join(', ') || 'None'}`,
+                        `> Rules: ${agent.validation_rules} validation, ${agent.success_criteria} success`,
+                        ``,
+                        `=== AGENT PROMPT (Preview) ===`,
+                        promptPreview,
+                        `=== END PROMPT ===`,
+                        ``,
+                        `> Status: Ready for execution`
+                    ].join('\n');
+                    
+                    terminal.innerHTML = terminalInfo;
+                    terminal.scrollTop = terminal.scrollHeight;
+                } else {
+                    document.getElementById('agent-prompt-display').textContent = 'Failed to load prompt';
+                    const terminal = document.getElementById('terminal-output');
+                    terminal.innerHTML += `\n> Error: Failed to load agent prompt\n> Status: Ready for execution (prompt unavailable)`;
+                }
+                
+            } catch (error) {
+                document.getElementById('agent-details').innerHTML = `
+                    <p style="color: var(--accent-red);">Error loading agent details: ${error.message}</p>
+                `;
+                document.getElementById('agent-prompt-display').textContent = 'Error loading prompt';
+            }
+        }
+        
+        async function executeAgent() {
+            if (!selectedAgent) {
+                alert('Please select an agent first');
+                return;
+            }
+            
+            // Set UI state
+            document.getElementById('agent-status').textContent = 'Running';
+            document.getElementById('agent-status').className = 'status-badge status-running running';
+            document.getElementById('terminal-output').innerHTML = 'Starting execution...\n';
+            document.getElementById('execute-btn').disabled = true;
+            document.getElementById('stop-btn').style.display = 'inline-block';
+            
+            // Get execution parameters (simplified)
+            const workflowId = document.getElementById('workflow-id').value.trim() || `auto-${selectedAgent.id}-${Date.now()}`;
+            let contextDir = '/Users/shawn_meredith/code/pets/warpcore'; // Smart default
+            let customPrompt = '';
+            
+            // Only get custom settings if in custom mode
+            if (executionMode === 'custom') {
+                contextDir = document.getElementById('context-directory').value.trim() || contextDir;
+                customPrompt = document.getElementById('custom-prompt').value.trim();
+            }
+            
+            currentWorkflowId = workflowId;
+            
+            try {
+                // Start the execution via regular API (no streaming for now)
+                const response = await fetch('http://localhost:8081/api/execute-agent', {
+                    method: 'POST',
+                    headers: {
+                        'Content-Type': 'application/json',
+                    },
+                    body: JSON.stringify({
+                        agent_id: selectedAgent.id,
+                        workflow_id: workflowId,
+                        custom_prompt: customPrompt,
+                        src_dir: contextDir
+                    }),
+                });
+                
+                const result = await response.json();
+                const terminal = document.getElementById('terminal-output');
+                
+                if (result.status === 'success') {
+                    terminal.innerHTML += `✅ Started successfully!\n`;
+                    terminal.innerHTML += `📋 Command: ${result.command}\n`;
+                    terminal.innerHTML += `🆔 Process ID: ${result.process_id}\n`;
+                    terminal.innerHTML += `🏷️  Workflow ID: ${result.workflow_id}\n\n`;
+                    terminal.innerHTML += `⏳ Agent is running in background...\n`;
+                    terminal.innerHTML += `💡 Use the Process Manager to monitor progress\n\n`;
+                    terminal.scrollTop = terminal.scrollHeight;
+                    
+                    // Update current workflow ID
+                    currentWorkflowId = result.workflow_id;
+                    
+                    // Poll for completion
+                    pollForCompletion(result.workflow_id);
+                    
+                } else {
+                    terminal.innerHTML += `❌ Failed to start: ${result.message}\n`;
+                    document.getElementById('agent-status').textContent = 'Failed';
+                    document.getElementById('agent-status').className = 'status-badge status-failed';
+                    document.getElementById('execute-btn').disabled = false;
+                    document.getElementById('stop-btn').style.display = 'none';
+                }
+                
+            } catch (error) {
+                const terminal = document.getElementById('terminal-output');
+                terminal.innerHTML += `❌ Error: ${error.message}\n`;
+                document.getElementById('agent-status').textContent = 'Error';
+                document.getElementById('agent-status').className = 'status-badge status-failed';
+                document.getElementById('execute-btn').disabled = false;
+                document.getElementById('stop-btn').style.display = 'none';
+            }
+            
+            // Refresh processes
+            await refreshProcesses();
+        }
+        
+        // Poll for process completion
+        async function pollForCompletion(workflowId) {
+            const maxPolls = 60; // 5 minutes max (5 second intervals)
+            let pollCount = 0;
+            
+            const pollInterval = setInterval(async () => {
+                try {
+                    const response = await fetch('http://localhost:8081/api/running-processes');
+                    const data = await response.json();
+                    
+                    if (data.status === 'success') {
+                        const runningProcess = data.running_processes.find(p => p.workflow_id === workflowId);
+                        
+                        if (!runningProcess) {
+                            // Process completed
+                            clearInterval(pollInterval);
+                            const terminal = document.getElementById('terminal-output');
+                            terminal.innerHTML += `✅ Agent execution completed!\n`;
+                            terminal.innerHTML += `📊 Check the .data/ directory for results\n`;
+                            terminal.scrollTop = terminal.scrollHeight;
+                            
+                            document.getElementById('agent-status').textContent = 'Completed';
+                            document.getElementById('agent-status').className = 'status-badge status-completed';
+                            document.getElementById('execute-btn').disabled = false;
+                            document.getElementById('stop-btn').style.display = 'none';
+                            
+                            // Refresh processes
+                            await refreshProcesses();
+                            return;
+                        }
+                    }
+                    
+                    pollCount++;
+                    if (pollCount >= maxPolls) {
+                        clearInterval(pollInterval);
+                        const terminal = document.getElementById('terminal-output');
+                        terminal.innerHTML += `⚠️  Polling timeout - process may still be running\n`;
+                        document.getElementById('execute-btn').disabled = false;
+                    }
+                    
+                } catch (error) {
+                    console.error('Polling error:', error);
+                }
+            }, 5000); // Poll every 5 seconds
+        }
+        
+        async function stopAgent() {
+            if (!currentWorkflowId) return;
+            
+            try {
+                const response = await fetch(`http://localhost:8081/api/stop-workflow/${currentWorkflowId}`, {
+                    method: 'POST'
+                });
+                const data = await response.json();
+                
+                if (data.status === 'success') {
+                    document.getElementById('terminal-output').innerHTML += `\nStopped workflow: ${currentWorkflowId}\n`;
+                    document.getElementById('agent-status').textContent = 'Stopped';
+                    document.getElementById('agent-status').className = 'status-badge status-failed';
+                    document.getElementById('execute-btn').disabled = false;
+                    document.getElementById('stop-btn').style.display = 'none';
+                    
+                    if (currentEventSource) {
+                        currentEventSource.close();
+                        currentEventSource = null;
+                    }
+                    
+                    // Refresh running processes
+                    loadRunningProcesses();
+                } else {
+                    document.getElementById('terminal-output').innerHTML += `\nFailed to stop workflow: ${data.message}\n`;
+                }
+            } catch (error) {
+                document.getElementById('terminal-output').innerHTML += `\nError stopping workflow: ${error.message}\n`;
+            }
+        }
+        
+        async function loadRunningProcesses() {
+            try {
+                const response = await fetch('http://localhost:8081/api/running-processes');
+                const data = await response.json();
+                
+                const processList = document.getElementById('processList');
+                
+                if (data.status === 'success') {
+                    if (data.running_processes && data.running_processes.length > 0) {
+                        processList.innerHTML = '';
+                        
+                        data.running_processes.forEach(process => {
+                            const processEl = document.createElement('div');
+                            processEl.className = 'process-card';
+                            processEl.innerHTML = `
+                                <div class="process-header">
+                                    <div class="process-info">
+                                        <h4>${process.agent_id}</h4>
+                                        <p>PID: ${process.pid}</p>
+                                        <p>Started: ${new Date(process.start_time).toLocaleTimeString()}</p>
+                                        ${process.workflow_id ? `<p>Workflow: ${process.workflow_id}</p>` : ''}
+                                    </div>
+                                    <button class="btn btn-danger" onclick="stopProcess('${process.workflow_id}')">STOP</button>
+                                </div>
+                            `;
+                            processList.appendChild(processEl);
+                        });
+                    } else {
+                        processList.innerHTML = '<p>No active processes</p>';
+                    }
+                } else {
+                    processList.innerHTML = `<p>Error loading processes: ${data.message}</p>`;
+                }
+            } catch (error) {
+                document.getElementById('processList').innerHTML = `<p>Failed to load processes: ${error.message}</p>`;
+            }
+        }
+        
+        async function stopProcess(workflowId) {
+            if (!workflowId) return;
+            
+            try {
+                const response = await fetch(`http://localhost:8081/api/stop-workflow/${workflowId}`, {
+                    method: 'POST'
+                });
+                const data = await response.json();
+                
+                if (data.status === 'success') {
+                    alert(`Stopped workflow: ${workflowId}`);
+                    loadRunningProcesses();
+                } else {
+                    alert(`Failed to stop workflow: ${data.message}`);
+                }
+            } catch (error) {
+                alert(`Error stopping workflow: ${error.message}`);
+            }
+        }
+        
+        function toggleSection(sectionId) {
+            const section = document.getElementById(sectionId);
+            const toggle = section.previousElementSibling;
+            
+            if (section.classList.contains('collapsed')) {
+                section.classList.remove('collapsed');
+                section.classList.add('expanded');
+                toggle.classList.add('expanded');
+            } else {
+                section.classList.remove('expanded');
+                section.classList.add('collapsed');
+                toggle.classList.remove('expanded');
+            }
+        }
+        
+        function togglePromptView() {
+            const promptDisplay = document.getElementById('agent-prompt-display');
+            const toggleBtn = document.getElementById('toggle-prompt');
+            
+            if (promptDisplay.classList.contains('expanded')) {
+                promptDisplay.classList.remove('expanded');
+                toggleBtn.textContent = 'SHOW FULL';
+            } else {
+                promptDisplay.classList.add('expanded');
+                toggleBtn.textContent = 'SHOW LESS';
+            }
+        }
+    </script>
+</body>
+</html>

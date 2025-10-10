@@ -344,7 +344,7 @@ class AgentSchemaFactory:
         "oracle": UserInputTranslatorAgentSchema,
         "architect": RequirementsGeneratorAgentSchema,
         "enforcer": RequirementsValidatorAgentSchema,
-        "craftsman_implementation": ImplementationAgentSchema,
+        "craftsman": ImplementationAgentSchema,
         "craftbuddy": RequirementsGeneratorAgentSchema,  # Creative enhancer, similar to requirements gen
         "gatekeeper": GatePromoteAgentSchema,
         "ghostwriter": RequirementsGeneratorAgentSchema,  # Content creator, similar functionality
