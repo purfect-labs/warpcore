@@ -196,8 +196,20 @@ Examples:
         help='Start API documentation server with Scalar UI'
     )
     
+    parser.add_argument(
+        '--fork',
+        dest='fork_name',
+        help='Fork WARPCORE framework to new app name (creates ../<NAME>/)'
+    )
+    
     args = parser.parse_args()
     
+    # Handle --fork flag - fork WARPCORE framework
+    if args.fork_name:
+        print(f"🚀 Forking WARPCORE Framework to {args.fork_name}...")
+        run_fork_command(args.fork_name)
+        return
+        
     # Handle --docs flag - start API documentation server
     if args.docs:
         print("📚 Starting WARPCORE API Documentation Server...")
@@ -1261,6 +1273,48 @@ def aggressive_rename(old_name, new_name):
                     continue
     
     print(f"⚡ Done! Fast parallel rename '{old_name}' → '{new_name}' complete")
+
+def run_fork_command(target_name):
+    """Run the WARPCORE Framer to fork framework to new app"""
+    try:
+        # Validate target name
+        if not target_name:
+            print("❌ Target name cannot be empty")
+            sys.exit(1)
+        
+        # Auto-detect current project name
+        current_name = detect_current_project_name()
+        if not current_name:
+            print("❌ Could not detect current project name")
+            print("💡 Make sure you're in a valid project directory")
+            sys.exit(1)
+            
+        # Check if fork script exists
+        fork_script = Path(__file__).parent / "bin" / "fork.sh"
+        if not fork_script.exists():
+            print(f"❌ Fork script not found: {fork_script}")
+            print("💡 Make sure bin/fork.sh exists and is executable")
+            sys.exit(1)
+        
+        print(f"🚀 Forking {current_name} → {target_name}")
+        
+        # Run the fork script with current and target names
+        result = subprocess.run(
+            ["bash", str(fork_script), current_name, target_name],
+            cwd=Path(__file__).parent,
+            text=True
+        )
+        
+        if result.returncode == 0:
+            print(f"\n🎉 Successfully forked {current_name} to {target_name}!")
+            print(f"💡 Next: cd ../{target_name} && python {target_name.lower()}.py --help")
+        else:
+            print(f"❌ Fork command failed with exit code: {result.returncode}")
+            sys.exit(1)
+            
+    except Exception as e:
+        print(f"❌ Fork command failed: {e}")
+        sys.exit(1)
 
 if __name__ == "__main__":
     main()

@@ -1,3 +1,0 @@
-"""
-APEX Web Package
-"""
